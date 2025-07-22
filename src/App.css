@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .shadow-neon {
+    box-shadow: 0 0 10px #ff2d55, 0 0 20px #0aff99;
+  }
+}
+
+body {
+  @apply bg-gradient-to-br from-gray-900 to-gray-800 bg-fixed;
+  background-image: none;
+  background-position: center;
+  background-attachment: fixed;
+  background-blend-mode: overlay;
+  font-family: "Orbitron", sans-serif;
+}
+
+.neon-button {
+  @apply bg-gradient-to-r from-red-600 to-pink-500 text-white font-bold py-2 px-4 rounded-lg shadow-lg transform transition duration-300 hover:scale-105 hover:shadow-neon;
+}
+
+.card {
+  @apply bg-gray-800 bg-opacity-80 backdrop-blur-md border border-gray-700 rounded-lg shadow-lg transform transition duration-300 hover:scale-105 hover:shadow-neon;
+}
+
+h1,
+h2,
+h3 {
+  @apply text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-500;
+}
+
+a {
+  @apply text-green-400 hover:text-green-300 transition duration-200;
+}
