@@ -30,6 +30,10 @@ const ShopTattoos = () => {
     setCart([...cart, tattoo]);
   };
 
+  const removeFromCart = (index) => {
+    setCart(cart.filter((_, i) => i !== index));
+  };
+
   const totalPrice =
     cart.reduce((total, item) => total + item.price, 0) * (1 - discount);
 
@@ -42,14 +46,14 @@ const ShopTattoos = () => {
         <strong>Warning:</strong> Tattoos are 18+. Satire, not medical advice.
         [YourSite] not liable for regrets.
       </p>
-      <div className="card p-6 mb-8">
+      <div className="card mb-8">
         <label className="block text-lg text-gray-300 mb-2">
           Select Membership Tier:
         </label>
         <select
           value={tier}
           onChange={handleTierChange}
-          className="border border-gray-700 bg-gray-800 text-white p-2 rounded-lg w-full md:w-1/4"
+          className="border pearl-border bg-gray-800 text-white p-2 rounded-lg w-full md:w-1/4"
         >
           <option value="Free">Free (0% off)</option>
           <option value="Pro">Pro (10% off)</option>
@@ -58,11 +62,12 @@ const ShopTattoos = () => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {tattoos.map((tattoo) => (
-          <div key={tattoo.name} className="card p-6">
+          <div key={tattoo.name} className="card">
             <img
               src={tattoo.image}
               alt={tattoo.name}
-              className="w-full h-48 object-cover rounded-lg mb-4"
+              className="w-full h-48 object-cover rounded-lg mb-4 pearl-border"
+              onError={(e) => (e.target.src = "https://picsum.photos/200/300")} // Fallback
             />
             <h2 className="text-2xl font-semibold mb-2">{tattoo.name}</h2>
             <p className="text-lg text-gray-300 mb-4">${tattoo.price}</p>
@@ -75,16 +80,24 @@ const ShopTattoos = () => {
           </div>
         ))}
       </div>
-      <div className="card p-6 mt-8">
+      <div className="card mt-8">
         <h2 className="text-2xl font-semibold mb-4">Cart</h2>
         <ul className="text-gray-300">
           {cart.map((item, index) => (
-            <li key={index} className="mb-2">
-              {item.name} - ${item.price}
+            <li key={index} className="mb-2 flex justify-between items-center">
+              <span>
+                {item.name} - ${item.price}
+              </span>
+              <button
+                onClick={() => removeFromCart(index)}
+                className="text-red-400 hover:text-red-300 text-sm"
+              >
+                Remove
+              </button>
             </li>
           ))}
         </ul>
-        <p className="text-xl text-green-400 font-bold mt-4">
+        <p className="text-xl text-green-400 font-bold mt-4 pearl-gradient p-2 rounded">
           Total: ${totalPrice.toFixed(2)} ({discount * 100}% discount)
         </p>
       </div>
