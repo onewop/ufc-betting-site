@@ -19,6 +19,24 @@
     border: 2px solid rgba(229, 231, 235, 0.7); /* Stronger pearl border */
     border-radius: 8px;
   }
+  .ufc-overlay {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+      url("https://picsum.photos/1920/1080?blur=2&grayscale"); /* Placeholder for UFC-inspired image; replace with asset from Pexels/Freepik */
+    background-size: cover;
+    background-position: center;
+    animation: subtle-pulse 5s ease-in-out infinite;
+  }
+  @keyframes subtle-pulse {
+    0% {
+      opacity: 0.8;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.8;
+    }
+  }
 }
 
 body {
