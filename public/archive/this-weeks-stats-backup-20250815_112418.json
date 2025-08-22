@@ -1,0 +1,140 @@
+{
+  "event": {
+    "name": "UFC 319: Du Plessis vs Chimaev",
+    "date": "August 16, 2025",
+    "location": "Chicago, Illinois, USA"
+  },
+  "fights": [
+    {
+      "matchup": "Dricus Du Plessis vs Khamzat Chimaev",
+      "weight_class": "Middleweight",
+      "fighters": [
+        {
+          "name": "Dricus Du Plessis",
+          "record": "23-2-0",
+          "height": "6'1\"",
+          "weight": "185 lbs",
+          "reach": "76\"",
+          "stance": "Switch",
+          "dob": "Jan 14, 1994",
+          "stats": {
+            "slpm": 6.12,
+            "striking_accuracy": "48%",
+            "sapm": 4.9,
+            "striking_defense": "54%",
+            "td_avg": 2.55,
+            "td_accuracy": "50%",
+            "td_defense": "50%",
+            "sub_avg": 0.7
+          },
+          "recent_fights": [
+            {
+              "opponent": "Sean Strickland",
+              "result": "Win by Unanimous Decision",
+              "date": "Feb 08, 2025",
+              "round": 5,
+              "time": "5:00"
+            },
+            {
+              "opponent": "Israel Adesanya",
+              "result": "Win by Submission (Rear Naked Choke)",
+              "date": "Aug 17, 2024",
+              "round": 4,
+              "time": "3:38"
+            }
+          ]
+        },
+        {
+          "name": "Khamzat Chimaev",
+          "record": "14-0-0",
+          "height": "6'2\"",
+          "weight": "185 lbs",
+          "reach": "75\"",
+          "stance": "Orthodox",
+          "dob": "May 01, 1994",
+          "stats": {
+            "slpm": 5.36,
+            "striking_accuracy": "58%",
+            "sapm": 3.25,
+            "striking_defense": "41%",
+            "td_avg": 4.31,
+            "td_accuracy": "46%",
+            "td_defense": "100%",
+            "sub_avg": 2.8
+          },
+          "recent_fights": [
+            {
+              "opponent": "Robert Whittaker",
+              "result": "Win by SUB (Rear Naked Choke)",
+              "date": "Oct 26, 2024",
+              "round": 1,
+              "time": "3:34"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Lerone Murphy vs Aaron Pico",
+      "weight_class": "Featherweight",
+      "fighters": [
+        {
+          "name": "Lerone Murphy",
+          "record": "14-0-1",
+          "height": "5'9\"",
+          "weight": "145 lbs",
+          "reach": "73\"",
+          "stance": "Orthodox",
+          "dob": "Jul 22, 1991",
+          "stats": {
+            "slpm": 3.95,
+            "striking_accuracy": "53%",
+            "sapm": 2.57,
+            "striking_defense": "60%",
+            "td_avg": 1.5,
+            "td_accuracy": "36%",
+            "td_defense": "84%",
+            "sub_avg": 0.3
+          },
+          "recent_fights": [
+            {
+              "opponent": "Edson Barboza",
+              "result": "Win by Unanimous Decision",
+              "date": "May 18, 2024",
+              "round": 5,
+              "time": "5:00"
+            }
+          ]
+        },
+        {
+          "name": "Aaron Pico",
+          "record": "13-4-0",
+          "height": "5'11\"",
+          "weight": "145 lbs",
+          "reach": "70\"",
+          "stance": "Orthodox",
+          "dob": "Sep 23, 1996",
+          "stats": {
+            "slpm": 4.5,
+            "striking_accuracy": "50%",
+            "sapm": 3.2,
+            "striking_defense": "55%",
+            "td_avg": 3.8,
+            "td_accuracy": "45%",
+            "td_defense": "75%",
+            "sub_avg": 1.2
+          },
+          "recent_fights": [
+            {
+              "opponent": "Henry Corrales",
+              "result": "Win by KO/TKO",
+              "date": "Feb 4, 2023",
+              "round": 1,
+              "time": "4:53"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

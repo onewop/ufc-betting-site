@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Home from "./components/Home";
 import ShopTattoos from "./components/ShopTattoos";
 import TeamCombinations from "./components/TeamCombinations";
@@ -9,9 +9,7 @@ import VideoVault from "./components/VideoVault";
 import LatestOdds from "./components/LatestOdds";
 import ManualTeams from "./components/ManualTeams";
 import DFSPicksProjections from "./components/DFSPicksProjections";
-import "./App.css";
-import "./components/Home.css";
-import "./components/ShopTattoos.css"; // Add this line
+import ThisWeeksStats from "./components/ThisWeeksStats";
 
 const App = () => {
   return (
@@ -20,50 +18,54 @@ const App = () => {
         <nav className="bg-blue-800 text-white p-4">
           <ul className="flex space-x-4">
             <li>
-              <a href="/" className="hover:underline">
+              <Link to="/" className="hover:underline">
                 Home
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/shop-tattoos" className="hover:underline">
+              <Link to="/shop-tattoos" className="hover:underline">
                 Shop Tattoos
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/team-combinations" className="hover:underline">
+              <Link to="/team-combinations" className="hover:underline">
                 DFS Teams
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/manual-teams" className="hover:underline">
+              <Link to="/manual-teams" className="hover:underline">
                 Manual Teams
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/fight-analyzer" className="hover:underline">
+              <Link to="/fight-analyzer" className="hover:underline">
                 Fight Analyzer
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/roster" className="hover:underline">
+              <Link to="/roster" className="hover:underline">
                 UFC Roster
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/video-vault" className="hover:underline">
+              <Link to="/video-vault" className="hover:underline">
                 Video Vault
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/latest-odds" className="hover:underline">
+              <Link to="/latest-odds" className="hover:underline">
                 Latest Odds
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/dfs-picks" className="hover:underline">
-                {" "}
-                // New link DFS Picks
-              </a>
+              <Link to="/dfs-picks" className="hover:underline">
+                DFS Picks
+              </Link>
+            </li>
+            <li>
+              <Link to="/this_weeks_stats" className="hover:underline">
+                This Week's Stats
+              </Link>
             </li>
           </ul>
         </nav>
@@ -76,8 +78,8 @@ const App = () => {
           <Route path="/roster" element={<Roster />} />
           <Route path="/video-vault" element={<VideoVault />} />
           <Route path="/latest-odds" element={<LatestOdds />} />
-          <Route path="/dfs-picks" element={<DFSPicksProjections />} /> // New
-          route
+          <Route path="/dfs-picks" element={<DFSPicksProjections />} />
+          <Route path="/this_weeks_stats" element={<ThisWeeksStats />} />
         </Routes>
       </div>
     </Router>

@@ -1,0 +1,1991 @@
+{
+  "event": {
+    "name": "UFC 300: Pereira vs. Hill",
+    "date": "April 13, 2024",
+    "location": "Las Vegas, Nevada, USA"
+  },
+  "fights": [
+    {
+      "matchup": "Alex Pereira vs. Jamahal Hill",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Alex Pereira",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "80%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Jamahal Hill",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "54%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Bo Nickal vs. Cody Brundage",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Bo Nickal",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "71%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "50%",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Bo Nickal",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "50%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "50%",
+            "td_defense": "N/A",
+            "sub_avg": 2.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Cody Brundage",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "33%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Cody Brundage",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "33%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Bobby Green vs. Jim Miller",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Bobby Green",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "51%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Bobby Green",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "53%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Bobby Green",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "67%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "100%",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 3",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Jim Miller",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "36%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Jim Miller",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "37%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Jim Miller",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "44%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 3",
+              "time": "N/A"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Calvin Kattar vs. Aljamain Sterling",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Calvin Kattar",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "26%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Calvin Kattar",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "40%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Calvin Kattar",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "0%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 3",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Aljamain Sterling",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "45%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "57%",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Aljamain Sterling",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "70%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "66%",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Aljamain Sterling",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "55%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "66%",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 3",
+              "time": "N/A"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Charles Oliveira vs. Arman Tsarukyan",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Charles Oliveira",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "81%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 1.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Charles Oliveira",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "55%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 1.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Charles Oliveira",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "29%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 2.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 3",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Arman Tsarukyan",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "56%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Arman Tsarukyan",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "61%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "50%",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Arman Tsarukyan",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "58%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "50%",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 3",
+              "time": "N/A"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Deiveson Figueiredo vs. Cody Garbrandt",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Deiveson Figueiredo",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "60%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "0%",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Deiveson Figueiredo",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "100%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "50%",
+            "td_defense": "N/A",
+            "sub_avg": 2.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Cody Garbrandt",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "53%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Cody Garbrandt",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "40%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Holly Holm vs. Kayla Harrison",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Holly Holm",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "16%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "0%",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Holly Holm",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "16%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Kayla Harrison",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "74%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "33%",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Kayla Harrison",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "55%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "50%",
+            "td_defense": "N/A",
+            "sub_avg": 1.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Jalin Turner vs. Renato Moicano",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Jalin Turner",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "36%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Jalin Turner",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "46%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Renato Moicano",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "50%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "33%",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Renato Moicano",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "54%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "33%",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Jessica Andrade vs. Marina Rodriguez",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Jessica Andrade",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "60%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Jessica Andrade",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "48%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Jessica Andrade",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "46%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "100%",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 3",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Marina Rodriguez",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "44%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Marina Rodriguez",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "32%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Marina Rodriguez",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "36%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 1.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 3",
+              "time": "N/A"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Jiri Prochazka vs. Aleksandar Rakic",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Jiri Prochazka",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "42%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Jiri Prochazka",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "66%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "100%",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Aleksandar Rakic",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "52%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Aleksandar Rakic",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "55%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Justin Gaethje vs. Max Holloway",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Justin Gaethje",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "46%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Justin Gaethje",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "69%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Justin Gaethje",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "52%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 3",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Justin Gaethje",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "58%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 4",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Justin Gaethje",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "36%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 5",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Max Holloway",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "64%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Max Holloway",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "56%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Max Holloway",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "54%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 3",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Max Holloway",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "57%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 4",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Max Holloway",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "60%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 5",
+              "time": "N/A"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Sodiq Yusuff vs. Diego Lopes",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Sodiq Yusuff",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "40%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Diego Lopes",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "81%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Zhang Weili vs. Yan Xiaonan",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Zhang Weili",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "56%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "100%",
+            "td_defense": "N/A",
+            "sub_avg": 1.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Zhang Weili",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "91%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "100%",
+            "td_defense": "N/A",
+            "sub_avg": 1.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Zhang Weili",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "48%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "0%",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 3",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Zhang Weili",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "57%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "100%",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 4",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Zhang Weili",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "40%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "100%",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 5",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Yan Xiaonan",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "30%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "100%",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 1",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Yan Xiaonan",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "30%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 2",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Yan Xiaonan",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "76%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "100%",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 3",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Yan Xiaonan",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "40%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 4",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Yan Xiaonan",
+          "record": "N/A",
+          "height": "N/A",
+          "weight": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "40%",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "Round 5",
+              "time": "N/A"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
