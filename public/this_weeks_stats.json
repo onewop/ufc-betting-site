@@ -20,13 +20,13 @@
           "dob": "Jul 07, 1987",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "80%",
+            "striking_accuracy": "80",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
             "td_accuracy": "---",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -49,13 +49,13 @@
           "dob": "May 19, 1991",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "54%",
+            "striking_accuracy": "54",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
             "td_accuracy": "---",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -75,22 +75,22 @@
       "fighters": [
         {
           "name": "Bo Nickal",
-          "nickname": NaN,
+          "nickname": null,
           "record": "5-0-0",
           "height": "6' 1\"",
           "weight": "185 lbs.",
           "reach": "--",
-          "stance": NaN,
+          "stance": "N/A",
           "dob": "Jan 14, 1996",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "71%",
+            "striking_accuracy": "71",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
-            "td_accuracy": "50%",
+            "td_accuracy": "50",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -104,7 +104,7 @@
         },
         {
           "name": "Cody Brundage",
-          "nickname": NaN,
+          "nickname": null,
           "record": "10-5-0",
           "height": "6' 0\"",
           "weight": "185 lbs.",
@@ -113,13 +113,13 @@
           "dob": "May 16, 1994",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "33%",
+            "striking_accuracy": "33",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
             "td_accuracy": "---",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -139,7 +139,7 @@
       "fighters": [
         {
           "name": "Bobby Green",
-          "nickname": "N/A",
+          "nickname": null,
           "record": "31-14-1",
           "height": "5' 10\"",
           "weight": "155 lbs.",
@@ -148,13 +148,13 @@
           "dob": "Sep 09, 1986",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "51%",
+            "striking_accuracy": "51",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
             "td_accuracy": "---",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -177,13 +177,13 @@
           "dob": "Aug 30, 1983",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "36%",
+            "striking_accuracy": "36",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
             "td_accuracy": "---",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -203,7 +203,7 @@
       "fighters": [
         {
           "name": "Calvin Kattar",
-          "nickname": NaN,
+          "nickname": null,
           "record": "23-7-0",
           "height": "5' 11\"",
           "weight": "145 lbs.",
@@ -212,13 +212,13 @@
           "dob": "Mar 26, 1988",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "26%",
+            "striking_accuracy": "26",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
             "td_accuracy": "---",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -241,13 +241,13 @@
           "dob": "Jul 31, 1989",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "45%",
+            "striking_accuracy": "45",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
-            "td_accuracy": "57%",
+            "td_accuracy": "57",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -276,7 +276,7 @@
           "dob": "Oct 17, 1989",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "81%",
+            "striking_accuracy": "81",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
@@ -305,13 +305,13 @@
           "dob": "Oct 11, 1996",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "56%",
+            "striking_accuracy": "56",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
             "td_accuracy": "---",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -340,13 +340,13 @@
           "dob": "Dec 18, 1987",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "60%",
+            "striking_accuracy": "60",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
-            "td_accuracy": "0%",
+            "td_accuracy": "0",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -369,13 +369,13 @@
           "dob": "Jul 07, 1991",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "53%",
+            "striking_accuracy": "53",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
             "td_accuracy": "---",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -404,13 +404,13 @@
           "dob": "Oct 17, 1981",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "16%",
+            "striking_accuracy": "16",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
-            "td_accuracy": "0%",
+            "td_accuracy": "0",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -424,22 +424,22 @@
         },
         {
           "name": "Kayla Harrison",
-          "nickname": NaN,
+          "nickname": null,
           "record": "16-1-0",
           "height": "--",
           "weight": "135 lbs.",
           "reach": "--",
-          "stance": NaN,
+          "stance": "N/A",
           "dob": "Jul 02, 1990",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "74%",
+            "striking_accuracy": "74",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
-            "td_accuracy": "33%",
+            "td_accuracy": "33",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -468,13 +468,13 @@
           "dob": "May 18, 1995",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "36%",
+            "striking_accuracy": "36",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
             "td_accuracy": "---",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -488,7 +488,7 @@
         },
         {
           "name": "Renato Moicano",
-          "nickname": NaN,
+          "nickname": null,
           "record": "17-5-1",
           "height": "5' 11\"",
           "weight": "155 lbs.",
@@ -497,13 +497,13 @@
           "dob": "May 21, 1989",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "50%",
+            "striking_accuracy": "50",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
-            "td_accuracy": "33%",
+            "td_accuracy": "33",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -532,13 +532,13 @@
           "dob": "Sep 25, 1991",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "60%",
+            "striking_accuracy": "60",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
             "td_accuracy": "---",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -552,7 +552,7 @@
         },
         {
           "name": "Marina Rodriguez",
-          "nickname": NaN,
+          "nickname": null,
           "record": "17-3-2",
           "height": "5' 6\"",
           "weight": "115 lbs.",
@@ -561,13 +561,13 @@
           "dob": "Apr 29, 1987",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "44%",
+            "striking_accuracy": "44",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
             "td_accuracy": "---",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -587,7 +587,7 @@
       "fighters": [
         {
           "name": "Jiri Prochazka",
-          "nickname": NaN,
+          "nickname": null,
           "record": "29-4-1",
           "height": "6' 3\"",
           "weight": "205 lbs.",
@@ -596,13 +596,13 @@
           "dob": "Oct 14, 1992",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "42%",
+            "striking_accuracy": "42",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
             "td_accuracy": "---",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -625,13 +625,13 @@
           "dob": "Feb 06, 1992",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "52%",
+            "striking_accuracy": "52",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
             "td_accuracy": "---",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -660,13 +660,13 @@
           "dob": "Nov 14, 1988",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "46%",
+            "striking_accuracy": "46",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
             "td_accuracy": "---",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -689,13 +689,13 @@
           "dob": "Dec 04, 1991",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "64%",
+            "striking_accuracy": "64",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
             "td_accuracy": "---",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -724,13 +724,13 @@
           "dob": "May 19, 1993",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "40%",
+            "striking_accuracy": "40",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
             "td_accuracy": "---",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -744,7 +744,7 @@
         },
         {
           "name": "Diego Lopes",
-          "nickname": NaN,
+          "nickname": null,
           "record": "23-6-0",
           "height": "5' 11\"",
           "weight": "145 lbs.",
@@ -753,13 +753,13 @@
           "dob": "Dec 30, 1994",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "81%",
+            "striking_accuracy": "81",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
             "td_accuracy": "---",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {
@@ -788,11 +788,11 @@
           "dob": "Aug 13, 1989",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "56%",
+            "striking_accuracy": "56",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
-            "td_accuracy": "100%",
+            "td_accuracy": "100",
             "td_defense": "N/A",
             "sub_avg": 1.0
           },
@@ -808,7 +808,7 @@
         },
         {
           "name": "Yan Xiaonan",
-          "nickname": NaN,
+          "nickname": null,
           "record": "17-3-0",
           "height": "5' 5\"",
           "weight": "115 lbs.",
@@ -817,13 +817,13 @@
           "dob": "Jun 16, 1989",
           "stats": {
             "slpm": 0,
-            "striking_accuracy": "30%",
+            "striking_accuracy": "30",
             "sapm": 0,
             "striking_defense": "N/A",
             "td_avg": 0,
-            "td_accuracy": "100%",
+            "td_accuracy": "100",
             "td_defense": "N/A",
-            "sub_avg": 0
+            "sub_avg": 0.0
           },
           "recent_fights": [
             {

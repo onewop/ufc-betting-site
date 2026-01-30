@@ -24,19 +24,25 @@ def csv_to_json(
     fighter_tott_path="../scrape_ufc_stats/ufc_fighter_tott.csv",
     output_path="public/this_weeks_stats.json"
 ):
-    """Convert UFCStats CSVs to JSON for UFC 300"""
+    """Convert UFCStats CSVs to JSON for UFC 300 with deduplication and validation"""
     try:
-        fight_stats_df = pd.read_csv(fight_stats_path)
+        # Load CSVs with error handling
+        fight_stats_df = pd.read_csv(fight_stats_path, low_memory=False)
         fighter_details_df = pd.read_csv(fighter_details_path) if os.path.exists(fighter_details_path) else pd.DataFrame()
         fighter_tott_df = pd.read_csv(fighter_tott_path) if os.path.exists(fighter_tott_path) else pd.DataFrame()
-        
+
+        # Standardize fighter names
         if not fighter_details_df.empty:
             fighter_details_df['FIGHTER'] = fighter_details_df['FIRST'] + ' ' + fighter_details_df['LAST']
-        
+            fighter_details_df['FIGHTER'] = fighter_details_df['FIGHTER'].str.strip().str.lower()
+            fighter_details_df = fighter_details_df.drop_duplicates(subset=['FIGHTER'])
+
+        # Filter for UFC 300
         ufc_300_stats = fight_stats_df[fight_stats_df['EVENT'] == 'UFC 300: Pereira vs. Hill']
         if ufc_300_stats.empty:
             raise ValueError("No UFC 300 data found in ufc_fight_stats.csv")
-        
+
+        # Manual records and outcomes for accuracy
         manual_records = {
             "Alex Pereira": "9-2-0",
             "Jamahal Hill": "12-1-0",
@@ -65,7 +71,7 @@ def csv_to_json(
             "Justin Gaethje": "25-4-0",
             "Max Holloway": "25-7-0"
         }
-        
+
         manual_outcomes = {
             "Alex Pereira vs. Jamahal Hill": [
                 {"fighter": "Alex Pereira", "opponent": "Jamahal Hill", "result": "W", "date": "April 13, 2024", "round": "1", "time": "3:14"},
@@ -116,38 +122,45 @@ def csv_to_json(
                 {"fighter": "Yan Xiaonan", "opponent": "Zhang Weili", "result": "L", "date": "April 13, 2024", "round": "5", "time": "5:00"}
             ]
         }
-        
+
+        # Deduplicate and clean fighter data
+        if not fighter_tott_df.empty:
+            fighter_tott_df = fighter_tott_df.drop_duplicates(subset=['FIGHTER'])
+            fighter_tott_df.fillna({'slpm': 0, 'sapm': 0, 'str_def': 'N/A', 'td_avg': 0, 'td_def': 'N/A'}, inplace=True)
+
         fights = []
         for matchup, group in ufc_300_stats.groupby('BOUT'):
-            # Deduplicate fighters
-            unique_fighters = group.drop_duplicates(subset=['FIGHTER'])
+            # Deduplicate fighters in this matchup
+            unique_fighters = group.drop_duplicates(subset=['FIGHTER']).copy()  # Create a copy to avoid SettingWithCopyWarning
+            unique_fighters.loc[:, 'FIGHTER'] = unique_fighters['FIGHTER'].str.strip().str.lower()
             fighters = []
             for _, row in unique_fighters.iterrows():
-                fighter_info = fighter_details_df[fighter_details_df['FIGHTER'] == row['FIGHTER']] if not fighter_details_df.empty else pd.DataFrame()
-                tott_info = fighter_tott_df[fighter_tott_df['FIGHTER'] == row['FIGHTER']] if not fighter_tott_df.empty else pd.DataFrame()
-                
+                fighter_name = row['FIGHTER'].strip().lower()
+                fighter_info = fighter_details_df[fighter_details_df['FIGHTER'].str.lower() == fighter_name] if not fighter_details_df.empty else pd.DataFrame()
+                tott_info = fighter_tott_df[fighter_tott_df['FIGHTER'].str.lower() == fighter_name] if not fighter_tott_df.empty else pd.DataFrame()
+
                 # Get manual outcome
-                fight_outcome = [o for o in manual_outcomes.get(matchup, []) if o['fighter'] == row['FIGHTER']] or [{}]
+                fight_outcome = [o for o in manual_outcomes.get(matchup, []) if o['fighter'].lower() == fighter_name] or [{}]
                 fight_outcome = fight_outcome[0]
-                
+
                 fighter_data = {
-                    "name": row['FIGHTER'],
-                    "nickname": fighter_info['NICKNAME'].iloc[0] if not fighter_info.empty and 'NICKNAME' in fighter_info.columns else 'N/A',
-                    "record": manual_records.get(row['FIGHTER'], 'N/A'),
-                    "height": tott_info['HEIGHT'].iloc[0] if not tott_info.empty and 'HEIGHT' in tott_info.columns else 'N/A',
-                    "weight": tott_info['WEIGHT'].iloc[0] if not tott_info.empty and 'WEIGHT' in tott_info.columns else 'N/A',
-                    "reach": tott_info['REACH'].iloc[0] if not tott_info.empty and 'REACH' in tott_info.columns else 'N/A',
-                    "stance": tott_info['STANCE'].iloc[0] if not tott_info.empty and 'STANCE' in tott_info.columns else 'N/A',
-                    "dob": tott_info['DOB'].iloc[0] if not tott_info.empty and 'DOB' in tott_info.columns else 'N/A',
+                    "name": row['FIGHTER'].title(),
+                    "nickname": fighter_info['NICKNAME'].iloc[0] if not fighter_info.empty and 'NICKNAME' in fighter_info.columns and pd.notna(fighter_info['NICKNAME'].iloc[0]) else None,
+                    "record": manual_records.get(row['FIGHTER'].title(), 'N/A'),
+                    "height": tott_info['HEIGHT'].iloc[0] if not tott_info.empty and 'HEIGHT' in tott_info.columns and pd.notna(tott_info['HEIGHT'].iloc[0]) else 'N/A',
+                    "weight": tott_info['WEIGHT'].iloc[0] if not tott_info.empty and 'WEIGHT' in tott_info.columns and pd.notna(tott_info['WEIGHT'].iloc[0]) else 'N/A',
+                    "reach": tott_info['REACH'].iloc[0] if not tott_info.empty and 'REACH' in tott_info.columns and pd.notna(tott_info['REACH'].iloc[0]) else 'N/A',
+                    "stance": tott_info['STANCE'].iloc[0] if not tott_info.empty and 'STANCE' in tott_info.columns and pd.notna(tott_info['STANCE'].iloc[0]) else 'N/A',
+                    "dob": tott_info['DOB'].iloc[0] if not tott_info.empty and 'DOB' in tott_info.columns and pd.notna(tott_info['DOB'].iloc[0]) else 'N/A',
                     "stats": {
-                        "slpm": tott_info['slpm'].iloc[0] if not tott_info.empty and 'slpm' in tott_info.columns else 0,
-                        "striking_accuracy": row.get('SIG.STR. %', 'N/A'),
-                        "sapm": tott_info['sapm'].iloc[0] if not tott_info.empty and 'sapm' in tott_info.columns else 0,
-                        "striking_defense": tott_info['str_def'].iloc[0] if not tott_info.empty and 'str_def' in tott_info.columns else 'N/A',
-                        "td_avg": tott_info['td_avg'].iloc[0] if not tott_info.empty and 'td_avg' in tott_info.columns else 0,
-                        "td_accuracy": row.get('TD %', 'N/A'),
-                        "td_defense": tott_info['td_def'].iloc[0] if not tott_info.empty and 'td_def' in tott_info.columns else 'N/A',
-                        "sub_avg": row.get('SUB.ATT', 0) or 0
+                        "slpm": float(tott_info['slpm'].iloc[0]) if not tott_info.empty and 'slpm' in tott_info.columns and pd.notna(tott_info['slpm'].iloc[0]) else 0,
+                        "striking_accuracy": row.get('SIG.STR. %', 'N/A').replace('%', '') if pd.notna(row.get('SIG.STR. %')) else 'N/A',
+                        "sapm": float(tott_info['sapm'].iloc[0]) if not tott_info.empty and 'sapm' in tott_info.columns and pd.notna(tott_info['sapm'].iloc[0]) else 0,
+                        "striking_defense": tott_info['str_def'].iloc[0] if not tott_info.empty and 'str_def' in tott_info.columns and pd.notna(tott_info['str_def'].iloc[0]) else 'N/A',
+                        "td_avg": float(tott_info['td_avg'].iloc[0]) if not tott_info.empty and 'td_avg' in tott_info.columns and pd.notna(tott_info['td_avg'].iloc[0]) else 0,
+                        "td_accuracy": row.get('TD %', 'N/A').replace('%', '') if pd.notna(row.get('TD %')) else 'N/A',
+                        "td_defense": tott_info['td_def'].iloc[0] if not tott_info.empty and 'td_def' in tott_info.columns and pd.notna(tott_info['td_def'].iloc[0]) else 'N/A',
+                        "sub_avg": float(row.get('SUB.ATT', 0)) if pd.notna(row.get('SUB.ATT')) else 0
                     },
                     "recent_fights": [
                         {
@@ -160,11 +173,13 @@ def csv_to_json(
                     ]
                 }
                 fighters.append(fighter_data)
-            fights.append({
-                "matchup": matchup,
-                "weight_class": group['weight_class'].iloc[0] if 'weight_class' in group.columns else 'N/A',
-                "fighters": fighters
-            })
+            # Ensure exactly two fighters per matchup
+            if len(fighters) == 2:
+                fights.append({
+                    "matchup": matchup,
+                    "weight_class": group['weight_class'].iloc[0] if 'weight_class' in group.columns and pd.notna(group['weight_class'].iloc[0]) else 'N/A',
+                    "fighters": fighters
+                })
         data = {
             "event": {
                 "name": "UFC 300: Pereira vs. Hill",

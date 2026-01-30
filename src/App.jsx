@@ -38,7 +38,7 @@ const App = () => {
               </Link>
             </li>
             <li>
-              <Link to="/fight-analyzer" className="hover:underline">
+              <Link to="/this_weeks_stats" className="hover:underline">
                 Fight Analyzer
               </Link>
             </li>
@@ -59,12 +59,7 @@ const App = () => {
             </li>
             <li>
               <Link to="/dfs-picks" className="hover:underline">
-                DFS Picks
-              </Link>
-            </li>
-            <li>
-              <Link to="/this_weeks_stats" className="hover:underline">
-                This Week's Stats
+                MMA Handicapper Predictions
               </Link>
             </li>
           </ul>

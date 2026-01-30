@@ -4,18 +4,20 @@
   "private": true,
   "dependencies": {
     "@tailwindcss/forms": "^0.5.9",
-    "axios": "^1.11.0",
-    "framer-motion": "^11.18.2",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.26.1",
-    "tailwindcss": "^3.4.10"
+    "axios": "^1.7.7",
+    "framer-motion": "^11.11.9",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.27.0",
+    "tailwindcss": "^3.4.14"
   },
   "devDependencies": {
     "@craco/craco": "^7.1.0",
     "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.41",
-    "react-scripts": "5.0.1"
+    "postcss": "^8.4.47",
+    "react-scripts": "^5.0.1",
+    "svgo": "^3.3.2",
+    "webpack-dev-server": "^5.2.0"
   },
   "scripts": {
     "start": "craco start",

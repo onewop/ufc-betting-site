@@ -1,0 +1,841 @@
+{
+  "event": {
+    "name": "UFC 300: Pereira vs. Hill",
+    "date": "April 13, 2024",
+    "location": "Las Vegas, Nevada, USA"
+  },
+  "fights": [
+    {
+      "matchup": "Alex Pereira vs. Jamahal Hill",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Alex Pereira",
+          "nickname": "Poatan",
+          "record": "9-2-0",
+          "height": "6' 4\"",
+          "weight": "185 lbs.",
+          "reach": "79\"",
+          "stance": "Orthodox",
+          "dob": "Jul 07, 1987",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "80",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Jamahal Hill",
+              "result": "W",
+              "date": "April 13, 2024",
+              "round": "1",
+              "time": "3:14"
+            }
+          ]
+        },
+        {
+          "name": "Jamahal Hill",
+          "nickname": "Sweet Dreams",
+          "record": "12-1-0",
+          "height": "6' 4\"",
+          "weight": "205 lbs.",
+          "reach": "79\"",
+          "stance": "Southpaw",
+          "dob": "May 19, 1991",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "54",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Alex Pereira",
+              "result": "L",
+              "date": "April 13, 2024",
+              "round": "1",
+              "time": "3:14"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Bo Nickal vs. Cody Brundage",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Bo Nickal",
+          "nickname": null,
+          "record": "5-0-0",
+          "height": "6' 1\"",
+          "weight": "185 lbs.",
+          "reach": "--",
+          "stance": "N/A",
+          "dob": "Jan 14, 1996",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "71",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "50",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Cody Brundage",
+              "result": "W",
+              "date": "April 13, 2024",
+              "round": "2",
+              "time": "3:38"
+            }
+          ]
+        },
+        {
+          "name": "Cody Brundage",
+          "nickname": null,
+          "record": "10-5-0",
+          "height": "6' 0\"",
+          "weight": "185 lbs.",
+          "reach": "72\"",
+          "stance": "Orthodox",
+          "dob": "May 16, 1994",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "33",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Bo Nickal",
+              "result": "L",
+              "date": "April 13, 2024",
+              "round": "2",
+              "time": "3:38"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Bobby Green vs. Jim Miller",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Bobby Green",
+          "nickname": null,
+          "record": "31-14-1",
+          "height": "5' 10\"",
+          "weight": "155 lbs.",
+          "reach": "71\"",
+          "stance": "Orthodox",
+          "dob": "Sep 09, 1986",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "51",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Jim Miller",
+              "result": "W",
+              "date": "April 13, 2024",
+              "round": "3",
+              "time": "5:00"
+            }
+          ]
+        },
+        {
+          "name": "Jim Miller",
+          "nickname": "A-10",
+          "record": "37-17-0",
+          "height": "5' 8\"",
+          "weight": "155 lbs.",
+          "reach": "71\"",
+          "stance": "Southpaw",
+          "dob": "Aug 30, 1983",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "36",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Bobby Green",
+              "result": "L",
+              "date": "April 13, 2024",
+              "round": "3",
+              "time": "5:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Calvin Kattar vs. Aljamain Sterling",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Calvin Kattar",
+          "nickname": null,
+          "record": "23-7-0",
+          "height": "5' 11\"",
+          "weight": "145 lbs.",
+          "reach": "72\"",
+          "stance": "Orthodox",
+          "dob": "Mar 26, 1988",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "26",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Aljamain Sterling",
+              "result": "L",
+              "date": "April 13, 2024",
+              "round": "3",
+              "time": "5:00"
+            }
+          ]
+        },
+        {
+          "name": "Aljamain Sterling",
+          "nickname": "Funk Master",
+          "record": "23-4-0",
+          "height": "5' 7\"",
+          "weight": "135 lbs.",
+          "reach": "71\"",
+          "stance": "Orthodox",
+          "dob": "Jul 31, 1989",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "45",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "57",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Calvin Kattar",
+              "result": "W",
+              "date": "April 13, 2024",
+              "round": "3",
+              "time": "5:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Charles Oliveira vs. Arman Tsarukyan",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Charles Oliveira",
+          "nickname": "Do Bronxs",
+          "record": "34-9-0",
+          "height": "5' 10\"",
+          "weight": "155 lbs.",
+          "reach": "74\"",
+          "stance": "Orthodox",
+          "dob": "Oct 17, 1989",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "81",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 1.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Arman Tsarukyan",
+              "result": "L",
+              "date": "April 13, 2024",
+              "round": "3",
+              "time": "5:00"
+            }
+          ]
+        },
+        {
+          "name": "Arman Tsarukyan",
+          "nickname": "Ahalkalakets",
+          "record": "21-3-0",
+          "height": "5' 7\"",
+          "weight": "155 lbs.",
+          "reach": "72\"",
+          "stance": "Orthodox",
+          "dob": "Oct 11, 1996",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "56",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Charles Oliveira",
+              "result": "W",
+              "date": "April 13, 2024",
+              "round": "3",
+              "time": "5:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Deiveson Figueiredo vs. Cody Garbrandt",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Deiveson Figueiredo",
+          "nickname": "Deus da Guerra",
+          "record": "22-2-1",
+          "height": "5' 5\"",
+          "weight": "125 lbs.",
+          "reach": "68\"",
+          "stance": "Orthodox",
+          "dob": "Dec 18, 1987",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "60",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "0",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Cody Garbrandt",
+              "result": "W",
+              "date": "April 13, 2024",
+              "round": "2",
+              "time": "4:02"
+            }
+          ]
+        },
+        {
+          "name": "Cody Garbrandt",
+          "nickname": "No Love",
+          "record": "14-5-0",
+          "height": "5' 8\"",
+          "weight": "125 lbs.",
+          "reach": "65\"",
+          "stance": "Orthodox",
+          "dob": "Jul 07, 1991",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "53",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Deiveson Figueiredo",
+              "result": "L",
+              "date": "April 13, 2024",
+              "round": "2",
+              "time": "4:02"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Holly Holm vs. Kayla Harrison",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Holly Holm",
+          "nickname": "The Preacher's Daughter",
+          "record": "15-6-0",
+          "height": "5' 8\"",
+          "weight": "135 lbs.",
+          "reach": "69\"",
+          "stance": "Southpaw",
+          "dob": "Oct 17, 1981",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "16",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "0",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Kayla Harrison",
+              "result": "L",
+              "date": "April 13, 2024",
+              "round": "2",
+              "time": "1:47"
+            }
+          ]
+        },
+        {
+          "name": "Kayla Harrison",
+          "nickname": null,
+          "record": "16-1-0",
+          "height": "--",
+          "weight": "135 lbs.",
+          "reach": "--",
+          "stance": "N/A",
+          "dob": "Jul 02, 1990",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "74",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "33",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Holly Holm",
+              "result": "W",
+              "date": "April 13, 2024",
+              "round": "2",
+              "time": "1:47"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Jalin Turner vs. Renato Moicano",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Jalin Turner",
+          "nickname": "The Tarantula",
+          "record": "14-7-0",
+          "height": "6' 3\"",
+          "weight": "155 lbs.",
+          "reach": "77\"",
+          "stance": "Southpaw",
+          "dob": "May 18, 1995",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "36",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "N/A",
+              "time": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "Renato Moicano",
+          "nickname": null,
+          "record": "17-5-1",
+          "height": "5' 11\"",
+          "weight": "155 lbs.",
+          "reach": "72\"",
+          "stance": "Orthodox",
+          "dob": "May 21, 1989",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "50",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "33",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "N/A",
+              "result": "N/A",
+              "date": "N/A",
+              "round": "N/A",
+              "time": "N/A"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Jessica Andrade vs. Marina Rodriguez",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Jessica Andrade",
+          "nickname": "Bate Estaca",
+          "record": "24-12-0",
+          "height": "5' 1\"",
+          "weight": "125 lbs.",
+          "reach": "62\"",
+          "stance": "Orthodox",
+          "dob": "Sep 25, 1991",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "60",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Marina Rodriguez",
+              "result": "W",
+              "date": "April 13, 2024",
+              "round": "3",
+              "time": "5:00"
+            }
+          ]
+        },
+        {
+          "name": "Marina Rodriguez",
+          "nickname": null,
+          "record": "17-3-2",
+          "height": "5' 6\"",
+          "weight": "115 lbs.",
+          "reach": "65\"",
+          "stance": "Orthodox",
+          "dob": "Apr 29, 1987",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "44",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Jessica Andrade",
+              "result": "L",
+              "date": "April 13, 2024",
+              "round": "3",
+              "time": "5:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Jiri Prochazka vs. Aleksandar Rakic",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Jiri Prochazka",
+          "nickname": null,
+          "record": "29-4-1",
+          "height": "6' 3\"",
+          "weight": "205 lbs.",
+          "reach": "80\"",
+          "stance": "Orthodox",
+          "dob": "Oct 14, 1992",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "42",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Aleksandar Rakic",
+              "result": "W",
+              "date": "April 13, 2024",
+              "round": "2",
+              "time": "3:17"
+            }
+          ]
+        },
+        {
+          "name": "Aleksandar Rakic",
+          "nickname": "Rocket",
+          "record": "14-3-0",
+          "height": "6' 4\"",
+          "weight": "205 lbs.",
+          "reach": "78\"",
+          "stance": "Orthodox",
+          "dob": "Feb 06, 1992",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "52",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Jiri Prochazka",
+              "result": "L",
+              "date": "April 13, 2024",
+              "round": "2",
+              "time": "3:17"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Justin Gaethje vs. Max Holloway",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Justin Gaethje",
+          "nickname": "The Highlight",
+          "record": "25-4-0",
+          "height": "5' 11\"",
+          "weight": "155 lbs.",
+          "reach": "70\"",
+          "stance": "Orthodox",
+          "dob": "Nov 14, 1988",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "46",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Max Holloway",
+              "result": "L",
+              "date": "April 13, 2024",
+              "round": "5",
+              "time": "4:59"
+            }
+          ]
+        },
+        {
+          "name": "Max Holloway",
+          "nickname": "Blessed",
+          "record": "25-7-0",
+          "height": "5' 11\"",
+          "weight": "145 lbs.",
+          "reach": "69\"",
+          "stance": "Orthodox",
+          "dob": "Dec 04, 1991",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "64",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Justin Gaethje",
+              "result": "W",
+              "date": "April 13, 2024",
+              "round": "5",
+              "time": "4:59"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Sodiq Yusuff vs. Diego Lopes",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Sodiq Yusuff",
+          "nickname": "Super",
+          "record": "13-3-0",
+          "height": "5' 9\"",
+          "weight": "145 lbs.",
+          "reach": "71\"",
+          "stance": "Orthodox",
+          "dob": "May 19, 1993",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "40",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Diego Lopes",
+              "result": "L",
+              "date": "April 13, 2024",
+              "round": "1",
+              "time": "1:29"
+            }
+          ]
+        },
+        {
+          "name": "Diego Lopes",
+          "nickname": null,
+          "record": "23-6-0",
+          "height": "5' 11\"",
+          "weight": "145 lbs.",
+          "reach": "72\"",
+          "stance": "Orthodox",
+          "dob": "Dec 30, 1994",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "81",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "---",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Sodiq Yusuff",
+              "result": "W",
+              "date": "April 13, 2024",
+              "round": "1",
+              "time": "1:29"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "matchup": "Zhang Weili vs. Yan Xiaonan",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Zhang Weili",
+          "nickname": "Magnum",
+          "record": "N/A",
+          "height": "5' 4\"",
+          "weight": "115 lbs.",
+          "reach": "63\"",
+          "stance": "Switch",
+          "dob": "Aug 13, 1989",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "56",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "100",
+            "td_defense": "N/A",
+            "sub_avg": 1.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Yan Xiaonan",
+              "result": "W",
+              "date": "April 13, 2024",
+              "round": "5",
+              "time": "5:00"
+            }
+          ]
+        },
+        {
+          "name": "Yan Xiaonan",
+          "nickname": null,
+          "record": "17-3-0",
+          "height": "5' 5\"",
+          "weight": "115 lbs.",
+          "reach": "63\"",
+          "stance": "Orthodox",
+          "dob": "Jun 16, 1989",
+          "stats": {
+            "slpm": 0,
+            "striking_accuracy": "30",
+            "sapm": 0,
+            "striking_defense": "N/A",
+            "td_avg": 0,
+            "td_accuracy": "100",
+            "td_defense": "N/A",
+            "sub_avg": 0.0
+          },
+          "recent_fights": [
+            {
+              "opponent": "Zhang Weili",
+              "result": "L",
+              "date": "April 13, 2024",
+              "round": "5",
+              "time": "5:00"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
