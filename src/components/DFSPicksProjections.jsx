@@ -554,6 +554,24 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
   const [optimalLineups, setOptimalLineups] = useState([]);
   const [optimizerError, setOptimizerError] = useState(null);
   const [exposureLimit, setExposureLimit] = useState(60); // max % a fighter can appear across lineups
+  const [openSections, setOpenSections] = useState({
+    chart: true,
+    table: true,
+    matchupIntel: false, // collapsed by default — open via nav or header click
+    optimizer: true,
+  });
+  const toggleSection = (key) =>
+    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  const openAndScroll = (id, key) => {
+    if (key) setOpenSections((prev) => ({ ...prev, [key]: true }));
+    setTimeout(
+      () =>
+        document
+          .getElementById(id)
+          ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      50
+    );
+  };
   // Unique per user session — seeds projection noise so two users building
   // at the same time get slightly different diverse lineup orderings.
   const userSeed = Date.now() + Math.random() * 10000;
@@ -1020,16 +1038,61 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
 
         {error && <p className="text-red-400 text-center mb-4">{error}</p>}
 
+        {/* ── Section Navigator ── */}
+        <div className="sticky top-0 z-20 -mx-4 px-4 bg-stone-950/95 backdrop-blur-sm border-b border-stone-800 mb-8 py-2">
+          <div className="flex items-center justify-center gap-1 flex-wrap max-w-6xl mx-auto">
+            <span className="text-stone-600 text-[10px] tracking-widest uppercase mr-2 hidden sm:inline">
+              Jump to:
+            </span>
+            {[
+              { label: "📊 Chart", id: "section-chart", key: "chart" },
+              {
+                label: "📋 Projections",
+                id: "section-table",
+                key: "table",
+              },
+              {
+                label: "🔍 Matchup Intel",
+                id: "section-matchup",
+                key: "matchupIntel",
+              },
+              {
+                label: "⚙️ Optimizer",
+                id: "section-optimizer",
+                key: "optimizer",
+              },
+              { label: "🎥 Videos", id: "section-videos", key: null },
+            ].map(({ label, id, key }) => (
+              <button
+                key={id}
+                onClick={() => openAndScroll(id, key)}
+                className="px-3 py-1 rounded text-[11px] font-semibold tracking-wide text-stone-400 hover:text-yellow-400 hover:bg-stone-800 transition whitespace-nowrap"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* ── Bar Chart ── */}
         {top10Chart.length > 0 && (
-          <section className="mb-10">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="h-px flex-1 bg-yellow-700/30" />
-              <span className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600">
+          <section id="section-chart" className="mb-10">
+            <div
+              className="flex items-center gap-3 mb-5 cursor-pointer group"
+              onClick={() => toggleSection("chart")}
+              title={openSections.chart ? "Collapse section" : "Expand section"}
+            >
+              <div className="h-px flex-1 bg-yellow-700/30 group-hover:bg-yellow-700/60 transition" />
+              <span className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600 group-hover:text-yellow-400 transition">
                 TOP 10 DFS PROJECTIONS
               </span>
-              <div className="h-px flex-1 bg-yellow-700/30" />
+              <span className="text-yellow-700 group-hover:text-yellow-400 transition text-xs ml-1">
+                {openSections.chart ? "▲" : "▼"}
+              </span>
+              <div className="h-px flex-1 bg-yellow-700/30 group-hover:bg-yellow-700/60 transition" />
             </div>
+            {openSections.chart && (
+            <>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart
                 data={top10Chart}
@@ -1076,18 +1139,29 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
                 High-own fade risk
               </span>
             </div>
+            </>
+            )}
           </section>
         )}
 
         {/* ── Table ── */}
-        <section className="mb-12">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-px flex-1 bg-yellow-700/30" />
-            <span className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600">
+        <section id="section-table" className="mb-12">
+          <div
+            className="flex items-center gap-3 mb-4 cursor-pointer group"
+            onClick={() => toggleSection("table")}
+            title={openSections.table ? "Collapse section" : "Expand section"}
+          >
+            <div className="h-px flex-1 bg-yellow-700/30 group-hover:bg-yellow-700/60 transition" />
+            <span className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600 group-hover:text-yellow-400 transition">
               FULL CARD PROJECTIONS
             </span>
-            <div className="h-px flex-1 bg-yellow-700/30" />
+            <span className="text-yellow-700 group-hover:text-yellow-400 transition text-xs ml-1">
+              {openSections.table ? "▲" : "▼"}
+            </span>
+            <div className="h-px flex-1 bg-yellow-700/30 group-hover:bg-yellow-700/60 transition" />
           </div>
+          {openSections.table && (
+          <>
           <p className="text-stone-400 mb-4 text-center text-sm">
             Projections use DK historical avg when available, scaled to expected
             fight length. Green rows = value plays · Red rows = high-own fade
@@ -1211,20 +1285,59 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
             &amp; UFCStats. Ownership estimates are conceptual, not sourced from
             live data.
           </p>
+          </>
+          )}
         </section>
 
         {/* ── Matchup Intel ── */}
-        <MatchupIntel fights={fights} />
+        <section id="section-matchup" className="mb-12">
+          <div
+            className="flex items-center gap-3 mb-4 cursor-pointer group"
+            onClick={() => toggleSection("matchupIntel")}
+            title={
+              openSections.matchupIntel
+                ? "Collapse section"
+                : "Expand section"
+            }
+          >
+            <div className="h-px flex-1 bg-yellow-700/30 group-hover:bg-yellow-700/60 transition" />
+            <span className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600 group-hover:text-yellow-400 transition">
+              MATCHUP INTEL
+            </span>
+            <span className="text-yellow-700 group-hover:text-yellow-400 transition text-xs ml-1">
+              {openSections.matchupIntel ? "▲" : "▼"}
+            </span>
+            <div className="h-px flex-1 bg-yellow-700/30 group-hover:bg-yellow-700/60 transition" />
+          </div>
+          {!openSections.matchupIntel && (
+            <p className="text-stone-500 text-center text-xs mb-2">
+              Strike, wrestling &amp; submission vulnerability breakdown for
+              each fight. Click the header to expand.
+            </p>
+          )}
+          {openSections.matchupIntel && <MatchupIntel fights={fights} />}
+        </section>
 
         {/* ── Lineup Optimizer ── */}
-        <section className="mb-12">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-px flex-1 bg-yellow-700/30" />
-            <span className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600">
+        <section id="section-optimizer" className="mb-12">
+          <div
+            className="flex items-center gap-3 mb-3 cursor-pointer group"
+            onClick={() => toggleSection("optimizer")}
+            title={
+              openSections.optimizer ? "Collapse section" : "Expand section"
+            }
+          >
+            <div className="h-px flex-1 bg-yellow-700/30 group-hover:bg-yellow-700/60 transition" />
+            <span className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600 group-hover:text-yellow-400 transition">
               LINEUP OPTIMIZER
             </span>
-            <div className="h-px flex-1 bg-yellow-700/30" />
+            <span className="text-yellow-700 group-hover:text-yellow-400 transition text-xs ml-1">
+              {openSections.optimizer ? "▲" : "▼"}
+            </span>
+            <div className="h-px flex-1 bg-yellow-700/30 group-hover:bg-yellow-700/60 transition" />
           </div>
+          {openSections.optimizer && (
+          <>
           <p className="text-stone-400 text-center text-sm mb-4">
             Lock 🔒 fighters to force them in. Exclude ✕ fighters to leave them
             out. Then build the highest-projected lineup under $50K.
@@ -1357,10 +1470,12 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
               ))}
             </div>
           )}
+          </>
+          )}
         </section>
 
         {/* ── Video Vault link ── */}
-        <section className="text-center pb-10">
+        <section id="section-videos" className="text-center pb-10">
           <div className="flex items-center gap-3 mb-4">
             <div className="h-px flex-1 bg-yellow-700/30" />
             <span className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600">
