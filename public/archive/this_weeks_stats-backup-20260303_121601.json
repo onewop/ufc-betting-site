@@ -1,0 +1,129 @@
+{
+  "event": {
+    "name": "UFC Fight Night: Oliveira vs. Holloway",
+    "date": "March 7, 2026",
+    "location": "Las Vegas, Nevada, USA"
+  },
+  "fights": [
+    {
+      "matchup": "Johnson vs. Dober",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Michael Johnson",
+          "salary": 8200,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Drew Dober",
+          "salary": 8000,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "matchup": "Long vs. Garbrandt",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Xiao Long",
+          "salary": 8300,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Cody Garbrandt",
+          "salary": 7900,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "matchup": "Tumendemberel vs. Durden",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Nyamjargal Tumendemberel",
+          "salary": 8400,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Cody Durden",
+          "salary": 7800,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,429 @@
+{
+  "event": {
+    "name": "UFC Fight Night: Oliveira vs. Holloway",
+    "date": "March 7, 2026",
+    "location": "Las Vegas, Nevada, USA"
+  },
+  "fights": [
+    {
+      "matchup": "Aguilar vs. Sumudaerji",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Su Sumudaerji",
+          "dk_id": "42160390",
+          "salary": 9100,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Jesus Aguilar",
+          "dk_id": "42160389",
+          "salary": 7100,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "matchup": "Bellato vs. Fernandez",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Luke Fernandez",
+          "dk_id": "42160392",
+          "salary": 8900,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Rodolfo Bellato",
+          "dk_id": "42160391",
+          "salary": 7300,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "matchup": "Ferreira vs. Rodrigues",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Gregory Rodrigues",
+          "dk_id": "42160393",
+          "salary": 8600,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Brunno Ferreira",
+          "dk_id": "42160394",
+          "salary": 7600,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "matchup": "Johnson vs. Dober",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Michael Johnson",
+          "dk_id": "42160401",
+          "salary": 8200,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Drew Dober",
+          "dk_id": "42160402",
+          "salary": 8000,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "matchup": "Long vs. Garbrandt",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Xiao Long",
+          "dk_id": "42160388",
+          "salary": 8300,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Cody Garbrandt",
+          "dk_id": "42160387",
+          "salary": 7900,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "matchup": "Montes vs. Turcios",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Alberto Montes",
+          "dk_id": "42160399",
+          "salary": 8500,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Ricky Turcios",
+          "dk_id": "42160400",
+          "salary": 7700,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "matchup": "Oliveira vs. Holloway",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Max Holloway",
+          "dk_id": "42160384",
+          "salary": 8800,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Charles Oliveira",
+          "dk_id": "42160383",
+          "salary": 7400,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "matchup": "Rosas Jr. vs. Font",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Raul Rosas Jr.",
+          "dk_id": "42160396",
+          "salary": 8700,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Rob Font",
+          "dk_id": "42160395",
+          "salary": 7500,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "matchup": "Tumendemberel vs. Durden",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Nyamjargal Tumendemberel",
+          "dk_id": "42160398",
+          "salary": 8400,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Cody Durden",
+          "dk_id": "42160397",
+          "salary": 7800,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "matchup": "de Ridder vs. Borralho",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Caio Borralho",
+          "dk_id": "42160385",
+          "salary": 9200,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Reinier de Ridder",
+          "dk_id": "42160386",
+          "salary": 7000,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    }
+  ]
+}

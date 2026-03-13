@@ -1,0 +1,459 @@
+{
+  "event": {
+    "name": "UFC Fight Night: Oliveira vs. Holloway",
+    "date": "March 7, 2026",
+    "location": "Las Vegas, Nevada, USA"
+  },
+  "fights": [
+    {
+      "fight_id": 0,
+      "matchup": "Aguilar vs. Sumudaerji",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Su Sumudaerji",
+          "dk_id": "42160390",
+          "salary": 9100,
+          "avgPointsPerGame": 53.42,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Jesus Aguilar",
+          "dk_id": "42160389",
+          "salary": 7100,
+          "avgPointsPerGame": 62.84,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "fight_id": 1,
+      "matchup": "Bellato vs. Fernandez",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Luke Fernandez",
+          "dk_id": "42160392",
+          "salary": 8900,
+          "avgPointsPerGame": 0.0,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Rodolfo Bellato",
+          "dk_id": "42160391",
+          "salary": 7300,
+          "avgPointsPerGame": 51.42,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "fight_id": 2,
+      "matchup": "Ferreira vs. Rodrigues",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Gregory Rodrigues",
+          "dk_id": "42160393",
+          "salary": 8600,
+          "avgPointsPerGame": 83.63,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Brunno Ferreira",
+          "dk_id": "42160394",
+          "salary": 7600,
+          "avgPointsPerGame": 76.94,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "fight_id": 3,
+      "matchup": "Johnson vs. Dober",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Michael Johnson",
+          "dk_id": "42160401",
+          "salary": 8200,
+          "avgPointsPerGame": 53.66,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Drew Dober",
+          "dk_id": "42160402",
+          "salary": 8000,
+          "avgPointsPerGame": 60.68,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "fight_id": 4,
+      "matchup": "Long vs. Garbrandt",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Xiao Long",
+          "dk_id": "42160388",
+          "salary": 8300,
+          "avgPointsPerGame": 61.32,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Cody Garbrandt",
+          "dk_id": "42160387",
+          "salary": 7900,
+          "avgPointsPerGame": 60.45,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "fight_id": 5,
+      "matchup": "Montes vs. Turcios",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Alberto Montes",
+          "dk_id": "42160399",
+          "salary": 8500,
+          "avgPointsPerGame": 0.0,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Ricky Turcios",
+          "dk_id": "42160400",
+          "salary": 7700,
+          "avgPointsPerGame": 61.38,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "fight_id": 6,
+      "matchup": "Oliveira vs. Holloway",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Max Holloway",
+          "dk_id": "42160384",
+          "salary": 8800,
+          "avgPointsPerGame": 88.29,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Charles Oliveira",
+          "dk_id": "42160383",
+          "salary": 7400,
+          "avgPointsPerGame": 70.79,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "fight_id": 7,
+      "matchup": "Rosas Jr. vs. Font",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Raul Rosas Jr.",
+          "dk_id": "42160396",
+          "salary": 8700,
+          "avgPointsPerGame": 89.62,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Rob Font",
+          "dk_id": "42160395",
+          "salary": 7500,
+          "avgPointsPerGame": 74.76,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "fight_id": 8,
+      "matchup": "Tumendemberel vs. Durden",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Nyamjargal Tumendemberel",
+          "dk_id": "42160398",
+          "salary": 8400,
+          "avgPointsPerGame": 26.25,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Cody Durden",
+          "dk_id": "42160397",
+          "salary": 7800,
+          "avgPointsPerGame": 56.72,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "fight_id": 9,
+      "matchup": "de Ridder vs. Borralho",
+      "weight_class": "N/A",
+      "fighters": [
+        {
+          "name": "Caio Borralho",
+          "dk_id": "42160385",
+          "salary": 9200,
+          "avgPointsPerGame": 80.4,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        },
+        {
+          "name": "Reinier de Ridder",
+          "dk_id": "42160386",
+          "salary": 7000,
+          "avgPointsPerGame": 96.08,
+          "nickname": null,
+          "record": "N/A",
+          "height": "N/A",
+          "reach": "N/A",
+          "stance": "N/A",
+          "dob": "N/A",
+          "stats": {
+            "slpm": 0.0,
+            "sapm": 0.0,
+            "striking_defense": "N/A",
+            "td_avg": 0.0,
+            "td_defense": "N/A"
+          }
+        }
+      ]
+    }
+  ]
+}
