@@ -2,44 +2,149 @@ import { useState, useEffect } from "react";
 import "tailwindcss/tailwind.css"; // or your correct Tailwind import path
 
 const generalQuestions = [
-  "Who is the better striker?",
-  "Compare striking accuracy.",
+  "Who has the striking advantage?",
   "Who lands more strikes per minute?",
-  "Analyze striking styles.",
-  "Who has the edge in knockout power?",
-  "Compare grappling skills.",
-  "Who has better takedown success rate?",
+  "Compare striking accuracy.",
+  "Who has better striking defense?",
+  "Who has the grappling / wrestling edge?",
+  "How does each fighter's takedown offense compare to the other's defense?",
   "Analyze takedown defense statistics.",
-  "How does Fighter A perform against Fighter B's takedown defense?",
   "Who has more submission wins?",
-  "Fighter A's last three fights: Wins, losses, methods?",
-  "Fighter B's last three fights: Wins, losses, methods?",
-  "Compare recent performance streaks.",
-  "UFC stats: Fighter A's win-loss record.",
-  "UFC stats: Fighter B's win-loss record.",
-  "Sherdog stats: Fighter A's career highlights.",
-  "Sherdog stats: Fighter B's career highlights.",
-  "Who has better cardio in long fights?",
-  "Analyze stance switching impact.",
-  "Mental toughness comparison in rematches.",
-  "Who has the better reach advantage?",
-  "Compare head movement and evasion.",
-  "How does Fighter B perform against southpaws?",
-  "Compare counter-striking vs. aggression.",
-  "Ground game: Who controls positions better?",
-  "Stand-up to ground transitions analysis.",
-  "Injury history and how it affects the fight.",
-  "Age and experience factor comparison.",
-  "Training camp insights from recent interviews.",
-  "Betting odds breakdown and value bets.",
-  "Fan predictions from social media.",
-  "Expert opinions from MMA analysts.",
-  "Historical rematch outcomes in UFC.",
-  "Weight cut effects on performance.",
-  "Fight prediction: Who wins and how?",
-  "What is Fighter A's DK Salary?",
-  "What is Fighter A's Average Points Per Game?",
+  "Compare their win/loss records.",
+  "Who has the better finish rate?",
+  "Who wins by KO/TKO more often?",
+  "Who is on the better win streak?",
+  "Compare reach and physical attributes.",
+  "What is the DFS salary value breakdown?",
+  "Who wins? Overall fight prediction.",
 ];
+
+// ─── Matchup Intel helpers (shared with DFSPicksProjections) ────────────────
+const _parsePct = (v) => {
+  if (v == null) return null;
+  const n = parseFloat(String(v).replace("%", ""));
+  return isNaN(n) ? null : n;
+};
+
+const _evalAngle = (label, attackerVal, defenderDefPct) => {
+  if (attackerVal == null || defenderDefPct == null)
+    return { level: "neutral", label, tip: "No data available" };
+  if (defenderDefPct === 0)
+    return {
+      level: "neutral",
+      label,
+      tip: `${attackerVal > 0 ? attackerVal : "no data"} output vs 0% defense (small sample — insufficient data)`,
+    };
+  if (attackerVal === 0)
+    return {
+      level: "neutral",
+      label,
+      tip: `No attempts on record vs ${defenderDefPct}% defense`,
+    };
+  if (defenderDefPct < 50)
+    return {
+      level: "strong",
+      label,
+      tip: `${attackerVal} output vs ${defenderDefPct}% defense — clear exploit`,
+    };
+  if (defenderDefPct < 65)
+    return {
+      level: "moderate",
+      label,
+      tip: `${attackerVal} output vs ${defenderDefPct}% defense — potential edge`,
+    };
+  return {
+    level: "neutral",
+    label,
+    tip: `${attackerVal} output vs ${defenderDefPct}% defense — no clear edge`,
+  };
+};
+
+// Evaluate submission threat: no "sub defense %" exists in UFCStats data.
+// We compare each fighter's avg_sub_attempts head-to-head — higher ratio = more
+// one-sided mat threat.
+const _evalSubAngle = (attackerSub, defenderSub) => {
+  const label = "Submissions";
+  const a = attackerSub ?? 0;
+  const d = defenderSub ?? 0;
+  if (a === 0)
+    return { level: "neutral", label, tip: "No submission attempts on record" };
+  if (d === 0)
+    return {
+      level: "strong",
+      label,
+      tip: `${a} sub attempts/fight vs opponent's 0 — clear one-sided mat threat`,
+    };
+  const ratio = a / d;
+  if (ratio >= 2.0)
+    return {
+      level: "strong",
+      label,
+      tip: `${a} vs ${d} sub attempts/fight — dominant submission threat`,
+    };
+  if (ratio >= 1.4)
+    return {
+      level: "moderate",
+      label,
+      tip: `${a} vs ${d} sub attempts/fight — more active submission game`,
+    };
+  return {
+    level: "neutral",
+    label,
+    tip: `${a} vs ${d} sub attempts/fight — similar mat activity`,
+  };
+};
+
+const _computeAngles = (f1, f2) => {
+  const s1 = f1.stats || {};
+  const s2 = f2.stats || {};
+  const subAtt1 = s1.avg_sub_attempts ?? f1.avg_sub_attempts ?? 0;
+  const subAtt2 = s2.avg_sub_attempts ?? f2.avg_sub_attempts ?? 0;
+  return [
+    {
+      attacker: f1.name,
+      defender: f2.name,
+      angles: [
+        _evalAngle("Striking", s1.slpm, _parsePct(s2.striking_defense)),
+        _evalAngle("Wrestling", s1.td_avg, _parsePct(s2.td_defense)),
+        _evalSubAngle(subAtt1, subAtt2),
+      ],
+    },
+    {
+      attacker: f2.name,
+      defender: f1.name,
+      angles: [
+        _evalAngle("Striking", s2.slpm, _parsePct(s1.striking_defense)),
+        _evalAngle("Wrestling", s2.td_avg, _parsePct(s1.td_defense)),
+        _evalSubAngle(subAtt2, subAtt1),
+      ],
+    },
+  ];
+};
+
+const _LEVEL = {
+  strong: {
+    dot: "bg-red-500",
+    border: "border-red-700/60",
+    bg: "bg-red-950/50",
+    badge: "bg-red-700 text-red-100",
+    label: "Exploit",
+  },
+  moderate: {
+    dot: "bg-orange-400",
+    border: "border-orange-700/50",
+    bg: "bg-orange-950/30",
+    badge: "bg-orange-800 text-orange-100",
+    label: "Edge",
+  },
+  neutral: {
+    dot: "bg-stone-600",
+    border: "border-stone-700",
+    bg: "bg-stone-900/40",
+    badge: "bg-stone-700 text-stone-300",
+    label: "Even",
+  },
+};
 
 const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
   const [fighters, setFighters] = useState([]);
@@ -50,7 +155,6 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [liveData, setLiveData] = useState(null);
-  const [showOdds, setShowOdds] = useState(false);
   const [cachedOdds, setCachedOdds] = useState([]);
   const [expandedStats, setExpandedStats] = useState(false);
   const [activeTab, setActiveTab] = useState("basics");
@@ -142,7 +246,11 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
               finish_rate_pct: f.finish_rate_pct ?? "N/A",
               decision_rate_pct: f.decision_rate_pct ?? "N/A",
               // Stats object — keep nested for getValue("stats.slpm") dot-path
+              // Spread ALL fields from JSON first so avg_kd_per_fight,
+              // avg_ctrl_secs, grappling_control_pct, avg_opp_ctrl_secs,
+              // avg_reversals_per_fight, implied_sub_def_pct, etc. are preserved.
               stats: {
+                ...f.stats,
                 slpm: f.stats?.slpm ?? 0,
                 sapm: f.stats?.sapm ?? 0,
                 striking_accuracy: f.stats?.striking_accuracy ?? 0,
@@ -212,376 +320,1150 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
       return;
     }
 
-    const [fighter1, fighter2] = fight.fighters;
-    const questionLower = activeQuestion.toLowerCase();
+    const [f1, f2] = fight.fighters;
+    const q = activeQuestion.toLowerCase();
+    const s1 = f1.stats || {};
+    const s2 = f2.stats || {};
 
-    // Debug log: show actual stats structure
-    console.log("Using stats for", fighter1.name, ":", fighter1.stats);
-    console.log("Using stats for", fighter2.name, ":", fighter2.stats);
-
-    // Helper functions to safely get stats with correct JSON keys
-    const getStrikesPerMin = (fighter) => {
-      const val = fighter?.stats?.slpm;
-      return val !== undefined && val !== null ? val : 0;
+    // ── Stat helpers ──────────────────────────────────────────────────────────
+    const num = (v) => {
+      const n = parseFloat(v);
+      return isNaN(n) ? null : n;
+    };
+    const pct = (v) => {
+      if (v == null) return null;
+      const n = parseFloat(String(v).replace("%", ""));
+      return isNaN(n) ? null : n;
+    };
+    const fmt = (v, suffix = "") => (v != null ? `${v}${suffix}` : "N/A");
+    const edgeName = (a, b, higherBetter = true) => {
+      if (a == null || b == null) return null;
+      if (higherBetter) return a > b ? f1.name : b > a ? f2.name : "Even";
+      return a < b ? f1.name : b < a ? f2.name : "Even";
     };
 
-    const getStrikingAccuracy = (fighter) => {
-      // Try sapm (strikes attempted per minute) or striking_accuracy, fallback to 0
-      if (
-        fighter?.stats?.striking_accuracy !== undefined &&
-        fighter?.stats?.striking_accuracy !== null
-      ) {
-        return fighter.stats.striking_accuracy;
-      }
-      if (fighter?.stats?.sapm !== undefined && fighter?.stats?.sapm !== null) {
-        return fighter.stats.sapm;
-      }
-      return 0;
-    };
-
-    const getTakedownAvg = (fighter) => {
-      const val = fighter?.stats?.td_avg;
-      return val !== undefined && val !== null ? val : 0;
-    };
-
-    const getTakedownDefense = (fighter) => {
-      const defense = fighter?.stats?.td_defense;
-      if (defense === undefined || defense === null) {
-        return "N/A";
-      }
-      return defense === "N/A" ? "N/A" : defense;
-    };
-
-    const getRecordStat = (fighter, stat) => {
-      const val = fighter?.[stat];
-      return val !== undefined && val !== null ? val : 0;
-    };
-
-    // Extract stats for both fighters using correct JSON keys
-    const f1StrikesPerMin = getStrikesPerMin(fighter1);
-    const f1Accuracy = getStrikingAccuracy(fighter1);
-    const f1TakedownAvg = getTakedownAvg(fighter1);
-    const f1TakedownDef = getTakedownDefense(fighter1);
-
-    const f2StrikesPerMin = getStrikesPerMin(fighter2);
-    const f2Accuracy = getStrikingAccuracy(fighter2);
-    const f2TakedownAvg = getTakedownAvg(fighter2);
-    const f2TakedownDef = getTakedownDefense(fighter2);
-
-    // Debug: log extracted stats
-    console.log(
-      `${fighter1.name} - Strikes/min: ${f1StrikesPerMin}, Accuracy: ${f1Accuracy}, TD Avg: ${f1TakedownAvg}, TD Def: ${f1TakedownDef}`,
+    // ── JSX helpers ───────────────────────────────────────────────────────────
+    const StatRow = ({ label, v1, v2, note, winner }) => (
+      <tr className="border-b border-stone-700/40">
+        <td className="py-1.5 pr-4 text-stone-400 text-xs whitespace-nowrap">
+          {label}
+        </td>
+        <td
+          className={`py-1.5 text-center text-xs font-semibold ${winner === f1.name ? "text-green-400" : "text-stone-200"}`}
+        >
+          {v1}
+        </td>
+        <td
+          className={`py-1.5 text-center text-xs font-semibold ${winner === f2.name ? "text-green-400" : "text-stone-200"}`}
+        >
+          {v2}
+        </td>
+        {note && (
+          <td className="py-1.5 pl-2 text-stone-500 text-xs italic hidden sm:table-cell">
+            {note}
+          </td>
+        )}
+      </tr>
     );
-    console.log(
-      `${fighter2.name} - Strikes/min: ${f2StrikesPerMin}, Accuracy: ${f2Accuracy}, TD Avg: ${f2TakedownAvg}, TD Def: ${f2TakedownDef}`,
+    const StatTable = ({ rows, summary }) => (
+      <div>
+        <h3 className="text-base font-bold text-stone-100 mb-3">
+          {f1.name} <span className="text-stone-500 text-sm mx-1">vs</span>{" "}
+          {f2.name}
+        </h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-stone-600">
+                <th className="pb-2 text-stone-500 text-xs font-bold uppercase tracking-wider">
+                  Stat
+                </th>
+                <th className="pb-2 text-center text-yellow-500 text-xs font-bold uppercase tracking-wider">
+                  {f1.name.split(" ").pop()}
+                </th>
+                <th className="pb-2 text-center text-yellow-400/70 text-xs font-bold uppercase tracking-wider">
+                  {f2.name.split(" ").pop()}
+                </th>
+                <th className="pb-2 text-stone-600 text-xs font-bold uppercase tracking-wider hidden sm:table-cell">
+                  Note
+                </th>
+              </tr>
+            </thead>
+            <tbody>{rows}</tbody>
+          </table>
+        </div>
+        {summary && (
+          <p className="mt-3 text-sm text-stone-300 border-t border-stone-700 pt-3 leading-relaxed">
+            {summary}
+          </p>
+        )}
+      </div>
     );
 
-    // Define color classes for headers
-    const headerColors = [
-      "text-blue-400",
-      "text-purple-400",
-      "text-green-400",
-      "text-yellow-400",
-    ];
-
-    // Wrap all response-building in try/catch so a bad stat value never silently crashes
     let response;
     try {
-      response = (
-        <div>
-          <h3 className="text-2xl font-bold mb-2">
-            Analyzing {fighter1.name} vs. {fighter2.name}
-          </h3>
-          <p className="mb-4">Based on your question: "{activeQuestion}"</p>
-        </div>
-      );
+      // ── 1. Striking advantage (comprehensive) ─────────────────────────────
+      if (
+        q.includes("striking advantage") ||
+        q.includes("better striker") ||
+        q.includes("striking edge") ||
+        q.includes("striking style") ||
+        q.includes("analyze striking") ||
+        q.includes("compare counter")
+      ) {
+        const slpm1 = num(s1.slpm),
+          slpm2 = num(s2.slpm);
+        const sapm1 = num(s1.sapm),
+          sapm2 = num(s2.sapm);
+        const acc1 = pct(s1.striking_accuracy),
+          acc2 = pct(s2.striking_accuracy);
+        const def1 = pct(s1.striking_defense),
+          def2 = pct(s2.striking_defense);
+        const sc = { [f1.name]: 0, [f2.name]: 0 };
+        const award = (w) => {
+          if (w && w !== "Even") sc[w]++;
+        };
+        award(edgeName(slpm1, slpm2));
+        award(edgeName(acc1, acc2));
+        award(edgeName(def1, def2));
+        award(edgeName(sapm1, sapm2, false));
+        const winner =
+          sc[f1.name] > sc[f2.name]
+            ? f1.name
+            : sc[f2.name] > sc[f1.name]
+              ? f2.name
+              : null;
+        response = (
+          <StatTable
+            rows={
+              <>
+                <StatRow
+                  label="Sig. Strikes Landed / Min (SLpM)"
+                  v1={fmt(slpm1)}
+                  v2={fmt(slpm2)}
+                  note="Higher = more output"
+                  winner={edgeName(slpm1, slpm2)}
+                />
+                <StatRow
+                  label="Striking Accuracy %"
+                  v1={fmt(acc1, "%")}
+                  v2={fmt(acc2, "%")}
+                  note="% of sig. strikes that land"
+                  winner={edgeName(acc1, acc2)}
+                />
+                <StatRow
+                  label="Striking Defense %"
+                  v1={fmt(def1, "%")}
+                  v2={fmt(def2, "%")}
+                  note="% of opp. strikes blocked/avoided"
+                  winner={edgeName(def1, def2)}
+                />
+                <StatRow
+                  label="Sig. Strikes Absorbed / Min (SApM)"
+                  v1={fmt(sapm1)}
+                  v2={fmt(sapm2)}
+                  note="Lower = harder to hit"
+                  winner={edgeName(sapm1, sapm2, false)}
+                />
+              </>
+            }
+            summary={
+              winner
+                ? `Striking edge: ${winner} wins ${sc[winner]} of 4 striking categories — more effective volume and harder to hit consistently. Look for them to dictate range and pace.`
+                : "Striking is closely matched across all four categories. Execution, footwork, and in-fight adjustments will decide this dimension."
+            }
+          />
+        );
+      }
 
-      // Salary query
-      if (questionLower.includes("dk salary")) {
-        console.log("Using stats for", fighter1.name, ":", fighter1);
-        console.log("Using stats for", fighter2.name, ":", fighter2);
+      // ── 2. Strikes per minute ─────────────────────────────────────────────
+      else if (
+        q.includes("strikes per minute") ||
+        q.includes("slpm") ||
+        q.includes("lands more strikes")
+      ) {
+        const slpm1 = num(s1.slpm),
+          slpm2 = num(s2.slpm);
+        const acc1 = pct(s1.striking_accuracy),
+          acc2 = pct(s2.striking_accuracy);
+        const w = edgeName(slpm1, slpm2);
         response = (
-          <div>
-            {response}
-            <p>
-              <span className={headerColors[0]}>
-                {fighter1.name}'s DK Salary:
-              </span>{" "}
-              ${fighter1.salary}
-            </p>
-            <p>
-              <span className={headerColors[1]}>
-                {fighter2.name}'s DK Salary:
-              </span>{" "}
-              ${fighter2.salary}
-            </p>
-            <p>
-              <span className={headerColors[2]}>Edge Assessment:</span>{" "}
-              {fighter1.salary > fighter2.salary
-                ? `${fighter1.name} has the higher salary, which might indicate a stronger expected performance.`
-                : fighter2.salary > fighter1.salary
-                  ? `${fighter2.name} boasts the higher salary.`
-                  : "Both fighters have the same salary."}
-            </p>
-          </div>
+          <StatTable
+            rows={
+              <>
+                <StatRow
+                  label="SLpM (Sig. Strikes Landed / Min)"
+                  v1={fmt(slpm1)}
+                  v2={fmt(slpm2)}
+                  note="Higher = more active striker"
+                  winner={w}
+                />
+                <StatRow
+                  label="Striking Accuracy %"
+                  v1={fmt(acc1, "%")}
+                  v2={fmt(acc2, "%")}
+                  note="Volume × accuracy = real threat"
+                  winner={edgeName(acc1, acc2)}
+                />
+              </>
+            }
+            summary={
+              w && w !== "Even"
+                ? `${w} throws more strikes per minute. Combined with accuracy, they set a higher-volume pace — constant output pressures opponents into defensive errors and creates late-round openings.`
+                : slpm1 == null
+                  ? "No SLpM data available for this matchup."
+                  : "Similar output from both fighters — timing and accuracy will matter more than volume here."
+            }
+          />
         );
-      } else if (
-        questionLower.includes("average points") ||
-        questionLower.includes("avg points")
-      ) {
-        console.log("Using stats for", fighter1.name, ":", fighter1);
-        console.log("Using stats for", fighter2.name, ":", fighter2);
-        const f1avg = fighter1.avgPointsPerGame ?? "N/A";
-        const f2avg = fighter2.avgPointsPerGame ?? "N/A";
-        console.log(
-          "f1avg:",
-          f1avg,
-          "fighter1.avgPointsPerGame:",
-          fighter1.avgPointsPerGame,
-        );
-        console.log(
-          "f2avg:",
-          f2avg,
-          "fighter2.avgPointsPerGame:",
-          fighter2.avgPointsPerGame,
-        );
-        response = (
-          <div>
-            {response}
-            <p>
-              <span className={headerColors[0]}>
-                {fighter1.name}'s Avg Points:
-              </span>{" "}
-              {f1avg}
-            </p>
-            <p>
-              <span className={headerColors[1]}>
-                {fighter2.name}'s Avg Points:
-              </span>{" "}
-              {f2avg}
-            </p>
-            <p>
-              <span className={headerColors[2]}>Comparison:</span>{" "}
-              {typeof f1avg === "number" && typeof f2avg === "number"
-                ? f1avg > f2avg
-                  ? `${fighter1.name} has a higher average.`
-                  : f2avg > f1avg
-                    ? `${fighter2.name} has a higher average.`
-                    : "Both fighters have the same average."
-                : "Average points data not available for comparison."}
-            </p>
-          </div>
-        );
-      } else if (questionLower.includes("striking")) {
-        console.log("Using stats for " + fighter1.name + ":", fighter1.stats);
-        console.log("Using stats for " + fighter2.name + ":", fighter2.stats);
-        console.log("💥 Striking analysis requested");
-        console.log(
-          `  ${fighter1.name}: slpm=${f1StrikesPerMin}, accuracy=${f1Accuracy}`,
-        );
-        console.log(
-          `  ${fighter2.name}: slpm=${f2StrikesPerMin}, accuracy=${f2Accuracy}`,
-        );
-        const strikingDataMissing =
-          (!f1StrikesPerMin && f1StrikesPerMin !== 0) ||
-          (!f2StrikesPerMin && f2StrikesPerMin !== 0);
-        if (strikingDataMissing) {
-          response = (
-            <div>
-              {response}
-              <p className="text-yellow-400 italic">
-                ⚠️ Limited stats available — striking comparison based on known
-                data (record, SLpM, TD avg, etc.).
-              </p>
-            </div>
-          );
-        } else
-          response = (
-            <div>
-              {response}
-              <p>
-                <span className={headerColors[0]}>
-                  {fighter1.name}'s Striking Profile:
-                </span>{" "}
-                With a striking accuracy of {f1Accuracy}% and {f1StrikesPerMin}{" "}
-                strikes per minute, {fighter1.name} is a high-volume striker who
-                can overwhelm opponents with constant pressure, potentially
-                leading to decision wins or late-round finishes. Their ability
-                to maintain this pace often forces opponents into defensive
-                errors, especially in longer fights.
-              </p>
-              <p>
-                <span className={headerColors[1]}>
-                  {fighter2.name}'s Striking Profile:
-                </span>{" "}
-                Comparatively, {fighter2.name} has {f2Accuracy}% accuracy and{" "}
-                {f2StrikesPerMin} strikes per minute, favoring precision over
-                volume, which could allow for effective counter-striking if{" "}
-                {fighter1.name} overcommits. This approach thrives in exploiting
-                openings during aggressive exchanges.
-              </p>
-              <p>
-                <span className={headerColors[2]}>Edge Assessment:</span>{" "}
-                {f1Accuracy &&
-                f2Accuracy &&
-                typeof f1Accuracy === "number" &&
-                typeof f2Accuracy === "number" &&
-                f1Accuracy > f2Accuracy
-                  ? `${fighter1.name} has a clear advantage in accuracy, making them the better striker in prolonged exchanges. Their higher output could dictate the fight's rhythm, though they must watch for counterpunches.`
-                  : f1Accuracy &&
-                      f2Accuracy &&
-                      typeof f1Accuracy === "number" &&
-                      typeof f2Accuracy === "number"
-                    ? `${fighter2.name} edges out in precision, potentially turning the tide with clean, impactful shots. Their efficiency might lead to a points victory if they avoid being overwhelmed.`
-                    : "Both fighters have solid striking profiles. The advantage may come down to technique and fight pace."}{" "}
-                Remember, factors like reach, footwork, and cage control play a
-                huge role—bet wisely!
-              </p>
-            </div>
-          );
-      } else if (
-        questionLower.includes("takedown") ||
-        questionLower.includes("grappling")
-      ) {
-        console.log("Using stats for " + fighter1.name + ":", fighter1.stats);
-        console.log("Using stats for " + fighter2.name + ":", fighter2.stats);
-        console.log("🤼 Grappling analysis requested");
-        console.log(
-          `  ${fighter1.name}: td_avg=${f1TakedownAvg}, td_defense=${f1TakedownDef}`,
-        );
-        console.log(
-          `  ${fighter2.name}: td_avg=${f2TakedownAvg}, td_defense=${f2TakedownDef}`,
-        );
-        const grapplingDataMissing =
-          (!f1TakedownAvg && f1TakedownAvg !== 0) ||
-          (!f2TakedownAvg && f2TakedownAvg !== 0);
-        if (grapplingDataMissing) {
-          response = (
-            <div>
-              {response}
-              <p className="text-yellow-400 italic">
-                ⚠️ Limited stats available — grappling comparison based on known
-                data (record, TD avg, TD defense).
-              </p>
-            </div>
-          );
-        } else
-          response = (
-            <div>
-              {response}
-              <p>
-                <span className={headerColors[0]}>
-                  {fighter1.name}'s Grappling Profile:
-                </span>{" "}
-                Boasting a {f1TakedownAvg}% takedown success rate and{" "}
-                {f1TakedownDef}% defense, {fighter1.name} excels at controlling
-                the fight on the ground, often securing dominant positions or
-                seeking submissions. Their wrestling base allows them to dictate
-                where the fight takes place, a critical advantage in close
-                bouts.
-              </p>
-              <p>
-                <span className={headerColors[1]}>
-                  {fighter2.name}'s Grappling Profile:
-                </span>{" "}
-                {fighter2.name} counters with {f2TakedownAvg}% success on
-                takedowns and {f2TakedownDef}% defense, which might allow them
-                to keep the fight standing or scramble effectively if taken
-                down. Their defensive skills could frustrate grapplers who rely
-                on ground control.
-              </p>
-              <p>
-                <span className={headerColors[2]}>Edge Assessment:</span>{" "}
-                {f1TakedownAvg &&
-                f2TakedownAvg &&
-                typeof f1TakedownAvg === "number" &&
-                typeof f2TakedownAvg === "number" &&
-                f1TakedownAvg > f2TakedownAvg
-                  ? `${fighter1.name} likely has the grappling advantage, potentially grinding out a win with relentless takedowns and top control.`
-                  : f1TakedownAvg &&
-                      f2TakedownAvg &&
-                      typeof f1TakedownAvg === "number" &&
-                      typeof f2TakedownAvg === "number"
-                    ? `${fighter2.name} could dominate here, using superior defense to neutralize threats and keep the fight in their preferred striking range.`
-                    : "Both fighters have notable grappling skills. Execution will be key."}{" "}
-                In MMA, grappling can flip scripts—consider their submission
-                defense and recent ground performances for betting insights.
-              </p>
-            </div>
-          );
-      } else if (
-        questionLower.includes("record") ||
-        questionLower.includes("history")
-      ) {
-        console.log("Using stats for " + fighter1.name + ":", fighter1.stats);
-        console.log("Using stats for " + fighter2.name + ":", fighter2.stats);
-        console.log("📊 Record analysis requested");
-        const f1Wins = getRecordStat(fighter1, "wins");
-        const f1Losses = getRecordStat(fighter1, "losses");
-        const f1Draws = getRecordStat(fighter1, "draws");
-        const f2Wins = getRecordStat(fighter2, "wins");
-        const f2Losses = getRecordStat(fighter2, "losses");
-        const f2Draws = getRecordStat(fighter2, "draws");
-        console.log(`  ${fighter1.name}: ${f1Wins}W-${f1Losses}L-${f1Draws}D`);
-        console.log(`  ${fighter2.name}: ${f2Wins}W-${f2Losses}L-${f2Draws}D`);
+      }
 
+      // ── 3. Striking accuracy ──────────────────────────────────────────────
+      else if (
+        q.includes("striking accuracy") ||
+        q.includes("compare striking accuracy")
+      ) {
+        const acc1 = pct(s1.striking_accuracy),
+          acc2 = pct(s2.striking_accuracy);
+        const slpm1 = num(s1.slpm),
+          slpm2 = num(s2.slpm);
+        const w = edgeName(acc1, acc2);
         response = (
-          <div>
-            {response}
-            <p>
-              <span className={headerColors[0]}>{fighter1.name}'s Record:</span>{" "}
-              {f1Wins} wins, {f1Losses} losses, {f1Draws} draws. This record
-              highlights a fighter with proven longevity and adaptability
-              against top-tier competition, often securing victories through
-              strategic game plans and resilience in high-pressure situations.
-            </p>
-            <p>
-              <span className={headerColors[1]}>{fighter2.name}'s Record:</span>{" "}
-              {f2Wins} wins, {f2Losses} losses, {f2Draws} draws. {fighter2.name}
-              's path shows a blend of knockout power and submission skills,
-              with key wins demonstrating their ability to close fights
-              decisively.
-            </p>
-            <p>
-              <span className={headerColors[2]}>Comparison:</span>{" "}
-              {f1Wins > f2Wins
-                ? `${fighter1.name} has more overall wins, suggesting greater experience and consistency across a broader range of opponents.`
-                : `${fighter2.name} edges in victories, indicating a potentially more explosive style that could lead to quick finishes.`}{" "}
-              However, records are just numbers—look at the quality of
-              opponents, recent form, and stylistic matchups for smarter betting
-              decisions.
-            </p>
-          </div>
+          <StatTable
+            rows={
+              <>
+                <StatRow
+                  label="Striking Accuracy %"
+                  v1={fmt(acc1, "%")}
+                  v2={fmt(acc2, "%")}
+                  note="% of sig. strikes that land (higher = better)"
+                  winner={w}
+                />
+                <StatRow
+                  label="SLpM (volume context)"
+                  v1={fmt(slpm1)}
+                  v2={fmt(slpm2)}
+                  note="Volume context"
+                  winner={null}
+                />
+              </>
+            }
+            summary={
+              w && w !== "Even"
+                ? `${w} lands a higher percentage of their strikes. Precision means each shot carries more threat — a more accurate striker wastes fewer attempts and connects more cleanly in exchanges.`
+                : "Both fighters have similar accuracy. The edge will come from footwork and combination setup rather than raw precision."
+            }
+          />
         );
-      } else {
+      }
+
+      // ── 4. Striking defense ───────────────────────────────────────────────
+      else if (
+        q.includes("striking defense") ||
+        q.includes("absorbs fewer") ||
+        q.includes("head movement") ||
+        q.includes("evasion")
+      ) {
+        const def1 = pct(s1.striking_defense),
+          def2 = pct(s2.striking_defense);
+        const sapm1 = num(s1.sapm),
+          sapm2 = num(s2.sapm);
+        const w1 = edgeName(def1, def2);
+        const w2 = edgeName(sapm1, sapm2, false);
+        const agree = w1 === w2 && w1 && w1 !== "Even";
+        response = (
+          <StatTable
+            rows={
+              <>
+                <StatRow
+                  label="Striking Defense %"
+                  v1={fmt(def1, "%")}
+                  v2={fmt(def2, "%")}
+                  note="% of opp. strikes blocked/avoided (higher = better)"
+                  winner={w1}
+                />
+                <StatRow
+                  label="SApM (Sig. Strikes Absorbed / Min)"
+                  v1={fmt(sapm1)}
+                  v2={fmt(sapm2)}
+                  note="Lower = harder to hit"
+                  winner={w2}
+                />
+              </>
+            }
+            summary={
+              agree
+                ? `${w1} is harder to hit — blocks/avoids more incoming strikes AND absorbs fewer per minute. This durability advantage means they survive exchanges better and accumulate less damage over a full fight.`
+                : "Both fighters have similar defensive profiles. Chin, footwork, and fight-week preparation will decide who absorbs damage more effectively."
+            }
+          />
+        );
+      }
+
+      // ── 5. Grappling / wrestling edge (comprehensive) ─────────────────────
+      else if (
+        q.includes("grappling") ||
+        q.includes("wrestling") ||
+        q.includes("ground game") ||
+        q.includes("controls positions") ||
+        q.includes("stand-up to ground")
+      ) {
+        const td1 = num(s1.td_avg),
+          td2 = num(s2.td_avg);
+        const tdAcc1 = pct(s1.td_accuracy),
+          tdAcc2 = pct(s2.td_accuracy);
+        const tdDef1 = pct(s1.td_defense),
+          tdDef2 = pct(s2.td_defense);
+        const ctrl1 = num(s1.avg_ctrl_secs),
+          ctrl2 = num(s2.avg_ctrl_secs);
+        const sub1 = num(f1.wins_submission),
+          sub2 = num(f2.wins_submission);
+        const sc = { [f1.name]: 0, [f2.name]: 0 };
+        [
+          [td1, td2],
+          [tdAcc1, tdAcc2],
+          [ctrl1, ctrl2],
+          [sub1, sub2],
+        ].forEach(([a, b]) => {
+          if (a != null && b != null) {
+            if (a > b) sc[f1.name]++;
+            else if (b > a) sc[f2.name]++;
+          }
+        });
+        const winner =
+          sc[f1.name] > sc[f2.name]
+            ? f1.name
+            : sc[f2.name] > sc[f1.name]
+              ? f2.name
+              : null;
+        response = (
+          <StatTable
+            rows={
+              <>
+                <StatRow
+                  label="TD Avg (takedowns per 15 min)"
+                  v1={fmt(td1)}
+                  v2={fmt(td2)}
+                  note="Higher = more active wrestler"
+                  winner={edgeName(td1, td2)}
+                />
+                <StatRow
+                  label="TD Accuracy %"
+                  v1={fmt(tdAcc1, "%")}
+                  v2={fmt(tdAcc2, "%")}
+                  note="% of attempts that succeed"
+                  winner={edgeName(tdAcc1, tdAcc2)}
+                />
+                <StatRow
+                  label="TD Defense %"
+                  v1={fmt(tdDef1, "%")}
+                  v2={fmt(tdDef2, "%")}
+                  note="Higher = harder to take down"
+                  winner={edgeName(tdDef1, tdDef2)}
+                />
+                <StatRow
+                  label="Avg Control Time (secs)"
+                  v1={fmt(ctrl1, "s")}
+                  v2={fmt(ctrl2, "s")}
+                  note="Ground control per fight"
+                  winner={edgeName(ctrl1, ctrl2)}
+                />
+                <StatRow
+                  label="Wins by Submission"
+                  v1={fmt(sub1)}
+                  v2={fmt(sub2)}
+                  winner={edgeName(sub1, sub2)}
+                />
+              </>
+            }
+            summary={
+              winner
+                ? `Grappling edge: ${winner} leads in more mat categories. Their wrestling activity gives them a path to ground control, sustained top pressure, and potential finishes — especially if their opponent's TD defense is below 65%.`
+                : "Grappling is closely matched. Neither fighter holds a decisive mat advantage — the fight will likely stay on the feet."
+            }
+          />
+        );
+      }
+
+      // ── 6. Takedown offense vs opponent defense ───────────────────────────
+      else if (
+        q.includes("takedown offense") ||
+        q.includes("takedown success") ||
+        q.includes("perform against") ||
+        q.includes("how does")
+      ) {
+        const td1 = num(s1.td_avg),
+          td2 = num(s2.td_avg);
+        const tdDef1 = pct(s1.td_defense),
+          tdDef2 = pct(s2.td_defense);
+        const levelLabel = (def) =>
+          def == null
+            ? "No data"
+            : def < 50
+              ? "🔴 Exploit"
+              : def < 65
+                ? "🟠 Edge"
+                : "⚪ Even";
+        const levelClass = (def) =>
+          def == null
+            ? "text-stone-500"
+            : def < 50
+              ? "text-red-400 font-bold"
+              : def < 65
+                ? "text-orange-400 font-bold"
+                : "text-stone-400";
         response = (
           <div>
-            {response}
-            <p>
-              Your question opens up an exciting angle on the fight! While I
-              have detailed data on striking, takedowns, and records, this query
-              might require more specific keywords like "striking," "takedown,"
-              or "record" for a deep dive. For example, based on current stats,{" "}
-              {fighter1.name} might have an edge in longer fights due to their
-              defensive metrics, but refining your question will unlock a more
-              tailored analysis!
+            <h3 className="text-base font-bold text-stone-100 mb-3">
+              Takedown Offense vs. Defense
+            </h3>
+            <div className="overflow-x-auto mb-3">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-stone-600">
+                    <th className="pb-2 text-stone-500 text-xs font-bold uppercase">
+                      Attacking Fighter
+                    </th>
+                    <th className="pb-2 text-center text-stone-400 text-xs font-bold uppercase">
+                      TD Avg (/15m)
+                    </th>
+                    <th className="pb-2 text-center text-stone-400 text-xs font-bold uppercase">
+                      Opp. TD Def %
+                    </th>
+                    <th className="pb-2 text-center text-stone-400 text-xs font-bold uppercase">
+                      Edge
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-stone-700/40">
+                    <td className="py-2 pr-3 text-xs text-stone-200 font-semibold">
+                      {f1.name}
+                    </td>
+                    <td className="py-2 text-center text-xs text-stone-200">
+                      {fmt(td1)}
+                    </td>
+                    <td className="py-2 text-center text-xs text-stone-200">
+                      {fmt(tdDef2, "%")}
+                    </td>
+                    <td
+                      className={`py-2 text-center text-xs ${levelClass(tdDef2)}`}
+                    >
+                      {levelLabel(tdDef2)}
+                    </td>
+                  </tr>
+                  <tr className="border-b border-stone-700/40">
+                    <td className="py-2 pr-3 text-xs text-stone-200 font-semibold">
+                      {f2.name}
+                    </td>
+                    <td className="py-2 text-center text-xs text-stone-200">
+                      {fmt(td2)}
+                    </td>
+                    <td className="py-2 text-center text-xs text-stone-200">
+                      {fmt(tdDef1, "%")}
+                    </td>
+                    <td
+                      className={`py-2 text-center text-xs ${levelClass(tdDef1)}`}
+                    >
+                      {levelLabel(tdDef1)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-stone-500 italic">
+              TD Defense % &lt; 50% = clear exploit · &lt; 65% = edge · 65%+ =
+              no clear advantage. Also check TD Accuracy % to gauge conversion
+              likelihood.
             </p>
           </div>
         );
       }
 
-      if (liveData) {
+      // ── 7. Takedown defense ───────────────────────────────────────────────
+      else if (
+        q.includes("takedown defense") ||
+        q.includes("analyze takedown defense")
+      ) {
+        const tdDef1 = pct(s1.td_defense),
+          tdDef2 = pct(s2.td_defense);
+        const w = edgeName(tdDef1, tdDef2);
+        response = (
+          <StatTable
+            rows={
+              <StatRow
+                label="TD Defense %"
+                v1={fmt(tdDef1, "%")}
+                v2={fmt(tdDef2, "%")}
+                note="Higher = harder to take down"
+                winner={w}
+              />
+            }
+            summary={
+              w && w !== "Even"
+                ? `${w} has better takedown defense — harder for opponents to dictate where the fight takes place. This is a major factor if their opponent is a high-volume wrestler.`
+                : "Both fighters have similar takedown defense. Wrestling success will come down to timing, setups, and physical matchup."
+            }
+          />
+        );
+      }
+
+      // ── 8. Submissions ────────────────────────────────────────────────────
+      else if (q.includes("submission")) {
+        const sub1 = num(f1.wins_submission),
+          sub2 = num(f2.wins_submission);
+        const subA1 = num(f1.avg_sub_attempts ?? s1.avg_sub_attempts);
+        const subA2 = num(f2.avg_sub_attempts ?? s2.avg_sub_attempts);
+        const tdDef1 = pct(s1.td_defense),
+          tdDef2 = pct(s2.td_defense);
+        const w = edgeName(sub1, sub2);
+        const extraNote =
+          w === f1.name && tdDef2 != null && tdDef2 < 65
+            ? ` ${f2.name}'s ${tdDef2}% TD defense means ${f1.name} can get this to the mat where that sub threat becomes real.`
+            : w === f2.name && tdDef1 != null && tdDef1 < 65
+              ? ` ${f1.name}'s ${tdDef1}% TD defense means ${f2.name} can get this to the mat where that sub threat becomes real.`
+              : "";
+        response = (
+          <StatTable
+            rows={
+              <>
+                <StatRow
+                  label="Wins by Submission"
+                  v1={fmt(sub1)}
+                  v2={fmt(sub2)}
+                  winner={w}
+                />
+                <StatRow
+                  label="Avg Sub Attempts / Fight"
+                  v1={fmt(subA1)}
+                  v2={fmt(subA2)}
+                  note="Volume of submission threats"
+                  winner={edgeName(subA1, subA2)}
+                />
+                <StatRow
+                  label="TD Defense % (sub resistance)"
+                  v1={fmt(tdDef1, "%")}
+                  v2={fmt(tdDef2, "%")}
+                  note="Harder to TD = harder to submit"
+                  winner={edgeName(tdDef1, tdDef2)}
+                />
+              </>
+            }
+            summary={
+              w && w !== "Even"
+                ? `${w} has more career submission wins and poses the bigger threat on the mat.${extraNote}`
+                : sub1 === 0 && sub2 === 0
+                  ? "Neither fighter has submission wins on record — this one likely stays on the feet or goes to the scorecards."
+                  : "Both fighters have similar submission records. The key variable is who can consistently get the fight to the mat."
+            }
+          />
+        );
+      }
+
+      // ── 9. Record / history ───────────────────────────────────────────────
+      else if (
+        q.includes("record") ||
+        q.includes("win-loss") ||
+        q.includes("history") ||
+        q.includes("highlights") ||
+        q.includes("career")
+      ) {
+        const st1 = Number(f1.current_win_streak) || 0;
+        const st2 = Number(f2.current_win_streak) || 0;
+        const ls1 = Number(f1.current_loss_streak) || 0;
+        const ls2 = Number(f2.current_loss_streak) || 0;
+        const stW = st1 > st2 ? f1.name : st2 > st1 ? f2.name : null;
+        response = (
+          <StatTable
+            rows={
+              <>
+                <StatRow
+                  label="Overall Record (W-L-D)"
+                  v1={f1.record || `${f1.wins}-${f1.losses}-${f1.draws}`}
+                  v2={f2.record || `${f2.wins}-${f2.losses}-${f2.draws}`}
+                  winner={null}
+                />
+                <StatRow
+                  label="UFC Win Streak (UFCStats)"
+                  v1={f1.current_win_streak ?? "N/A"}
+                  v2={f2.current_win_streak ?? "N/A"}
+                  note="Active UFC wins entering fight (pre-UFC wins not included)"
+                  winner={stW}
+                />
+                <StatRow
+                  label="UFC Loss Streak (UFCStats)"
+                  v1={f1.current_loss_streak ?? "N/A"}
+                  v2={f2.current_loss_streak ?? "N/A"}
+                  note="Lower = better momentum"
+                  winner={
+                    ls1 < ls2 && (ls1 || ls2)
+                      ? f1.name
+                      : ls2 < ls1 && (ls1 || ls2)
+                        ? f2.name
+                        : null
+                  }
+                />
+                <StatRow
+                  label="Last Fight Result"
+                  v1={f1.last_fight_result ?? "N/A"}
+                  v2={f2.last_fight_result ?? "N/A"}
+                  winner={null}
+                />
+                <StatRow
+                  label="Record (Last 5)"
+                  v1={f1.record_last_5 ?? "N/A"}
+                  v2={f2.record_last_5 ?? "N/A"}
+                  winner={null}
+                />
+                <StatRow
+                  label="Record (Last 10)"
+                  v1={f1.record_last_10 ?? "N/A"}
+                  v2={f2.record_last_10 ?? "N/A"}
+                  winner={null}
+                />
+                <StatRow
+                  label="KO / TKO Wins"
+                  v1={fmt(num(f1.wins_ko_tko))}
+                  v2={fmt(num(f2.wins_ko_tko))}
+                  winner={edgeName(num(f1.wins_ko_tko), num(f2.wins_ko_tko))}
+                />
+                <StatRow
+                  label="Submission Wins"
+                  v1={fmt(num(f1.wins_submission))}
+                  v2={fmt(num(f2.wins_submission))}
+                  winner={edgeName(
+                    num(f1.wins_submission),
+                    num(f2.wins_submission),
+                  )}
+                />
+              </>
+            }
+            summary={
+              stW
+                ? `${stW} enters on a longer active win streak — stronger recent form. Recent performance typically outweighs career record as a predictor, especially when the gap is 2+ fights.`
+                : "Both fighters enter in comparable recent form. Focus on the quality of recent opponents and the methods of those wins/losses."
+            }
+          />
+        );
+      }
+
+      // ── 10. Finish rate ───────────────────────────────────────────────────
+      else if (
+        q.includes("finish rate") ||
+        q.includes("finishes") ||
+        q.includes("who wins by") ||
+        q.includes("how does it end")
+      ) {
+        const finish1 = pct(f1.finish_rate_pct),
+          finish2 = pct(f2.finish_rate_pct);
+        const dec1 = pct(f1.decision_rate_pct),
+          dec2 = pct(f2.decision_rate_pct);
+        const ko1 = num(f1.wins_ko_tko),
+          ko2 = num(f2.wins_ko_tko);
+        const sub1 = num(f1.wins_submission),
+          sub2 = num(f2.wins_submission);
+        const kd1 = num(s1.avg_kd_per_fight),
+          kd2 = num(s2.avg_kd_per_fight);
+        const avgDur1 = f1.avg_fight_duration,
+          avgDur2 = f2.avg_fight_duration;
+        const finishW = edgeName(finish1, finish2);
+        const avgF =
+          finish1 != null && finish2 != null ? (finish1 + finish2) / 2 : null;
+        response = (
+          <StatTable
+            rows={
+              <>
+                <StatRow
+                  label="Finish Rate %"
+                  v1={fmt(finish1, "%")}
+                  v2={fmt(finish2, "%")}
+                  note="% of wins by KO or Sub (higher = finisher)"
+                  winner={finishW}
+                />
+                <StatRow
+                  label="Decision Rate %"
+                  v1={fmt(dec1, "%")}
+                  v2={fmt(dec2, "%")}
+                  note="% of wins by decision"
+                  winner={null}
+                />
+                <StatRow
+                  label="KO / TKO Wins"
+                  v1={fmt(ko1)}
+                  v2={fmt(ko2)}
+                  winner={edgeName(ko1, ko2)}
+                />
+                <StatRow
+                  label="Submission Wins"
+                  v1={fmt(sub1)}
+                  v2={fmt(sub2)}
+                  winner={edgeName(sub1, sub2)}
+                />
+                <StatRow
+                  label="Avg Knockdowns / Fight"
+                  v1={fmt(kd1)}
+                  v2={fmt(kd2)}
+                  note="Signals KO power"
+                  winner={edgeName(kd1, kd2)}
+                />
+                <StatRow
+                  label="Avg Fight Duration"
+                  v1={avgDur1 ?? "N/A"}
+                  v2={avgDur2 ?? "N/A"}
+                  note="Shorter avg = more stoppages"
+                  winner={null}
+                />
+              </>
+            }
+            summary={
+              finishW && finishW !== "Even"
+                ? `${finishW} finishes fights more often (${finishW === f1.name ? finish1 : finish2}% finish rate vs ${finishW === f1.name ? finish2 : finish1}%).${avgF != null && avgF > 60 ? " Both fighters have high finish rates — a decision would be the surprise." : avgF != null && avgF < 35 ? " Both fighters go the distance often — lean toward decision scoring." : ""} Watch for ${finishW} to push for a stoppage rather than coast to the cards.`
+                : `Check individual KO wins (${f1.name}: ${ko1 ?? "N/A"}, ${f2.name}: ${ko2 ?? "N/A"}) and sub wins (${f1.name}: ${sub1 ?? "N/A"}, ${f2.name}: ${sub2 ?? "N/A"}) to understand each fighter's preferred finish mode.`
+            }
+          />
+        );
+      }
+
+      // ── 11. KO power ──────────────────────────────────────────────────────
+      else if (q.includes("ko") || q.includes("knockout")) {
+        const ko1 = num(f1.wins_ko_tko),
+          ko2 = num(f2.wins_ko_tko);
+        const finish1 = pct(f1.finish_rate_pct),
+          finish2 = pct(f2.finish_rate_pct);
+        const slpm1 = num(s1.slpm),
+          slpm2 = num(s2.slpm);
+        const kd1 = num(s1.avg_kd_per_fight),
+          kd2 = num(s2.avg_kd_per_fight);
+        const sapm1 = num(s1.sapm),
+          sapm2 = num(s2.sapm);
+        const w = edgeName(ko1, ko2);
+        response = (
+          <StatTable
+            rows={
+              <>
+                <StatRow
+                  label="KO / TKO Wins"
+                  v1={fmt(ko1)}
+                  v2={fmt(ko2)}
+                  note="Career stoppages"
+                  winner={w}
+                />
+                <StatRow
+                  label="Finish Rate %"
+                  v1={fmt(finish1, "%")}
+                  v2={fmt(finish2, "%")}
+                  winner={edgeName(finish1, finish2)}
+                />
+                <StatRow
+                  label="SLpM (striking output)"
+                  v1={fmt(slpm1)}
+                  v2={fmt(slpm2)}
+                  note="Higher volume = more KO opportunities"
+                  winner={edgeName(slpm1, slpm2)}
+                />
+                <StatRow
+                  label="Avg Knockdowns / Fight"
+                  v1={fmt(kd1)}
+                  v2={fmt(kd2)}
+                  note="Knockdown rate signals power"
+                  winner={edgeName(kd1, kd2)}
+                />
+                <StatRow
+                  label="SApM (strikes absorbed)"
+                  v1={fmt(sapm1)}
+                  v2={fmt(sapm2)}
+                  note="Higher SApM = more hittable = KO risk"
+                  winner={edgeName(sapm1, sapm2, false)}
+                />
+              </>
+            }
+            summary={
+              w && w !== "Even"
+                ? `${w} has the bigger KO history. Their knockdown rate supports the power narrative — watch for them to look for the finish, not the scorecards. Also note: ${edgeName(sapm1, sapm2, false) === (w === f1.name ? f2.name : f1.name) ? `${w === f1.name ? f2.name : f1.name} absorbs more strikes per minute — an elevated KO risk for them.` : "both fighters absorb similar volume."}`
+                : `Both fighters have similar KO records. Look at SApM (strikes absorbed) to assess who carries more KO risk in this matchup.`
+            }
+          />
+        );
+      }
+
+      // ── 12. Win streak / momentum ─────────────────────────────────────────
+      else if (
+        q.includes("win streak") ||
+        q.includes("streak") ||
+        q.includes("momentum") ||
+        q.includes("recent performance") ||
+        q.includes("age") ||
+        q.includes("experience")
+      ) {
+        const st1 = Number(f1.current_win_streak) || 0;
+        const st2 = Number(f2.current_win_streak) || 0;
+        response = (
+          <StatTable
+            rows={
+              <>
+                <StatRow
+                  label="UFC Win Streak (UFCStats)"
+                  v1={f1.current_win_streak ?? "N/A"}
+                  v2={f2.current_win_streak ?? "N/A"}
+                  winner={st1 > st2 ? f1.name : st2 > st1 ? f2.name : null}
+                />
+                <StatRow
+                  label="Longest UFC Win Streak (UFCStats)"
+                  v1={f1.longest_win_streak ?? "N/A"}
+                  v2={f2.longest_win_streak ?? "N/A"}
+                  winner={null}
+                />
+                <StatRow
+                  label="Last Fight Result"
+                  v1={f1.last_fight_result ?? "N/A"}
+                  v2={f2.last_fight_result ?? "N/A"}
+                  winner={null}
+                />
+                <StatRow
+                  label="Record (Last 5)"
+                  v1={f1.record_last_5 ?? "N/A"}
+                  v2={f2.record_last_5 ?? "N/A"}
+                  winner={null}
+                />
+                <StatRow
+                  label="Record (Last 10)"
+                  v1={f1.record_last_10 ?? "N/A"}
+                  v2={f2.record_last_10 ?? "N/A"}
+                  winner={null}
+                />
+                <StatRow
+                  label="Age"
+                  v1={f1.age ?? "N/A"}
+                  v2={f2.age ?? "N/A"}
+                  winner={null}
+                />
+                <StatRow
+                  label="Career Longevity (yrs)"
+                  v1={f1.career_longevity_years ?? "N/A"}
+                  v2={f2.career_longevity_years ?? "N/A"}
+                  winner={null}
+                />
+              </>
+            }
+            summary={
+              st1 > st2
+                ? `${f1.name} enters on a ${st1}-fight win streak — better recent momentum. Fighters on active streaks bring sharper preparation and higher confidence heading in.`
+                : st2 > st1
+                  ? `${f2.name} enters on a ${st2}-fight win streak — better recent momentum. Fighters on active streaks bring sharper preparation and higher confidence heading in.`
+                  : "Both fighters enter in comparable recent form. Focus on the quality of recent opponents and the methods of each win and loss."
+            }
+          />
+        );
+      }
+
+      // ── 13. Physical / reach ──────────────────────────────────────────────
+      else if (
+        q.includes("reach") ||
+        q.includes("physical") ||
+        q.includes("height") ||
+        q.includes("stance") ||
+        q.includes("southpaw")
+      ) {
+        const parseReach = (r) => {
+          if (!r || r === "N/A") return null;
+          return parseFloat(String(r).replace('"', "").replace("in", ""));
+        };
+        const reach1 = parseReach(f1.reach),
+          reach2 = parseReach(f2.reach);
+        const reachDiff =
+          reach1 != null && reach2 != null
+            ? Math.abs(reach1 - reach2).toFixed(1)
+            : null;
+        const reachW =
+          reach1 != null && reach2 != null
+            ? reach1 > reach2
+              ? f1.name
+              : reach2 > reach1
+                ? f2.name
+                : null
+            : null;
+        const southpaw =
+          f1.stance !== f2.stance &&
+          (f1.stance === "Southpaw" || f2.stance === "Southpaw");
+        response = (
+          <StatTable
+            rows={
+              <>
+                <StatRow
+                  label="Height"
+                  v1={f1.height ?? "N/A"}
+                  v2={f2.height ?? "N/A"}
+                  winner={null}
+                />
+                <StatRow
+                  label="Reach"
+                  v1={f1.reach ?? "N/A"}
+                  v2={f2.reach ?? "N/A"}
+                  note={reachDiff ? `${reachDiff}" gap` : ""}
+                  winner={reachW}
+                />
+                <StatRow
+                  label="Stance"
+                  v1={f1.stance ?? "N/A"}
+                  v2={f2.stance ?? "N/A"}
+                  winner={null}
+                />
+                <StatRow
+                  label="Age"
+                  v1={f1.age ?? "N/A"}
+                  v2={f2.age ?? "N/A"}
+                  winner={null}
+                />
+              </>
+            }
+            summary={
+              reachW
+                ? `${reachW} has a ${reachDiff}" reach advantage — helps with jab range, kick distance, and keeping opponents at distance. Most impactful in early exchanges before a shorter fighter works inside.${southpaw ? ` Note: ${f1.stance} vs ${f2.stance} — opposite-stance matchup creates unique lead-hand alignment and diagonal cross-side angles.` : ""}`
+                : `Physical attributes are close.${southpaw ? ` Note: ${f1.name} is ${f1.stance}, ${f2.name} is ${f2.stance} — stance difference creates distinct offensive angles for both fighters.` : ""}`
+            }
+          />
+        );
+      }
+
+      // ── 14. DFS salary / value ────────────────────────────────────────────
+      else if (
+        q.includes("salary") ||
+        q.includes("dk salary") ||
+        q.includes("dfs") ||
+        q.includes("value") ||
+        q.includes("average points") ||
+        q.includes("avg points")
+      ) {
+        const sal1 = num(f1.salary),
+          sal2 = num(f2.salary);
+        const pts1 = num(f1.avgPointsPerGame),
+          pts2 = num(f2.avgPointsPerGame);
+        const ppd1 = sal1 && pts1 ? (pts1 / (sal1 / 1000)).toFixed(2) : null;
+        const ppd2 = sal2 && pts2 ? (pts2 / (sal2 / 1000)).toFixed(2) : null;
+        const valueW = edgeName(
+          ppd1 != null ? parseFloat(ppd1) : null,
+          ppd2 != null ? parseFloat(ppd2) : null,
+        );
+        response = (
+          <StatTable
+            rows={
+              <>
+                <StatRow
+                  label="DK Salary"
+                  v1={sal1 != null ? `$${sal1.toLocaleString()}` : "N/A"}
+                  v2={sal2 != null ? `$${sal2.toLocaleString()}` : "N/A"}
+                  winner={null}
+                />
+                <StatRow
+                  label="Avg DFS Points"
+                  v1={pts1 != null ? pts1.toFixed(1) : "N/A"}
+                  v2={pts2 != null ? pts2.toFixed(1) : "N/A"}
+                  note="Historical scoring average"
+                  winner={edgeName(pts1, pts2)}
+                />
+                <StatRow
+                  label="Pts per $1K (value ratio)"
+                  v1={ppd1 ?? "N/A"}
+                  v2={ppd2 ?? "N/A"}
+                  note="Higher = better DFS value"
+                  winner={valueW}
+                />
+              </>
+            }
+            summary={
+              valueW && valueW !== "Even"
+                ? `${valueW} provides better DFS value (${valueW === f1.name ? ppd1 : ppd2} pts per $1K salary). A value play like this frees up salary cap elsewhere — key to building a winning lineup.`
+                : ppd1 == null && ppd2 == null
+                  ? "DFS value cannot be calculated — salary or average points data is missing for one or both fighters."
+                  : "Both fighters offer similar value. Look at projected fight script (finish vs. decision) and ceiling potential when choosing between them."
+            }
+          />
+        );
+      }
+
+      // ── 15. Overall prediction ────────────────────────────────────────────
+      else if (
+        q.includes("who wins") ||
+        q.includes("prediction") ||
+        q.includes("overall") ||
+        q.includes("favorite") ||
+        q.includes("fight prediction")
+      ) {
+        const sc = { [f1.name]: 0, [f2.name]: 0 };
+        const factors = [];
+        const award = (winner, reason) => {
+          if (winner && winner !== "Even") {
+            sc[winner]++;
+            factors.push({ winner, reason });
+          }
+        };
+
+        const slpm1 = num(s1.slpm),
+          slpm2 = num(s2.slpm);
+        const acc1 = pct(s1.striking_accuracy),
+          acc2 = pct(s2.striking_accuracy);
+        const sapm1 = num(s1.sapm),
+          sapm2 = num(s2.sapm);
+        const td1 = num(s1.td_avg),
+          td2 = num(s2.td_avg);
+        const tdD1 = pct(s1.td_defense),
+          tdD2 = pct(s2.td_defense);
+        const st1 = Number(f1.current_win_streak) || 0;
+        const st2 = Number(f2.current_win_streak) || 0;
+        const fin1 = pct(f1.finish_rate_pct),
+          fin2 = pct(f2.finish_rate_pct);
+
+        // Effective striking (slpm × accuracy)
+        if (slpm1 != null && slpm2 != null && acc1 != null && acc2 != null) {
+          const es1 = slpm1 * (acc1 / 100),
+            es2 = slpm2 * (acc2 / 100);
+          award(
+            es1 > es2 ? f1.name : es2 > es1 ? f2.name : "Even",
+            `Higher effective striking (SLpM × accuracy: ${es1.toFixed(2)} vs ${es2.toFixed(2)})`,
+          );
+        } else if (slpm1 != null && slpm2 != null) {
+          award(edgeName(slpm1, slpm2), `Higher SLpM (${slpm1} vs ${slpm2})`);
+        }
+
+        // Striking defense (lower SApM = harder to hit)
+        award(
+          edgeName(sapm1, sapm2, false),
+          `Absorbs fewer strikes per minute (SApM: ${sapm1 ?? "N/A"} vs ${sapm2 ?? "N/A"})`,
+        );
+
+        // Grappling effectiveness (td_avg × (1 - opponent td_defense))
+        if (td1 != null && td2 != null && tdD1 != null && tdD2 != null) {
+          const ws1 = td1 * (1 - tdD2 / 100),
+            ws2 = td2 * (1 - tdD1 / 100);
+          award(
+            ws1 > ws2 ? f1.name : ws2 > ws1 ? f2.name : "Even",
+            `Better wrestling effectiveness vs. opponent's defense`,
+          );
+        } else if (td1 != null && td2 != null) {
+          award(
+            edgeName(td1, td2),
+            `Higher TD avg (${td1} vs ${td2} per 15 min)`,
+          );
+        }
+
+        // Win streak momentum
+        if (st1 !== st2)
+          award(
+            st1 > st2 ? f1.name : f2.name,
+            `Longer active win streak (${Math.max(st1, st2)} fights)`,
+          );
+
+        // Finish rate
+        award(
+          edgeName(fin1, fin2),
+          `Higher finish rate (${fin1 ?? "N/A"}% vs ${fin2 ?? "N/A"}%)`,
+        );
+
+        const total = sc[f1.name] + sc[f2.name];
+        const predictedW =
+          sc[f1.name] > sc[f2.name]
+            ? f1.name
+            : sc[f2.name] > sc[f1.name]
+              ? f2.name
+              : null;
+
         response = (
           <div>
-            {response}
-            <p>
-              <span className={headerColors[3]}>Live Insight:</span> Based on
-              league data from TheSportsDB API, current UFC trends show fighters
-              with strong grappling like {fighter1.name} performing well in
-              title bouts—something to consider for this matchup. Recent events
-              suggest a premium on versatile skill sets, which could influence
-              betting strategies.
+            <h3 className="text-base font-bold text-stone-100 mb-3">
+              {f1.name} <span className="text-stone-500">vs</span> {f2.name} —
+              Overall Assessment
+            </h3>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              {[f1, f2].map((fx) => {
+                const s = sc[fx.name];
+                const isW = fx.name === predictedW;
+                return (
+                  <div
+                    key={fx.name}
+                    className={`rounded-lg border p-3 ${isW ? "border-green-700/60 bg-green-950/20" : "border-stone-700 bg-stone-900"}`}
+                  >
+                    <div className="font-bold text-sm text-stone-100 mb-1 truncate">
+                      {fx.name}
+                    </div>
+                    <div
+                      className={`text-2xl font-black ${isW ? "text-green-400" : "text-stone-500"}`}
+                    >
+                      {s}
+                      <span className="text-sm font-normal text-stone-600">
+                        /{total}
+                      </span>
+                    </div>
+                    <div className="text-xs text-stone-500">categories won</div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="space-y-1.5 mb-4">
+              {factors.map((fac, i) => (
+                <p
+                  key={i}
+                  className="text-xs text-stone-400 flex items-start gap-1.5"
+                >
+                  <span
+                    className={`flex-shrink-0 ${fac.winner === predictedW ? "text-green-500" : "text-stone-500"}`}
+                  >
+                    ●
+                  </span>
+                  <span>
+                    <span className="text-stone-200 font-semibold">
+                      {fac.winner}
+                    </span>{" "}
+                    — {fac.reason}
+                  </span>
+                </p>
+              ))}
+              {factors.length === 0 && (
+                <p className="text-xs text-stone-500 italic">
+                  Insufficient stat data for a detailed breakdown.
+                </p>
+              )}
+            </div>
+            <p className="text-sm text-stone-200 border-t border-stone-700 pt-3 leading-relaxed">
+              {predictedW
+                ? `Stats favor ${predictedW} across ${sc[predictedW]} of ${total} measurable categories. This is a data-driven assessment — always factor in betting lines, training camp developments, and stylistic nuances.`
+                : "Stats are closely matched across all categories. Either fighter can win — lean on betting odds, stylistic matchup, and recent fight quality when making your call."}
             </p>
+          </div>
+        );
+      }
+
+      // ── Fallback ──────────────────────────────────────────────────────────
+      else {
+        response = (
+          <div>
+            <h3 className="text-base font-bold text-stone-100 mb-2">
+              {f1.name} vs {f2.name}
+            </h3>
+            <p className="text-stone-400 text-sm mb-3">
+              Use a quick question button or type keywords like:
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {[
+                "striking",
+                "grappling",
+                "takedown defense",
+                "submission",
+                "record",
+                "finish rate",
+                "ko",
+                "win streak",
+                "reach",
+                "salary",
+                "who wins",
+              ].map((kw) => (
+                <span
+                  key={kw}
+                  className="text-xs bg-stone-800 text-yellow-500 px-2 py-1 rounded border border-yellow-700/30"
+                >
+                  {kw}
+                </span>
+              ))}
+            </div>
           </div>
         );
       }
@@ -634,26 +1516,26 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
       style={{ fontFamily: "'Courier New', monospace" }}
     >
       {/* Classification banner */}
-      <div className="flex items-center justify-between border-b border-yellow-700/40 bg-yellow-900/10 px-6 py-2">
+      <div className="flex items-center justify-between border-b border-yellow-700/40 bg-yellow-900/10 px-3 sm:px-6 py-2">
         <span className="text-yellow-500 text-xs font-bold tracking-widest uppercase">
           ⚡ CLASSIFIED INTEL
         </span>
         <span className="text-yellow-500/50 text-xs tracking-wider hidden sm:block">
           CLEARANCE: LEVEL 5
         </span>
-        <span className="text-yellow-500 text-xs font-bold tracking-widest uppercase">
+        <span className="text-yellow-500 text-[11px] sm:text-xs font-bold tracking-widest uppercase">
           FIGHT ANALYSIS ⚡
         </span>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-10">
+      <div className="max-w-6xl mx-auto px-4 py-4 md:py-10">
         {/* Page header */}
         <div className="text-center mb-10">
           <p className="text-xs text-stone-500 tracking-[0.5em] uppercase mb-2">
             ◆ OPERATION COMBAT VAULT — FIGHT DIVISION ◆
           </p>
           <h1
-            className="text-4xl md:text-5xl font-black text-stone-100 tracking-wider uppercase"
+            className="text-2xl sm:text-3xl md:text-5xl font-black text-stone-100 tracking-wide uppercase"
             style={{
               fontFamily: "'Impact', sans-serif",
               textShadow: "2px 2px 0 #4a5240, 0 0 40px rgba(100,120,80,0.3)",
@@ -670,7 +1552,7 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
         <select
           value={selectedFight}
           onChange={(e) => setSelectedFight(e.target.value)}
-          className="border border-yellow-700/40 bg-stone-900 text-stone-100 p-2 rounded-lg w-full md:w-1/4 mb-4"
+          className="border border-yellow-700/40 bg-stone-900 text-stone-100 p-2 rounded-lg w-full md:w-1/3 mb-4 min-h-[44px] text-sm"
         >
           <option value="">Select a Fight</option>
           {fights.map((fight) => (
@@ -680,7 +1562,24 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
           ))}
         </select>
 
-        {/* Live odds strip from cached API data */}
+        <input
+          type="text"
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          placeholder="Ask about striking, takedowns, or records..."
+          className="border border-yellow-700/40 bg-stone-900 text-stone-100 p-2 rounded-lg w-full mb-4 min-h-[44px] text-sm"
+        />
+
+        <button
+          onClick={() => processQuestion()}
+          className="neon-button mb-8 w-full sm:w-auto"
+        >
+          Analyze
+        </button>
+
+        <div className="text-stone-300 mb-6">{answer}</div>
+
+        {/* Live odds from cached API data */}
         {selectedFight &&
           (() => {
             const fight = fights.find(
@@ -689,7 +1588,6 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
             if (!fight || fight.fighters.length < 2) return null;
             const [f1, f2] = fight.fighters;
 
-            // Fuzzy-match by last name
             const lastName = (name) =>
               name.trim().split(" ").pop().toLowerCase();
             const matchEvent = cachedOdds.find((ev) => {
@@ -749,8 +1647,7 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                     {matchEvent.bookmakers.length} books · best available
                   </span>
                 </div>
-                <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 gap-2">
-                  {/* Fighter 1 */}
+                <div className="hidden sm:grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 gap-2">
                   <div>
                     <div className="text-stone-100 text-sm font-semibold">
                       {f1.name}
@@ -781,7 +1678,6 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                   <div className="text-stone-600 text-xs font-bold text-center px-2">
                     VS
                   </div>
-                  {/* Fighter 2 */}
                   <div className="items-end flex flex-col">
                     <div className="text-stone-100 text-sm font-semibold text-right">
                       {f2.name}
@@ -810,190 +1706,31 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                     </div>
                   </div>
                 </div>
+                <div className="sm:hidden px-3 py-3 space-y-2">
+                  <div className="mobile-kv-row">
+                    <span className="text-sm font-semibold text-stone-100 truncate pr-2">
+                      {f1.name}
+                    </span>
+                    <span
+                      className={`text-lg font-black ${f1Fav ? "text-red-400" : "text-green-400"}`}
+                    >
+                      {fmt(o1)}
+                    </span>
+                  </div>
+                  <div className="mobile-kv-row">
+                    <span className="text-sm font-semibold text-stone-100 truncate pr-2">
+                      {f2.name}
+                    </span>
+                    <span
+                      className={`text-lg font-black ${f2Fav ? "text-red-400" : "text-green-400"}`}
+                    >
+                      {fmt(o2)}
+                    </span>
+                  </div>
+                </div>
               </div>
             );
           })()}
-
-        <input
-          type="text"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          placeholder="Ask about striking, takedowns, or records..."
-          className="border border-yellow-700/40 bg-stone-900 text-stone-100 p-2 rounded-lg w-full mb-4"
-        />
-
-        <button onClick={() => processQuestion()} className="neon-button mb-8">
-          Analyze
-        </button>
-
-        <div className="text-stone-300 mb-6">{answer}</div>
-
-        <div className="flex justify-center mt-4 space-x-4 mb-8">
-          {fights
-            .find((f) => f.fight_id === parseInt(selectedFight))
-            ?.fighters.map((fighter) => (
-              <a href={`/roster#${fighter.id}`} key={fighter.id}>
-                <img
-                  src={`/fighter-${fighter.id}.jpg`}
-                  alt={fighter.name}
-                  className="w-16 h-16 rounded-full object-cover border border-yellow-700/40"
-                  onError={(e) =>
-                    (e.target.src = "https://picsum.photos/200/200")
-                  }
-                />
-              </a>
-            ))}
-        </div>
-
-        {/* Odds Display Section */}
-        <div className="max-w-2xl mx-auto mb-8">
-          <button
-            onClick={() => setShowOdds(!showOdds)}
-            className="w-full bg-gradient-to-r from-yellow-700 to-yellow-600 text-stone-950 font-bold py-3 px-4 rounded-lg hover:brightness-110 transition duration-300 ease-in-out border border-yellow-700/50 flex justify-between items-center"
-          >
-            <span>📊 Betting Odds</span>
-            <span>{showOdds ? "▼" : "▶"}</span>
-          </button>
-
-          {showOdds && selectedFight && (
-            <div className="mt-4 bg-stone-900 border border-yellow-700/50 rounded-lg p-6">
-              {(() => {
-                const fight = fights.find(
-                  (f) => f.fight_id === parseInt(selectedFight),
-                );
-                if (!fight || fight.fighters.length < 2) return null;
-                const [fighter1, fighter2] = fight.fighters;
-                const bo = fight.betting_odds || {};
-                const hasRealOdds =
-                  bo.fighter1_moneyline && bo.fighter1_moneyline !== "N/A";
-
-                // Moneyline colour helper: negative = favourite (green), positive = underdog (red)
-                const mlColour = (ml) => {
-                  if (!ml || ml === "N/A") return "text-gray-400";
-                  const n = parseInt(String(ml).replace(/[^0-9-+]/g, ""), 10);
-                  return isNaN(n)
-                    ? "text-gray-400"
-                    : n < 0
-                      ? "text-green-400"
-                      : "text-red-400";
-                };
-
-                return (
-                  <div>
-                    <h3 className="text-2xl font-bold text-yellow-300 mb-4 text-center">
-                      {fighter1.name} vs. {fighter2.name}
-                    </h3>
-
-                    {/* ── Moneyline ── */}
-                    <h4 className="text-yellow-400 font-semibold mb-2">
-                      Moneyline
-                    </h4>
-                    <div className="overflow-x-auto mb-5">
-                      <table className="w-full text-gray-200 border-collapse">
-                        <thead>
-                          <tr className="border-b border-yellow-700/60">
-                            <th className="px-4 py-2 text-left text-yellow-300">
-                              Fighter
-                            </th>
-                            <th className="px-4 py-2 text-center text-yellow-300">
-                              Moneyline
-                            </th>
-                            <th className="px-4 py-2 text-center text-yellow-300">
-                              KO/TKO (Knockout)
-                            </th>
-                            <th className="px-4 py-2 text-center text-yellow-300">
-                              Sub (Submission)
-                            </th>
-                            <th className="px-4 py-2 text-center text-yellow-300">
-                              Decision
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {[
-                            {
-                              fighter: fighter1,
-                              ml: bo.fighter1_moneyline ?? "N/A",
-                              ko: bo.fighter1_ko_odds ?? "N/A",
-                              sub: bo.fighter1_sub_odds ?? "N/A",
-                              dec: bo.fighter1_decision_odds ?? "N/A",
-                            },
-                            {
-                              fighter: fighter2,
-                              ml: bo.fighter2_moneyline ?? "N/A",
-                              ko: bo.fighter2_ko_odds ?? "N/A",
-                              sub: bo.fighter2_sub_odds ?? "N/A",
-                              dec: bo.fighter2_decision_odds ?? "N/A",
-                            },
-                          ].map(({ fighter, ml, ko, sub, dec }) => (
-                            <tr
-                              key={fighter.id}
-                              className="border-b border-stone-700 hover:bg-stone-800/60 transition"
-                            >
-                              <td className="px-4 py-3 font-semibold text-white">
-                                {fighter.name}
-                              </td>
-                              <td
-                                className={`px-4 py-3 text-center font-mono font-bold ${mlColour(ml)}`}
-                              >
-                                {ml}
-                              </td>
-                              <td className="px-4 py-3 text-center text-blue-300 font-mono">
-                                {ko}
-                              </td>
-                              <td className="px-4 py-3 text-center text-orange-300 font-mono">
-                                {sub}
-                              </td>
-                              <td className="px-4 py-3 text-center text-purple-300 font-mono">
-                                {dec}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-
-                    {/* ── Over/Under ── */}
-                    {(bo.over_under_rounds && bo.over_under_rounds !== "N/A") ||
-                    (bo.over_odds && bo.over_odds !== "N/A") ? (
-                      <>
-                        <h4 className="text-yellow-400 font-semibold mb-2">
-                          Over / Under Rounds
-                        </h4>
-                        <div className="flex gap-4 mb-5">
-                          <div className="flex-1 bg-gray-900 rounded-lg p-3 text-center border border-gray-600">
-                            <p className="text-xs text-gray-400 mb-1">Line</p>
-                            <p className="text-white font-mono font-bold">
-                              {bo.over_under_rounds ?? "N/A"}
-                            </p>
-                          </div>
-                          <div className="flex-1 bg-gray-900 rounded-lg p-3 text-center border border-green-700">
-                            <p className="text-xs text-gray-400 mb-1">Over</p>
-                            <p className="text-green-400 font-mono font-bold">
-                              {bo.over_odds ?? "N/A"}
-                            </p>
-                          </div>
-                          <div className="flex-1 bg-gray-900 rounded-lg p-3 text-center border border-red-700">
-                            <p className="text-xs text-gray-400 mb-1">Under</p>
-                            <p className="text-red-400 font-mono font-bold">
-                              {bo.under_odds ?? "N/A"}
-                            </p>
-                          </div>
-                        </div>
-                      </>
-                    ) : null}
-
-                    <p className="text-xs text-gray-400 mt-2 text-center italic">
-                      {hasRealOdds
-                        ? "* Odds sourced from BestFightOdds.com at time of data pull. Always verify with your sportsbook."
-                        : "* Live odds unavailable — BestFightOdds did not return data for this matchup. Check sportsbooks directly."}
-                    </p>
-                  </div>
-                );
-              })()}
-            </div>
-          )}
-        </div>
 
         {selectedFight &&
           (() => {
@@ -1001,7 +1738,7 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
               (f) => f.fight_id === parseInt(selectedFight),
             );
 
-            const renderStats = (fighter) => {
+            const renderStats = (fighter, tabKey = activeTab) => {
               const statsList = {
                 basics: [
                   { label: "Nickname", key: "nickname" },
@@ -1010,10 +1747,11 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                   { label: "Reach", key: "reach" },
                   { label: "Stance", key: "stance" },
                   { label: "Weight Class", key: "weight_class" },
-                  { label: "Record", key: "record" },
-                  { label: "Wins", key: "wins" },
-                  { label: "Losses", key: "losses" },
-                  { label: "Draws", key: "draws" },
+                  {
+                    label:
+                      "Record (Full MMA career when Sherdog data available, otherwise UFC only)",
+                    key: "record",
+                  },
                   {
                     label: "DK (DraftKings) Salary",
                     key: "salary",
@@ -1034,9 +1772,16 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                     label: "SApM (Sig. Strikes Absorbed per Min)",
                     key: "stats.sapm",
                   },
-                  { label: "Striking Accuracy %", key: "striking_accuracy" },
-                  { label: "Striking Defense", key: "stats.striking_defense" },
-                  { label: "Strikes/Min", key: "stats.slpm" },
+                  {
+                    label: "Striking Accuracy %",
+                    key: "striking_accuracy",
+                    isPct: true,
+                  },
+                  {
+                    label: "Striking Defense %",
+                    key: "stats.striking_defense",
+                    isPct: true,
+                  },
                 ],
                 grappling: [
                   {
@@ -1046,14 +1791,17 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                   {
                     label: "TD Accuracy % (Takedown Accuracy)",
                     key: "stats.td_accuracy",
+                    isPct: true,
                   },
                   {
                     label: "TD Defense % (Takedown Defense)",
                     key: "stats.td_defense",
+                    isPct: true,
                   },
                   {
                     label: "Sub Win % (Submission Win %)",
                     key: "submission_wins_pct",
+                    isPct: true,
                   },
                   { label: "Avg Sub Attempts", key: "avg_sub_attempts" },
                   {
@@ -1067,12 +1815,51 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                   {
                     label: "CTRL (Control) Time %",
                     key: "stats.grappling_control_pct",
+                    isPct: true,
+                  },
+                ],
+                // Added Defensive Grappling Breakdown using new stats from aggregate_stats.py
+                defGrappling: [
+                  {
+                    label: "TD Defense % (Takedown Defense)",
+                    key: "stats.td_defense",
+                    isPct: true,
+                  },
+                  {
+                    label: "Implied Sub Defense % (est.)",
+                    key: "stats.implied_sub_def_pct",
+                    isPct: true,
+                  },
+                  {
+                    label: "Avg Opp Control Time (secs / fight)",
+                    key: "stats.avg_opp_ctrl_secs",
+                  },
+                  {
+                    label: "Reversals / Fight (bottom→top escapes)",
+                    key: "stats.avg_reversals_per_fight",
+                  },
+                  {
+                    label: "Subs Conceded (recent fights analyzed)",
+                    key: "stats.subs_conceded",
+                  },
+                  {
+                    label: "Opp Sub Attempts vs Fighter",
+                    key: "stats.opp_sub_attempts_vs",
                   },
                 ],
                 recordAwards: [
-                  { label: "Current Win Streak", key: "current_win_streak" },
-                  { label: "Longest Win Streak", key: "longest_win_streak" },
-                  { label: "Current Loss Streak", key: "current_loss_streak" },
+                  {
+                    label: "UFC Win Streak (UFCStats)",
+                    key: "current_win_streak",
+                  },
+                  {
+                    label: "Longest UFC Win Streak (UFCStats)",
+                    key: "longest_win_streak",
+                  },
+                  {
+                    label: "UFC Loss Streak (UFCStats)",
+                    key: "current_loss_streak",
+                  },
                   { label: "Last Fight Result", key: "last_fight_result" },
                   { label: "Record (Last 5)", key: "record_last_5" },
                   { label: "Record (Last 10)", key: "record_last_10" },
@@ -1082,8 +1869,16 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                   },
                   { label: "Wins by Submission (Sub)", key: "wins_submission" },
                   { label: "Wins by Decision (Dec)", key: "wins_decision" },
-                  { label: "Finish Rate %", key: "finish_rate_pct" },
-                  { label: "Decision Rate %", key: "decision_rate_pct" },
+                  {
+                    label: "Finish Rate %",
+                    key: "finish_rate_pct",
+                    isPct: true,
+                  },
+                  {
+                    label: "Decision Rate %",
+                    key: "decision_rate_pct",
+                    isPct: true,
+                  },
                   { label: "Total Title Bouts", key: "total_title_bouts" },
                 ],
                 advanced: [
@@ -1109,28 +1904,56 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                 return value;
               };
 
-              const stats = statsList[activeTab] || statsList.basics;
+              // Normalize a value that should be shown as a percentage.
+              // Strips any trailing "%" already in the data, then re-adds it once.
+              const formatPct = (raw) => {
+                if (raw === null || raw === undefined) return "N/A";
+                const stripped = String(raw).replace(/%$/, "").trim();
+                if (stripped === "" || stripped === "N/A") return "N/A";
+                return `${stripped}%`;
+              };
+
+              const stats = statsList[tabKey] || statsList.basics;
+
+              // For record/award tabs, check if all values are null — show a
+              // helpful message instead of a column of N/As for unmatched fighters
+              const allNull = stats.every(
+                (stat) => (getValue(fighter, stat.key) ?? null) === null,
+              );
+              if (allNull && tabKey !== "basics") {
+                return (
+                  <div className="text-stone-500 text-sm italic py-4 text-center">
+                    No career data available for {fighter.name} in this dataset.
+                    <br />
+                    <span className="text-xs">
+                      (Fighter not found in ufc-master.csv enrichment source)
+                    </span>
+                  </div>
+                );
+              }
 
               return (
-                <div className="space-y-2">
-                  {stats.map((stat) => (
+                <div key={tabKey} className="space-y-2">
+                  {stats.map((stat, i) => (
                     <div
-                      key={stat.key}
-                      className="flex justify-between py-1 border-b border-stone-700/50"
+                      key={`${tabKey}-${i}`}
+                      className="flex items-baseline justify-between gap-2 py-1 border-b border-stone-700/50"
                     >
-                      <span className="text-stone-500 text-sm">
+                      <span className="text-stone-500 text-sm flex-1 min-w-0">
                         {stat.label}:
                       </span>
                       <span
-                        className={`font-semibold ${
+                        className={`font-semibold shrink-0 text-right ${
                           stat.isMoney || stat.isHighlight
                             ? "text-yellow-400"
                             : "text-stone-200"
                         }`}
                       >
                         {stat.isMoney
-                          ? `$${getValue(fighter, stat.key) || "N/A"}`
-                          : getValue(fighter, stat.key) || "N/A"}
+                          ? `$${getValue(fighter, stat.key) ?? "N/A"}`
+                          : stat.isPct
+                            ? formatPct(getValue(fighter, stat.key))
+                            : (getValue(fighter, stat.key) ?? "N/A")}
                       </span>
                     </div>
                   ))}
@@ -1145,39 +1968,36 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                   📊 Research every stat side-by-side — make your own decisions
                 </p>
 
-                {/* Collapsible Header */}
-                <button
-                  onClick={() => {
-                    setExpandedStats(!expandedStats);
-                    if (!expandedStats) console.log("Stats section expanded");
-                  }}
-                  className="w-full bg-stone-900 hover:bg-stone-800 border border-yellow-700/50 text-yellow-500 font-bold py-3 px-4 rounded-t-lg flex justify-between items-center transition cursor-pointer"
+                <details
+                  open={expandedStats}
+                  onToggle={(e) => setExpandedStats(e.currentTarget.open)}
+                  className="border border-yellow-700/50 rounded-lg bg-stone-900"
                 >
-                  <span className="text-xl">
-                    📋 View Full Fighter Stats & Comparisons
-                  </span>
-                  <span className="text-lg">{expandedStats ? "▼" : "▶"}</span>
-                </button>
+                  <summary
+                    className="w-full bg-stone-900 hover:bg-stone-800 text-yellow-500 font-bold py-3 px-4 flex justify-between items-center transition"
+                    aria-label="Toggle full fighter stats and comparisons"
+                  >
+                    <span className="text-base sm:text-xl">
+                      📋 View Full Fighter Stats & Comparisons
+                    </span>
+                    <span className="text-lg">{expandedStats ? "▼" : "▶"}</span>
+                  </summary>
 
-                {/* Expanded Content */}
-                {expandedStats && (
-                  <div className="bg-stone-900 border border-t-0 border-yellow-700/50 p-6 rounded-b-lg">
-                    {/* Tab Buttons */}
-                    <div className="flex flex-wrap gap-2 mb-6 border-b border-gray-600 pb-4">
+                  <div className="border-t border-yellow-700/30 p-4 sm:p-6">
+                    {/* Desktop tabs */}
+                    <div className="hidden md:flex flex-wrap gap-2 mb-6 border-b border-gray-600 pb-4">
                       {[
                         { id: "basics", label: "Basics" },
                         { id: "striking", label: "Striking" },
                         { id: "grappling", label: "Grappling" },
+                        { id: "defGrappling", label: "Def. Grappling" },
                         { id: "recordAwards", label: "Record & Awards" },
-                        {
-                          id: "advanced",
-                          label: "Advanced/DFS (Daily Fantasy Sports)",
-                        },
+                        { id: "advanced", label: "Advanced / DFS" },
                       ].map((tab) => (
                         <button
                           key={tab.id}
                           onClick={() => setActiveTab(tab.id)}
-                          className={`px-4 py-2 rounded-lg font-bold tracking-wide uppercase text-xs transition ${
+                          className={`min-h-[42px] px-4 py-2 rounded-lg font-bold tracking-wide uppercase text-xs transition ${
                             activeTab === tab.id
                               ? "bg-yellow-700 text-stone-950"
                               : "bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-stone-200"
@@ -1188,8 +2008,46 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                       ))}
                     </div>
 
-                    {/* Side-by-Side Fighter Stats */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Mobile: category accordions for quick scanning */}
+                    <div className="md:hidden space-y-3 mb-6">
+                      {[
+                        { id: "basics", label: "Basics" },
+                        { id: "striking", label: "Striking" },
+                        { id: "grappling", label: "Grappling" },
+                        { id: "defGrappling", label: "Defensive Grappling" },
+                        { id: "recordAwards", label: "Record & Awards" },
+                        { id: "advanced", label: "Advanced / DFS" },
+                      ].map((tab) => (
+                        <details
+                          key={`mobile-tab-${tab.id}`}
+                          className="rounded-lg border border-stone-700 bg-stone-950/70"
+                        >
+                          <summary
+                            className="px-3 py-2.5 text-xs font-bold uppercase tracking-wider text-yellow-500"
+                            aria-label={`Toggle ${tab.label} stats`}
+                          >
+                            {tab.label}
+                          </summary>
+                          <div className="grid grid-cols-1 gap-3 p-3 border-t border-stone-700">
+                            <div className="rounded border border-yellow-700/40 p-3 bg-stone-950">
+                              <h4 className="text-sm font-bold text-yellow-500 mb-2 tracking-wide uppercase">
+                                {fight.fighters[0].name}
+                              </h4>
+                              {renderStats(fight.fighters[0], tab.id)}
+                            </div>
+                            <div className="rounded border border-yellow-700/20 p-3 bg-stone-950">
+                              <h4 className="text-sm font-bold text-yellow-400/80 mb-2 tracking-wide uppercase">
+                                {fight.fighters[1].name}
+                              </h4>
+                              {renderStats(fight.fighters[1], tab.id)}
+                            </div>
+                          </div>
+                        </details>
+                      ))}
+                    </div>
+
+                    {/* Desktop side-by-side stats */}
+                    <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="border border-yellow-700/50 rounded-lg p-4 bg-stone-950">
                         <h4 className="text-lg font-bold text-yellow-500 mb-4 text-center border-b border-yellow-700/40 pb-2 tracking-wide uppercase">
                           {fight.fighters[0].name}
@@ -1205,12 +2063,12 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                       </div>
                     </div>
 
-                    <p className="text-xs text-stone-600 mt-4 italic text-center tracking-wide">
+                    <p className="text-xs text-stone-600 mt-4 italic text-center tracking-wide leading-relaxed">
                       ✓ Stats from DraftKings, UFCStats, Sherdog, Tapology.
                       Public sources only. Not betting advice.
                     </p>
                   </div>
-                )}
+                </details>
               </div>
             ) : selectedFight ? (
               <div className="text-center text-stone-500 mb-8 tracking-wide">
@@ -1223,6 +2081,121 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
             );
           })()}
 
+        {/* ── Per-fight Matchup Intel ── */}
+        {selectedFight &&
+          (() => {
+            const fight = fights.find(
+              (f) => f.fight_id === parseInt(selectedFight),
+            );
+            if (!fight || fight.fighters.length < 2) return null;
+            const [f1, f2] = fight.fighters;
+            const directions = _computeAngles(f1, f2);
+            const hasStrong = directions.some((d) =>
+              d.angles.some((a) => a.level === "strong"),
+            );
+            const hasModerate = directions.some((d) =>
+              d.angles.some((a) => a.level === "moderate"),
+            );
+            const cardBorder = hasStrong
+              ? "border-red-700/60"
+              : hasModerate
+                ? "border-orange-700/50"
+                : "border-stone-700/60";
+
+            return (
+              <div className="mb-8">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="h-px flex-1 bg-yellow-700/30" />
+                  <span className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600">
+                    ◈ MATCHUP INTEL
+                  </span>
+                  <div className="h-px flex-1 bg-yellow-700/30" />
+                </div>
+                <p className="text-stone-400 text-center text-xs mb-4">
+                  Directional exploit analysis.{" "}
+                  <span className="text-red-400">🔴 Exploit</span> = clear edge
+                  over opponent's weakness ·{" "}
+                  <span className="text-orange-400">🟠 Edge</span> = some
+                  advantage · <span className="text-stone-400">⚪ Even</span> =
+                  no clear edge.
+                </p>
+                <div
+                  className={`bg-stone-900 rounded-lg border ${cardBorder} p-4`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-stone-100 font-bold text-sm">
+                      {f1.name}
+                      <span className="text-stone-500 mx-2">vs</span>
+                      {f2.name}
+                    </span>
+                    {hasStrong && (
+                      <span className="text-xs bg-red-800 text-red-100 px-2 py-0.5 rounded font-bold">
+                        ⚠ Exploit Found
+                      </span>
+                    )}
+                  </div>
+
+                  {directions.map((dir, di) => {
+                    const topAngles = dir.angles.filter(
+                      (a) => a.level !== "neutral",
+                    );
+                    if (topAngles.length === 0) return null;
+                    return (
+                      <div key={di} className="mb-3">
+                        <p className="text-xs text-stone-400 mb-1 font-semibold">
+                          {dir.attacker}{" "}
+                          <span className="text-stone-600">exploiting</span>{" "}
+                          {dir.defender}
+                        </p>
+                        <div className="flex flex-col gap-1">
+                          {dir.angles.map((angle, ai) => {
+                            const style = _LEVEL[angle.level];
+                            return (
+                              <div
+                                key={ai}
+                                className={`flex items-center gap-2 rounded px-2 py-1 ${style.bg} border ${style.border}`}
+                              >
+                                <span
+                                  className={`w-2 h-2 rounded-full flex-shrink-0 ${style.dot}`}
+                                />
+                                <span className="text-xs text-stone-300 flex-1">
+                                  <span className="font-semibold text-stone-100">
+                                    {angle.label}
+                                  </span>
+                                  {" — "}
+                                  {angle.tip}
+                                </span>
+                                <span
+                                  className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${style.badge}`}
+                                >
+                                  {style.label}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {(() => {
+                    const allStrong = directions.flatMap((d) =>
+                      d.angles
+                        .filter((a) => a.level === "strong")
+                        .map((a) => `${d.attacker}'s ${a.label.toLowerCase()}`),
+                    );
+                    if (allStrong.length === 0) return null;
+                    return (
+                      <p className="text-xs text-yellow-400/80 mt-2 border-t border-stone-700 pt-2">
+                        💡 DFS angle: Target {allStrong.join(" and ")}.
+                      </p>
+                    );
+                  })()}
+                </div>
+              </div>
+            );
+          })()}
+
         <div className="flex items-center gap-3 mb-4">
           <div className="h-px flex-1 bg-yellow-700/30" />
           <h2 className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600">
@@ -1231,7 +2204,26 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
           <div className="h-px flex-1 bg-yellow-700/30" />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-10">
+        <div className="md:hidden pb-6">
+          <details className="rounded-lg border border-stone-700 bg-stone-900/80">
+            <summary className="px-4 py-3 text-xs font-bold uppercase tracking-widest text-yellow-500">
+              Show Quick Questions
+            </summary>
+            <div className="grid grid-cols-1 gap-3 p-3 border-t border-stone-700">
+              {generalQuestions.map((question, index) => (
+                <button
+                  key={`mobile-q-${index}`}
+                  onClick={() => handleQuestionButton(question)}
+                  className="bg-stone-900 border border-yellow-700/40 text-stone-300 text-xs font-bold tracking-wide py-3 px-4 rounded-lg hover:bg-stone-800 hover:border-yellow-600/60 hover:text-yellow-400 transition duration-200 text-left min-h-[44px]"
+                >
+                  {question}
+                </button>
+              ))}
+            </div>
+          </details>
+        </div>
+
+        <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-4 pb-10">
           {generalQuestions.map((question, index) => (
             <button
               key={index}

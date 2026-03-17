@@ -93,8 +93,16 @@ const curatedVideos = [
 
 // Accent colours cycle for fighter cards
 const ACCENTS = [
-  "#fbbf24", "#ea8c34", "#a3a830", "#d6c68a", "#f59e0b",
-  "#c084fc", "#38bdf8", "#4ade80", "#fb7185", "#a78bfa",
+  "#fbbf24",
+  "#ea8c34",
+  "#a3a830",
+  "#d6c68a",
+  "#f59e0b",
+  "#c084fc",
+  "#38bdf8",
+  "#4ade80",
+  "#fb7185",
+  "#a78bfa",
 ];
 
 const VideoVault = () => {
@@ -146,18 +154,17 @@ const VideoVault = () => {
         </span>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-10">
+      <div className="max-w-7xl mx-auto px-4 py-4 md:py-10">
         {/* ── Page header ───────────────────────────────────────────────── */}
         <div className="text-center mb-10">
           <p className="text-xs text-stone-500 tracking-[0.5em] uppercase mb-2">
             ◆ OPERATION COMBAT VAULT — VIDEO DIVISION ◆
           </p>
           <h1
-            className="text-4xl md:text-5xl font-black text-stone-100 tracking-wider uppercase"
+            className="text-3xl md:text-5xl font-black text-stone-100 tracking-wider uppercase"
             style={{
               fontFamily: "'Impact', sans-serif",
-              textShadow:
-                "2px 2px 0 #4a5240, 0 0 40px rgba(100,120,80,0.3)",
+              textShadow: "2px 2px 0 #4a5240, 0 0 40px rgba(100,120,80,0.3)",
             }}
           >
             VIDEO <span className="text-yellow-600">VAULT</span>
@@ -187,7 +194,7 @@ const VideoVault = () => {
               No fighter data available.
             </p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[30rem] overflow-y-auto md:max-h-none md:overflow-visible pr-1">
               {fighters.map((fighter, i) => {
                 const accent = ACCENTS[fighter.accentIdx];
                 const query = encodeURIComponent(
@@ -240,7 +247,11 @@ const VideoVault = () => {
                         : "—"}
                     </p>
                     <p className="text-stone-600 text-[10px] text-center tracking-wide mb-3 leading-tight">
-                      vs. {fighter.matchup?.replace(fighter.name, "").replace("vs.", "").trim() || "TBD"}
+                      vs.{" "}
+                      {fighter.matchup
+                        ?.replace(fighter.name, "")
+                        .replace("vs.", "")
+                        .trim() || "TBD"}
                     </p>
 
                     {/* DK salary badge */}
@@ -318,9 +329,44 @@ const VideoVault = () => {
             <div className="h-px flex-1 bg-yellow-700/30" />
           </div>
           <p className="text-stone-500 text-xs text-center mb-6 tracking-wide">
-            Strange, funny, and weird fights for entertainment. Viewer discretion advised.
+            Strange, funny, and weird fights for entertainment. Viewer
+            discretion advised.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+          <details className="md:hidden rounded border border-stone-700 bg-stone-900/60">
+            <summary className="px-4 py-3 text-xs font-bold uppercase tracking-widest text-yellow-500">
+              Show Classified Archive ({curatedVideos.length})
+            </summary>
+            <div className="grid grid-cols-1 gap-3 p-3 border-t border-stone-700 max-h-[26rem] overflow-y-auto">
+              {curatedVideos.map((video, index) => (
+                <div
+                  key={`mobile-curated-${index}`}
+                  className="mobile-data-card flex flex-col items-center"
+                >
+                  <p className="text-[10px] text-stone-600 tracking-widest uppercase mb-2">
+                    FILE #{String(index + 1).padStart(2, "0")}
+                  </p>
+                  <h3 className="text-sm font-semibold text-stone-300 text-center mb-4 leading-snug">
+                    {video.title}
+                  </h3>
+                  <a
+                    href={video.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-auto text-[11px] font-bold tracking-widest uppercase px-4 py-2 rounded w-full text-center transition-all duration-200"
+                    style={{
+                      color: "#0f0e09",
+                      background: "#fbbf24",
+                    }}
+                  >
+                    ▶ ACCESS FILE
+                  </a>
+                </div>
+              ))}
+            </div>
+          </details>
+
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {curatedVideos.map((video, index) => (
               <div
                 key={index}

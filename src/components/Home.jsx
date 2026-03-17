@@ -92,7 +92,7 @@ export default function Home() {
             <span className="text-yellow-500 text-xs font-bold tracking-widest uppercase">
               ⚡ CLASSIFIED
             </span>
-            <span className="text-yellow-500/60 text-xs tracking-wider">
+            <span className="text-yellow-500/60 text-xs tracking-wider hidden sm:inline">
               CLEARANCE: LEVEL 5
             </span>
             <span className="text-yellow-500 text-xs font-bold tracking-widest uppercase">
@@ -107,7 +107,7 @@ export default function Home() {
             ◆ OPERATION COMBAT VAULT ◆
           </div>
           <h1
-            className="text-4xl md:text-6xl font-black text-stone-100 tracking-wider uppercase leading-none mb-4 whitespace-nowrap"
+            className="text-3xl sm:text-4xl md:text-6xl font-black text-stone-100 tracking-wider uppercase leading-tight mb-4"
             style={{
               fontFamily: "'Impact', sans-serif",
               textShadow:
@@ -127,7 +127,7 @@ export default function Home() {
         </div>
 
         {/* Shields */}
-        <div className="flex flex-wrap justify-center items-end gap-6 w-full max-w-7xl">
+        <div className="flex flex-wrap justify-center items-end gap-4 sm:gap-6 w-full max-w-7xl">
           {cards.map(({ to, title, desc, cta, icon, tag }, i) => {
             const palette = [
               {
@@ -197,7 +197,7 @@ export default function Home() {
                 to={to}
                 className="group hover:scale-105 transition-all duration-500 flex flex-col items-center"
                 style={{
-                  width: "clamp(175px, 17vw, 220px)",
+                  width: "clamp(140px, 40vw, 220px)",
                   filter: `drop-shadow(0 8px 28px ${p.glow}) drop-shadow(0 2px 4px rgba(0,0,0,0.8))`,
                   fontFamily:
                     "'Roboto Mono', 'IBM Plex Mono', 'Courier New', monospace",
@@ -594,19 +594,7 @@ export default function Home() {
                       }}
                     ></div>
 
-                    {/* Description */}
-                    <p
-                      style={{
-                        color: "#e5e7eb",
-                        fontSize: "0.75rem",
-                        lineHeight: 1.55,
-                        margin: 0,
-                        textShadow:
-                          "0 1px 4px rgba(0,0,0,0.9), 0 0 2px rgba(255,255,255,0.08)",
-                      }}
-                    >
-                      {desc}
-                    </p>
+                    {/* White description text intentionally removed for cleaner shields */}
                   </div>
                 </div>
                 {/* end shield wrapper */}

@@ -29,6 +29,37 @@ const bestOdds = (bookmakers, name) => {
 
 const CACHE_KEY = "ufc_odds_cache_v2"; // v2 = american odds format
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const ALERTS_KEY = "ufc_local_alerts_v1";
+const ALERTS_ENABLED_KEY = "ufc_local_alerts_enabled_v1";
+const ALERT_POLL_MS = 120000;
+
+const parseAmericanOdds = (value) => {
+  const parsed = parseInt(String(value).trim(), 10);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
+const findBestOddsForFighter = (events, fighterName) => {
+  if (!fighterName) return null;
+  const fighter = fighterName.trim().toLowerCase();
+  let best = null;
+  events.forEach((event) => {
+    const matched = [event.home_team, event.away_team]
+      .filter(Boolean)
+      .some((name) => name.trim().toLowerCase() === fighter);
+    if (!matched) return;
+    const candidate = bestOdds(event.bookmakers || [], fighterName);
+    if (candidate != null && (best == null || candidate > best))
+      best = candidate;
+  });
+  return best;
+};
+
+const evaluateAlertHit = (direction, currentOdds, targetOdds) => {
+  if (currentOdds == null || targetOdds == null) return false;
+  return direction === "better"
+    ? currentOdds > targetOdds
+    : currentOdds < targetOdds;
+};
 
 const LatestOdds = () => {
   const [odds, setOdds] = useState([]);
@@ -43,26 +74,98 @@ const LatestOdds = () => {
   const [alertDirection, setAlertDirection] = useState("better");
   const [alertOdds, setAlertOdds] = useState("");
   const [alertSubmitted, setAlertSubmitted] = useState(false);
+  const [localAlerts, setLocalAlerts] = useState([]);
+  const [alertsEnabled, setAlertsEnabled] = useState(false);
+  const [alertEvents, setAlertEvents] = useState([]);
+  const [lastPolledAt, setLastPolledAt] = useState(null);
+
+  const alertFormRef = useRef(null);
+  const [alertFormOpen, setAlertFormOpen] = useState(true);
+
+  const pushAlertEvents = (triggered) => {
+    if (!triggered.length) return;
+    const nowLabel = new Date().toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    const next = triggered.map((item) => ({
+      id: `${item.id}-${Date.now()}`,
+      message: `${item.fighter} hit ${fmt(item.lastSeenOdds)} (${item.direction === "better" ? "better" : "worse"} than ${fmt(item.targetOdds)})`,
+      time: nowLabel,
+    }));
+    setAlertEvents((prev) => [...next, ...prev].slice(0, 6));
+
+    if (
+      alertsEnabled &&
+      "Notification" in window &&
+      Notification.permission === "granted"
+    ) {
+      next.forEach((event) => {
+        new Notification("UFC Odds Alert", { body: event.message });
+      });
+    }
+  };
+
+  const evaluateAlerts = (events, alerts) => {
+    const nextAlerts = alerts.map((alert) => {
+      if (!alert.active) return alert;
+      const currentOdds = findBestOddsForFighter(events, alert.fighter);
+      if (currentOdds == null) return { ...alert, lastCheckedAt: Date.now() };
+      const hit = evaluateAlertHit(
+        alert.direction,
+        currentOdds,
+        alert.targetOdds,
+      );
+      if (!hit) {
+        return {
+          ...alert,
+          lastSeenOdds: currentOdds,
+          lastCheckedAt: Date.now(),
+        };
+      }
+      return {
+        ...alert,
+        active: false,
+        lastSeenOdds: currentOdds,
+        triggeredAt: Date.now(),
+      };
+    });
+
+    const triggered = nextAlerts.filter(
+      (alert, idx) => !alerts[idx]?.triggeredAt && alert.triggeredAt,
+    );
+
+    return { nextAlerts, triggered };
+  };
 
   const handleAlertSubmit = (e) => {
     e.preventDefault();
-    console.log("🔔 Odds Alert Request:", {
+    const targetOdds = parseAmericanOdds(alertOdds);
+    if (targetOdds == null || !alertFighter) {
+      return;
+    }
+
+    const alert = {
+      id: `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
       email: alertEmail,
       fighter: alertFighter,
       direction: alertDirection,
-      targetOdds: alertOdds,
-      requestedAt: new Date().toISOString(),
-    });
+      targetOdds,
+      active: true,
+      createdAt: Date.now(),
+      lastSeenOdds: null,
+      lastCheckedAt: null,
+      triggeredAt: null,
+    };
+
+    setLocalAlerts((prev) => [alert, ...prev].slice(0, 30));
     setAlertSubmitted(true);
     setAlertEmail("");
     setAlertFighter("");
     setAlertDirection("better");
     setAlertOdds("");
-    setTimeout(() => setAlertSubmitted(false), 5000);
+    setTimeout(() => setAlertSubmitted(false), 3500);
   };
-
-  const alertFormRef = useRef(null);
-  const [alertFormOpen, setAlertFormOpen] = useState(true);
 
   const selectFighterForAlert = (name) => {
     setAlertFighter(name);
@@ -88,16 +191,22 @@ const LatestOdds = () => {
       }),
     );
     setFromCache(cached);
+
+    if (localAlerts.length > 0) {
+      const { nextAlerts, triggered } = evaluateAlerts(sorted, localAlerts);
+      setLocalAlerts(nextAlerts);
+      pushAlertEvents(triggered);
+    }
   };
 
-  const fetchOdds = async (force = false) => {
+  const fetchOdds = async (force = false, silent = false) => {
     // Check cache first (unless forced)
     if (!force) {
       try {
         const cached = JSON.parse(localStorage.getItem(CACHE_KEY));
         if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
           applyData(cached.data, cached.timestamp, true);
-          setLoading(false);
+          if (!silent) setLoading(false);
           return;
         }
       } catch (_) {
@@ -105,8 +214,10 @@ const LatestOdds = () => {
       }
     }
 
-    setLoading(true);
-    setError(null);
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
     try {
       const response = await axios.get(
         `https://api.the-odds-api.com/v4/sports/mma_mixed_martial_arts/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h&oddsFormat=american`,
@@ -123,20 +234,61 @@ const LatestOdds = () => {
           JSON.stringify({ data: sorted, timestamp }),
         );
         applyData(sorted, timestamp, false);
+        setLastPolledAt(
+          new Date(timestamp).toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+          }),
+        );
       }
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Failed to fetch odds. Check your API key or try again later.",
-      );
+      if (!silent) {
+        setError(
+          err.response?.data?.message ||
+            "Failed to fetch odds. Check your API key or try again later.",
+        );
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchOdds(false);
   }, []);
+
+  useEffect(() => {
+    try {
+      const storedAlerts = JSON.parse(localStorage.getItem(ALERTS_KEY));
+      if (Array.isArray(storedAlerts)) {
+        setLocalAlerts(storedAlerts);
+      }
+    } catch (_) {
+      setLocalAlerts([]);
+    }
+
+    const storedEnabled = localStorage.getItem(ALERTS_ENABLED_KEY);
+    setAlertsEnabled(storedEnabled === "true");
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(ALERTS_KEY, JSON.stringify(localAlerts));
+  }, [localAlerts]);
+
+  useEffect(() => {
+    localStorage.setItem(ALERTS_ENABLED_KEY, String(alertsEnabled));
+  }, [alertsEnabled]);
+
+  useEffect(() => {
+    const activeCount = localAlerts.filter((alert) => alert.active).length;
+    if (!alertsEnabled || activeCount === 0) return;
+
+    const intervalId = setInterval(() => {
+      fetchOdds(true, true);
+    }, ALERT_POLL_MS);
+
+    return () => clearInterval(intervalId);
+  }, [alertsEnabled, localAlerts]);
 
   // Load fighter list from DKSalaries.csv (Name column, salary-desc order)
   const [dkFighters, setDkFighters] = useState([]);
@@ -203,9 +355,40 @@ const LatestOdds = () => {
             </span>
           </summary>
           <div className="px-4 py-4 bg-stone-900">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-3 border-b border-stone-700/60">
+              <label className="flex items-center gap-2 text-xs text-stone-300">
+                <input
+                  type="checkbox"
+                  checked={alertsEnabled}
+                  onChange={async (e) => {
+                    const enabled = e.target.checked;
+                    if (
+                      enabled &&
+                      "Notification" in window &&
+                      Notification.permission === "default"
+                    ) {
+                      try {
+                        await Notification.requestPermission();
+                      } catch (_) {
+                        // Ignore notification permission errors.
+                      }
+                    }
+                    setAlertsEnabled(enabled);
+                  }}
+                />
+                Enable local line polling
+              </label>
+              <span className="text-[11px] text-stone-500">
+                {alertsEnabled
+                  ? `Polling every ${Math.floor(ALERT_POLL_MS / 60000)} min`
+                  : "Polling paused"}
+                {alertsEnabled && lastPolledAt ? ` · last ${lastPolledAt}` : ""}
+              </span>
+            </div>
+
             {alertSubmitted ? (
               <div className="border border-green-700/50 bg-green-900/20 rounded px-4 py-3 text-green-400 text-sm">
-                ✓ Alert request sent! We'll add it manually for now.
+                ✓ Alert saved locally. This page will watch line movement.
               </div>
             ) : (
               <form
@@ -266,16 +449,91 @@ const LatestOdds = () => {
                   type="submit"
                   className="border border-yellow-700/60 text-yellow-400 px-5 py-2 text-xs tracking-widest uppercase hover:bg-yellow-900/20 transition"
                 >
-                  Request Alert
+                  Save Local Alert
                 </button>
               </form>
             )}
+
+            {alertEvents.length > 0 && (
+              <div className="mt-4 rounded border border-green-700/40 bg-green-950/20 p-3">
+                <p className="text-[11px] text-green-400 uppercase tracking-wider font-bold mb-2">
+                  Recent Alert Hits
+                </p>
+                <ul className="space-y-1">
+                  {alertEvents.map((event) => (
+                    <li
+                      key={event.id}
+                      className="text-xs text-stone-300 flex justify-between gap-2"
+                    >
+                      <span>{event.message}</span>
+                      <span className="text-stone-500 shrink-0">
+                        {event.time}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {localAlerts.length > 0 && (
+              <div className="mt-4 rounded border border-stone-700/60 p-3">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <p className="text-[11px] text-stone-400 uppercase tracking-wider font-bold">
+                    Saved Alerts
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setLocalAlerts([])}
+                    className="text-[10px] uppercase tracking-wider text-stone-500 hover:text-red-400 transition"
+                  >
+                    Clear all
+                  </button>
+                </div>
+                <ul className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                  {localAlerts.map((alert) => (
+                    <li
+                      key={alert.id}
+                      className="text-xs text-stone-300 border border-stone-800 rounded px-2.5 py-2 flex items-center justify-between gap-2"
+                    >
+                      <span className="min-w-0 truncate">
+                        {alert.fighter}{" "}
+                        {alert.direction === "better"
+                          ? "better than"
+                          : "worse than"}{" "}
+                        {fmt(alert.targetOdds)}
+                        {alert.lastSeenOdds != null && (
+                          <span className="text-stone-500">
+                            {" "}
+                            · now {fmt(alert.lastSeenOdds)}
+                          </span>
+                        )}
+                        {alert.triggeredAt && (
+                          <span className="text-green-400"> · triggered</span>
+                        )}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setLocalAlerts((prev) =>
+                            prev.filter((item) => item.id !== alert.id),
+                          )
+                        }
+                        className="text-[10px] uppercase tracking-wider text-stone-500 hover:text-red-400 transition shrink-0"
+                      >
+                        remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <p className="text-stone-600 text-xs mt-4">
-              Alerts coming soon — request one and we'll set it up! 21+ only.
+              Local alerts check live lines while this page is open. 21+ only.
             </p>
             <p className="text-stone-600 text-xs mt-1">
-              By submitting you agree to receive a one-time email notification.
-              Reply STOP to unsubscribe.
+              Browser notifications are optional; you can still monitor hits
+              in-page.
             </p>
           </div>
         </details>
@@ -348,7 +606,7 @@ const LatestOdds = () => {
                   key={event.id}
                   className="border-b border-stone-800 last:border-0"
                 >
-                  <div className="grid grid-cols-[1fr_auto_1fr] items-center py-2 px-3 gap-2 hover:bg-stone-900/50 transition">
+                  <div className="hidden md:grid grid-cols-[1fr_auto_1fr] items-center py-2 px-3 gap-2 hover:bg-stone-900/50 transition">
                     {/* Fighter 1 (left) */}
                     <div className="flex flex-col">
                       <div className="flex items-center gap-1">
@@ -433,41 +691,149 @@ const LatestOdds = () => {
                     </div>
                   </div>
 
+                  <article className="md:hidden p-3 bg-stone-950/60">
+                    <div className="flex items-center justify-between gap-2 border-b border-stone-800 pb-2">
+                      <span className="text-[11px] uppercase tracking-wider text-stone-500">
+                        Best Available Lines
+                      </span>
+                      <span className="text-[11px] text-stone-600">
+                        {event.bookmakers.length} books
+                      </span>
+                    </div>
+
+                    <div className="mobile-kv-row mt-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <button
+                          type="button"
+                          onClick={() => selectFighterForAlert(f1)}
+                          title={`Set alert for ${f1}`}
+                          className="text-stone-500 hover:text-yellow-400 transition text-xs"
+                        >
+                          🔔
+                        </button>
+                        <span className="text-sm font-semibold text-stone-100 truncate">
+                          {f1}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span
+                          className={`text-lg font-black ${f1Fav ? "text-red-400" : "text-green-400"}`}
+                        >
+                          {fmt(best1)}
+                        </span>
+                        {best1 != null && (
+                          <p className="text-[11px] text-stone-500">
+                            {impliedProb(best1)}% implied
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mobile-kv-row">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <button
+                          type="button"
+                          onClick={() => selectFighterForAlert(f2)}
+                          title={`Set alert for ${f2}`}
+                          className="text-stone-500 hover:text-yellow-400 transition text-xs"
+                        >
+                          🔔
+                        </button>
+                        <span className="text-sm font-semibold text-stone-100 truncate">
+                          {f2}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span
+                          className={`text-lg font-black ${f2Fav ? "text-red-400" : "text-green-400"}`}
+                        >
+                          {fmt(best2)}
+                        </span>
+                        {best2 != null && (
+                          <p className="text-[11px] text-stone-500">
+                            {impliedProb(best2)}% implied
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+
                   {/* Collapsed bookmaker rows */}
                   {event.bookmakers.length > 0 && (
                     <details className="bg-stone-900/30">
                       <summary className="px-3 py-1 text-xs text-stone-600 cursor-pointer hover:text-stone-400 select-none">
                         ▸ {event.bookmakers.length} books
                       </summary>
-                      <table className="w-full text-xs text-stone-400 mb-1">
-                        <tbody>
-                          {event.bookmakers.map((bm) => {
-                            const h2h = bm.markets.find((m) => m.key === "h2h");
-                            const o1 = h2h?.outcomes.find((o) => o.name === f1);
-                            const o2 = h2h?.outcomes.find((o) => o.name === f2);
-                            return (
-                              <tr
-                                key={bm.key}
-                                className="border-t border-stone-800/40"
-                              >
-                                <td className="px-3 py-1 text-stone-500 capitalize w-32">
-                                  {bm.title}
-                                </td>
-                                <td
-                                  className={`px-3 py-1 ${o1?.price === best1 ? "text-yellow-400 font-bold" : ""}`}
+                      <div className="overflow-x-auto hidden md:block">
+                        <table className="w-full text-xs text-stone-400 mb-1">
+                          <tbody>
+                            {event.bookmakers.map((bm) => {
+                              const h2h = bm.markets.find(
+                                (m) => m.key === "h2h",
+                              );
+                              const o1 = h2h?.outcomes.find(
+                                (o) => o.name === f1,
+                              );
+                              const o2 = h2h?.outcomes.find(
+                                (o) => o.name === f2,
+                              );
+                              return (
+                                <tr
+                                  key={bm.key}
+                                  className="border-t border-stone-800/40"
+                                >
+                                  <td className="px-3 py-1 text-stone-500 capitalize w-32">
+                                    {bm.title}
+                                  </td>
+                                  <td
+                                    className={`px-3 py-1 ${o1?.price === best1 ? "text-yellow-400 font-bold" : ""}`}
+                                  >
+                                    {fmt(o1?.price)}
+                                  </td>
+                                  <td
+                                    className={`px-3 py-1 text-right ${o2?.price === best2 ? "text-yellow-400 font-bold" : ""}`}
+                                  >
+                                    {fmt(o2?.price)}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>{" "}
+                      </div>
+                      <div className="md:hidden px-3 pb-2 space-y-1.5">
+                        {event.bookmakers.map((bm) => {
+                          const h2h = bm.markets.find((m) => m.key === "h2h");
+                          const o1 = h2h?.outcomes.find((o) => o.name === f1);
+                          const o2 = h2h?.outcomes.find((o) => o.name === f2);
+                          return (
+                            <div
+                              key={`mobile-book-${bm.key}`}
+                              className="mobile-data-card"
+                            >
+                              <p className="text-[11px] text-stone-500 uppercase tracking-wider mb-1">
+                                {bm.title}
+                              </p>
+                              <div className="mobile-kv-row">
+                                <span className="mobile-kv-label">{f1}</span>
+                                <span
+                                  className={`mobile-kv-value ${o1?.price === best1 ? "text-yellow-400" : ""}`}
                                 >
                                   {fmt(o1?.price)}
-                                </td>
-                                <td
-                                  className={`px-3 py-1 text-right ${o2?.price === best2 ? "text-yellow-400 font-bold" : ""}`}
+                                </span>
+                              </div>
+                              <div className="mobile-kv-row">
+                                <span className="mobile-kv-label">{f2}</span>
+                                <span
+                                  className={`mobile-kv-value ${o2?.price === best2 ? "text-yellow-400" : ""}`}
                                 >
                                   {fmt(o2?.price)}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </details>
                   )}
                 </div>

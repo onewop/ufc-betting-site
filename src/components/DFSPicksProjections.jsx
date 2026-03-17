@@ -126,19 +126,27 @@ const computeProjection = (fighter, roundsEst, roundsSource) => {
     };
   }
 
-  // Stat-based fallback: SLpM × 5 min/round × rounds × 0.45 DK pts/strike
-  //                    + TD avg × rounds × 5 DK pts
-  //                    + 20 base
-  const slpm = fighter.stats?.slpm || 0;
-  const tdAvg = fighter.stats?.td_avg || 0;
-  const base = slpm * 5 * rounds * 0.45 + tdAvg * rounds * 5 + 20;
+  // Stat-based fallback for fighters with no DK history. Some scraped profiles
+  // can have extreme single-fight outliers (e.g. TD avg > 20), so clamp to
+  // sane UFC ranges before projecting.
+  const rawSlpm = fighter.stats?.slpm || 0;
+  const rawTdAvg = fighter.stats?.td_avg || 0;
+  const slpm = Math.min(Math.max(rawSlpm, 0), 10);
+  const tdAvg = Math.min(Math.max(rawTdAvg, 0), 6);
+
+  const strikingPoints = slpm * 5 * rounds * 0.45;
+  const wrestlingPoints = tdAvg * rounds * 5;
+  const base = strikingPoints + wrestlingPoints + 20;
   return {
     projLo: Math.round(base * 0.85),
     projHi: Math.round(base * 1.15),
     projMid: Math.round(base),
     rounds,
     roundsSource,
-    source: "stat estimate",
+    source:
+      rawSlpm !== slpm || rawTdAvg !== tdAvg
+        ? "stat estimate (capped)"
+        : "stat estimate",
   };
 };
 
@@ -314,6 +322,42 @@ const evalAngle = (
   };
 };
 
+// Evaluate submission threat: compares attacker's avg sub attempts/fight against
+// the opponent's — there is no "sub defense %" stat in UFCStats, so we use the
+// opponent's own avg_sub_attempts as a mat-experience proxy.
+// High ratio (attacker >> opponent) = one-sided submission threat.
+const evalSubAngle = (attackerSub, defenderSub) => {
+  const label = "Submissions";
+  const a = attackerSub ?? 0;
+  const d = defenderSub ?? 0;
+  if (a === 0)
+    return { level: "neutral", label, tip: "No submission attempts on record" };
+  if (d === 0)
+    return {
+      level: "strong",
+      label,
+      tip: `${a} sub attempts/fight vs opponent's 0 — clear one-sided mat threat`,
+    };
+  const ratio = a / d;
+  if (ratio >= 2.0)
+    return {
+      level: "strong",
+      label,
+      tip: `${a} vs ${d} sub attempts/fight — dominant submission threat`,
+    };
+  if (ratio >= 1.4)
+    return {
+      level: "moderate",
+      label,
+      tip: `${a} vs ${d} sub attempts/fight — more active submission game`,
+    };
+  return {
+    level: "neutral",
+    label,
+    tip: `${a} vs ${d} sub attempts/fight — similar mat activity`,
+  };
+};
+
 // Compute all matchup angles for a fight with two fighter objects.
 // Returns array of angle objects from each fighter's perspective.
 const computeMatchupAngles = (f1, f2) => {
@@ -328,8 +372,8 @@ const computeMatchupAngles = (f1, f2) => {
   const tdAvg2 = s2.td_avg;
   const tdDef1 = parsePct(s1.td_defense);
   const tdDef2 = parsePct(s2.td_defense);
-  const subAtt1 = s1.avg_sub_attempts ?? f1.avg_sub_attempts;
-  const subAtt2 = s2.avg_sub_attempts ?? f2.avg_sub_attempts;
+  const subAtt1 = s1.avg_sub_attempts ?? f1.avg_sub_attempts ?? 0;
+  const subAtt2 = s2.avg_sub_attempts ?? f2.avg_sub_attempts ?? 0;
 
   return [
     // ── F1 attacking F2 ──────────────────────────────────────────────────
@@ -339,7 +383,7 @@ const computeMatchupAngles = (f1, f2) => {
       angles: [
         evalAngle("Striking", slpm1, strDef2),
         evalAngle("Wrestling", tdAvg1, tdDef2),
-        evalAngle("Submissions", subAtt1, tdDef2), // TD def as sub vulnerability proxy
+        evalSubAngle(subAtt1, subAtt2),
       ],
     },
     // ── F2 attacking F1 ──────────────────────────────────────────────────
@@ -349,7 +393,7 @@ const computeMatchupAngles = (f1, f2) => {
       angles: [
         evalAngle("Striking", slpm2, strDef1),
         evalAngle("Wrestling", tdAvg2, tdDef1),
-        evalAngle("Submissions", subAtt2, tdDef1),
+        evalSubAngle(subAtt2, subAtt1),
       ],
     },
   ];
@@ -383,8 +427,16 @@ const LEVEL_STYLE = {
   },
 };
 
-const MatchupIntel = ({ fights }) => {
+const MatchupIntel = ({ fights, focusFightId = null, onClearFocus }) => {
   if (!fights || fights.length === 0) return null;
+
+  const visibleFights =
+    focusFightId == null
+      ? fights
+      : fights.filter(
+          (fight) => String(fight.fight_id) === String(focusFightId),
+        );
+
   return (
     <section id="matchup-intel" className="mb-12">
       <div className="flex items-center gap-3 mb-2">
@@ -401,8 +453,23 @@ const MatchupIntel = ({ fights }) => {
         <span className="text-orange-400">🟠 Edge</span> = some advantage.{" "}
         <span className="text-stone-400">⚪ Even</span> = no clear edge.
       </p>
+      {focusFightId != null && (
+        <div className="mb-4 text-center">
+          <span className="text-xs text-yellow-500 tracking-wide">
+            Showing matchup intel for this fight only.
+          </span>
+          {onClearFocus && (
+            <button
+              onClick={onClearFocus}
+              className="ml-3 px-2 py-0.5 rounded bg-stone-700 text-stone-200 text-xs hover:bg-stone-600"
+            >
+              Show all fights
+            </button>
+          )}
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {fights.map((fight) => {
+        {visibleFights.map((fight) => {
           const [f1, f2] = fight.fighters || [];
           if (!f1 || !f2) return null;
           const directions = computeMatchupAngles(f1, f2);
@@ -554,6 +621,7 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
   const [optimalLineups, setOptimalLineups] = useState([]);
   const [optimizerError, setOptimizerError] = useState(null);
   const [exposureLimit, setExposureLimit] = useState(60); // max % a fighter can appear across lineups
+  const [focusedFightId, setFocusedFightId] = useState(null);
   const [openSections, setOpenSections] = useState({
     chart: true,
     table: true,
@@ -569,8 +637,15 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
         document
           .getElementById(id)
           ?.scrollIntoView({ behavior: "smooth", block: "start" }),
-      50
+      50,
     );
+  };
+
+  const openMatchupIntelFight = (fightAnchor, e) => {
+    if (e) e.preventDefault();
+    const match = String(fightAnchor).match(/^fight-(.+)$/);
+    setFocusedFightId(match ? match[1] : null);
+    openAndScroll(fightAnchor, "matchupIntel");
   };
   // Unique per user session — seeds projection noise so two users building
   // at the same time get slightly different diverse lineup orderings.
@@ -1015,14 +1090,14 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
         </span>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-10">
+      <div className="max-w-6xl mx-auto px-4 py-4 md:py-10">
         {/* Page header */}
         <div className="text-center mb-8">
           <p className="text-xs text-stone-500 tracking-[0.5em] uppercase mb-2">
             ◆ OPERATION COMBAT VAULT — PROJECTIONS INTEL ◆
           </p>
           <h1
-            className="text-4xl md:text-5xl font-black text-stone-100 tracking-wider uppercase"
+            className="text-3xl md:text-5xl font-black text-stone-100 tracking-wider uppercase"
             style={{
               fontFamily: "'Impact', sans-serif",
               textShadow: "2px 2px 0 #4a5240, 0 0 40px rgba(100,120,80,0.3)",
@@ -1061,11 +1136,13 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
                 id: "section-optimizer",
                 key: "optimizer",
               },
-              { label: "🎥 Videos", id: "section-videos", key: null },
             ].map(({ label, id, key }) => (
               <button
                 key={id}
-                onClick={() => openAndScroll(id, key)}
+                onClick={() => {
+                  if (key === "matchupIntel") setFocusedFightId(null);
+                  openAndScroll(id, key);
+                }}
                 className="px-3 py-1 rounded text-[11px] font-semibold tracking-wide text-stone-400 hover:text-yellow-400 hover:bg-stone-800 transition whitespace-nowrap"
               >
                 {label}
@@ -1092,54 +1169,63 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
               <div className="h-px flex-1 bg-yellow-700/30 group-hover:bg-yellow-700/60 transition" />
             </div>
             {openSections.chart && (
-            <>
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart
-                data={top10Chart}
-                margin={{ top: 5, right: 20, left: 0, bottom: 60 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis
-                  dataKey="fighter"
-                  tick={{ fill: "#9ca3af", fontSize: 11 }}
-                  angle={-35}
-                  textAnchor="end"
-                  interval={0}
-                />
-                <YAxis tick={{ fill: "#9ca3af", fontSize: 11 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="projMid" radius={[4, 4, 0, 0]}>
-                  {top10Chart.map((entry, i) => (
-                    <Cell
-                      key={i}
-                      fill={
-                        entry.ownerNum >= 28
-                          ? "#7f1d1d"
-                          : entry.projMid / (entry.salary / 1000) >
-                              (avgProjMid / (avgSalary / 1000)) * 1.15
-                            ? "#14532d"
-                            : "#1e3a5f"
-                      }
+              <>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart
+                    data={top10Chart}
+                    margin={{ top: 5, right: 20, left: 0, bottom: 60 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis
+                      dataKey="fighter"
+                      tick={{ fill: "#9ca3af", fontSize: 11 }}
+                      angle={-35}
+                      textAnchor="end"
+                      interval={0}
                     />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-            <div className="flex gap-4 justify-center text-xs text-stone-400 mt-2">
-              <span>
-                <span className="inline-block w-3 h-3 bg-green-900 rounded mr-1" />
-                Value play
-              </span>
-              <span>
-                <span className="inline-block w-3 h-3 bg-yellow-900 rounded mr-1" />
-                Standard
-              </span>
-              <span>
-                <span className="inline-block w-3 h-3 bg-red-900 rounded mr-1" />
-                High-own fade risk
-              </span>
-            </div>
-            </>
+                    <YAxis tick={{ fill: "#9ca3af", fontSize: 11 }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="projMid" radius={[4, 4, 0, 0]}>
+                      {top10Chart.map((entry, i) => (
+                        <Cell
+                          key={i}
+                          fill={
+                            entry.ownerNum >= 28
+                              ? "#7f1d1d"
+                              : entry.projMid / (entry.salary / 1000) >
+                                  (avgProjMid / (avgSalary / 1000)) * 1.15
+                                ? "#14532d"
+                                : "#1e3a5f"
+                          }
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+                <div className="flex gap-4 justify-center text-xs text-stone-400 mt-2">
+                  <span>
+                    <span
+                      className="inline-block w-3 h-3 rounded mr-1"
+                      style={{ backgroundColor: "#14532d" }}
+                    />
+                    Value play
+                  </span>
+                  <span>
+                    <span
+                      className="inline-block w-3 h-3 rounded mr-1"
+                      style={{ backgroundColor: "#1e3a5f" }}
+                    />
+                    Standard
+                  </span>
+                  <span>
+                    <span
+                      className="inline-block w-3 h-3 rounded mr-1"
+                      style={{ backgroundColor: "#7f1d1d" }}
+                    />
+                    High-own fade risk
+                  </span>
+                </div>
+              </>
             )}
           </section>
         )}
@@ -1161,51 +1247,30 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
             <div className="h-px flex-1 bg-yellow-700/30 group-hover:bg-yellow-700/60 transition" />
           </div>
           {openSections.table && (
-          <>
-          <p className="text-stone-400 mb-4 text-center text-sm">
-            Projections use DK historical avg when available, scaled to expected
-            fight length. Green rows = value plays · Red rows = high-own fade
-            candidates.
-          </p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-stone-300 border-collapse text-sm">
-              <thead>
-                <tr className="bg-stone-800/90 text-stone-200">
-                  <SortTh col="fighter" label="Fighter" />
-                  <SortTh col="salary" label="DK (DraftKings) Salary" />
-                  <SortTh col="type" label="Type" />
-                  <SortTh col="projMid" label="Projection" />
-                  <SortTh
-                    col="ownerNum"
-                    label="Own. Est. (Ownership Estimate)"
-                  />
-                  <th className="p-2 border border-stone-700">Rounds Est.</th>
-                  <th className="p-2 border border-stone-700 min-w-[260px]">
-                    Reasoning
-                  </th>
-                  <th className="p-2 border border-stone-700 text-center text-xs">
-                    Lock
-                  </th>
-                  <th className="p-2 border border-stone-700 text-center text-xs">
-                    Excl
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
+            <>
+              <p className="text-stone-400 mb-4 text-center text-sm">
+                Projections use DK historical avg when available, scaled to
+                expected fight length. Green rows = value plays · Red rows =
+                high-own fade candidates.
+              </p>
+              <div className="md:hidden space-y-3">
                 {sorted.map((pick, i) => (
-                  <tr
-                    key={i}
-                    className={`border-b transition ${rowClass(pick, avgProjMid, avgSalary)}`}
+                  <article
+                    key={`mobile-${i}`}
+                    className={`mobile-data-card ${rowClass(pick, avgProjMid, avgSalary)}`}
                   >
-                    <td className="p-2 border border-stone-700 font-semibold text-stone-100">
-                      {pick.fighter}
-                    </td>
-                    <td className="p-2 border border-stone-700 text-yellow-500/80">
-                      ${pick.salary.toLocaleString()}
-                    </td>
-                    <td className="p-2 border border-stone-700">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-base font-bold text-stone-100 leading-snug">
+                          {pick.fighter}
+                        </p>
+                        <p className="text-xs text-stone-500 mt-0.5">
+                          Salary ${pick.salary.toLocaleString()} · ~
+                          {pick.rounds}R ({pick.roundsSource})
+                        </p>
+                      </div>
                       <span
-                        className={`px-2 py-0.5 rounded text-xs font-bold ${
+                        className={`px-2 py-1 rounded text-xs font-bold ${
                           pick.type === "Stud"
                             ? "bg-yellow-700 text-yellow-100"
                             : "bg-stone-700 text-stone-200"
@@ -1213,11 +1278,16 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
                       >
                         {pick.type}
                       </span>
-                    </td>
-                    <td className="p-2 border border-stone-700 font-mono font-bold text-yellow-400">
-                      {pick.projection}
-                    </td>
-                    <td className="p-2 border border-stone-700">
+                    </div>
+
+                    <div className="mobile-kv-row mt-2">
+                      <span className="mobile-kv-label">Projection</span>
+                      <span className="mobile-kv-value text-yellow-400">
+                        {pick.projection}
+                      </span>
+                    </div>
+                    <div className="mobile-kv-row">
+                      <span className="mobile-kv-label">Ownership</span>
                       <span
                         className={`px-2 py-0.5 rounded text-xs font-semibold ${
                           pick.ownerNum >= 28
@@ -1229,63 +1299,202 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
                       >
                         {pick.ownership}
                       </span>
-                    </td>
-                    <td
-                      className="p-2 border border-stone-700 text-center text-xs"
-                      title={`Rounds estimate source: ${pick.roundsSource}`}
-                    >
-                      <span className="text-stone-300">~{pick.rounds}R</span>
-                      <br />
-                      <span className="text-stone-500">
-                        {pick.roundsSource}
-                      </span>
-                    </td>
-                    <td className="p-2 border border-stone-700 text-xs text-stone-300 leading-relaxed">
-                      {pick.reasoning}{" "}
-                      <a
-                        href={`#${pick.fightAnchor}`}
-                        className="inline-block mt-1 text-[10px] text-yellow-600 hover:text-yellow-400 underline underline-offset-2 whitespace-nowrap"
+                    </div>
+
+                    <details className="mt-2 rounded border border-stone-700/80 bg-stone-950/60">
+                      <summary
+                        className="px-3 py-2 text-xs tracking-wider uppercase text-yellow-500"
+                        aria-label={`Show reasoning for ${pick.fighter}`}
                       >
-                        ↓ matchup intel
-                      </a>
-                    </td>
-                    <td className="p-2 border border-stone-700 text-center">
+                        Reasoning
+                      </summary>
+                      <div className="px-3 pb-3 text-xs text-stone-300 leading-relaxed">
+                        {pick.reasoning}
+                        <a
+                          href={`#${pick.fightAnchor}`}
+                          onClick={(e) =>
+                            openMatchupIntelFight(pick.fightAnchor, e)
+                          }
+                          className="inline-block mt-2 text-[10px] text-yellow-600 hover:text-yellow-400 underline underline-offset-2"
+                        >
+                          View matchup intel
+                        </a>
+                      </div>
+                    </details>
+
+                    <div className="grid grid-cols-2 gap-2 mt-3">
                       <button
                         onClick={() => toggleLock(pick.fighter)}
                         title="Lock into lineup"
-                        className={`text-xs px-2 py-0.5 rounded font-bold transition ${
+                        className={`min-h-[42px] text-sm rounded font-bold transition ${
                           locked.has(pick.fighter)
                             ? "bg-yellow-500 text-stone-950"
-                            : "bg-stone-700 text-stone-400 hover:bg-yellow-700 hover:text-stone-100"
+                            : "bg-stone-700 text-stone-300 hover:bg-yellow-700 hover:text-stone-100"
                         }`}
                       >
-                        🔒
+                        🔒 Lock
                       </button>
-                    </td>
-                    <td className="p-2 border border-stone-700 text-center">
                       <button
                         onClick={() => toggleExclude(pick.fighter)}
                         title="Exclude from lineup"
-                        className={`text-xs px-2 py-0.5 rounded font-bold transition ${
+                        className={`min-h-[42px] text-sm rounded font-bold transition ${
                           excluded.has(pick.fighter)
                             ? "bg-red-600 text-stone-100"
-                            : "bg-stone-700 text-stone-400 hover:bg-red-900 hover:text-stone-100"
+                            : "bg-stone-700 text-stone-300 hover:bg-red-900 hover:text-stone-100"
                         }`}
                       >
-                        ✕
+                        ✕ Exclude
                       </button>
-                    </td>
-                  </tr>
+                    </div>
+                  </article>
                 ))}
-              </tbody>
-            </table>
-          </div>
-          <p className="text-stone-500 mt-3 text-center text-xs">
-            * For entertainment only. Projections based on career DK averages
-            &amp; UFCStats. Ownership estimates are conceptual, not sourced from
-            live data.
-          </p>
-          </>
+              </div>
+
+              <p className="hidden md:block text-center text-[11px] text-stone-500 mb-2">
+                Scroll horizontally to view all columns. Lock/Excl stay pinned
+                on the right.
+              </p>
+              <div className="-mx-4 sm:mx-0 overflow-x-auto hidden md:block relative">
+                <table className="w-full text-stone-300 border-collapse text-sm">
+                  <thead>
+                    <tr className="bg-stone-800/90 text-stone-200">
+                      <SortTh col="fighter" label="Fighter" />
+                      <SortTh col="salary" label="DK Salary" />
+                      <SortTh col="type" label="Type" />
+                      <SortTh col="projMid" label="Projection" />
+                      <SortTh col="ownerNum" label="Own. Est." />
+                      <th className="p-2 border border-stone-700">
+                        Rounds Est.
+                      </th>
+                      <th className="p-2 border border-stone-700 min-w-[360px] pr-32">
+                        Reasoning
+                      </th>
+                      <th
+                        className="p-1 border border-stone-700 text-center text-xs sticky right-12 bg-stone-800 z-20 w-12 min-w-12 max-w-12"
+                        style={{ boxShadow: "inset 1px 0 0 #44403c" }}
+                      >
+                        Lock
+                      </th>
+                      <th
+                        className="p-1 border border-stone-700 text-center text-xs sticky right-0 bg-stone-800 z-20 w-12 min-w-12 max-w-12"
+                        style={{
+                          boxShadow:
+                            "inset 1px 0 0 #44403c, inset -1px 0 0 #44403c",
+                        }}
+                      >
+                        Excl
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sorted.map((pick, i) => (
+                      <tr
+                        key={i}
+                        className={`border-b transition ${rowClass(pick, avgProjMid, avgSalary)}`}
+                      >
+                        <td className="p-2 border border-stone-700 font-semibold text-stone-100">
+                          {pick.fighter}
+                        </td>
+                        <td className="p-2 border border-stone-700 text-yellow-500/80 whitespace-nowrap w-[104px] min-w-[104px]">
+                          ${pick.salary.toLocaleString()}
+                        </td>
+                        <td className="p-2 border border-stone-700">
+                          <span
+                            className={`px-2 py-0.5 rounded text-xs font-bold ${
+                              pick.type === "Stud"
+                                ? "bg-yellow-700 text-yellow-100"
+                                : "bg-stone-700 text-stone-200"
+                            }`}
+                          >
+                            {pick.type}
+                          </span>
+                        </td>
+                        <td className="p-2 border border-stone-700 font-mono font-bold text-yellow-400">
+                          {pick.projection}
+                        </td>
+                        <td className="p-2 border border-stone-700 whitespace-nowrap w-[108px] min-w-[108px]">
+                          <span
+                            className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                              pick.ownerNum >= 28
+                                ? "bg-red-800 text-red-100"
+                                : pick.ownerNum <= 10
+                                  ? "bg-green-800 text-green-100"
+                                  : "bg-stone-700 text-stone-200"
+                            }`}
+                          >
+                            {pick.ownership}
+                          </span>
+                        </td>
+                        <td
+                          className="p-2 border border-stone-700 text-center text-xs"
+                          title={`Rounds estimate source: ${pick.roundsSource}`}
+                        >
+                          <span className="text-stone-300">
+                            ~{pick.rounds}R
+                          </span>
+                          <br />
+                          <span className="text-stone-500">
+                            {pick.roundsSource}
+                          </span>
+                        </td>
+                        <td className="p-2 pr-32 border border-stone-700 text-xs text-stone-300 leading-relaxed min-w-[360px]">
+                          {pick.reasoning}{" "}
+                          <a
+                            href={`#${pick.fightAnchor}`}
+                            onClick={(e) =>
+                              openMatchupIntelFight(pick.fightAnchor, e)
+                            }
+                            className="inline-block mt-1 text-[10px] text-yellow-600 hover:text-yellow-400 underline underline-offset-2 whitespace-nowrap"
+                          >
+                            ↓ matchup intel
+                          </a>
+                        </td>
+                        <td
+                          className="p-1 border border-stone-700 text-center sticky right-12 bg-stone-900 z-30 w-12 min-w-12 max-w-12"
+                          style={{ boxShadow: "inset 1px 0 0 #44403c" }}
+                        >
+                          <button
+                            onClick={() => toggleLock(pick.fighter)}
+                            title="Lock into lineup"
+                            className={`text-xs px-2 py-0.5 rounded font-bold transition ${
+                              locked.has(pick.fighter)
+                                ? "bg-yellow-500 text-stone-950"
+                                : "bg-stone-700 text-stone-400 hover:bg-yellow-700 hover:text-stone-100"
+                            }`}
+                          >
+                            🔒
+                          </button>
+                        </td>
+                        <td
+                          className="p-1 border border-stone-700 text-center sticky right-0 bg-stone-900 z-30 w-12 min-w-12 max-w-12"
+                          style={{
+                            boxShadow:
+                              "inset 1px 0 0 #44403c, inset -1px 0 0 #44403c",
+                          }}
+                        >
+                          <button
+                            onClick={() => toggleExclude(pick.fighter)}
+                            title="Exclude from lineup"
+                            className={`text-xs px-2 py-0.5 rounded font-bold transition ${
+                              excluded.has(pick.fighter)
+                                ? "bg-red-600 text-stone-100"
+                                : "bg-stone-700 text-stone-400 hover:bg-red-900 hover:text-stone-100"
+                            }`}
+                          >
+                            ✕
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-stone-500 mt-3 text-center text-xs">
+                * For entertainment only. Projections based on career DK
+                averages &amp; UFCStats. Ownership estimates are conceptual, not
+                sourced from live data.
+              </p>
+            </>
           )}
         </section>
 
@@ -1295,9 +1504,7 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
             className="flex items-center gap-3 mb-4 cursor-pointer group"
             onClick={() => toggleSection("matchupIntel")}
             title={
-              openSections.matchupIntel
-                ? "Collapse section"
-                : "Expand section"
+              openSections.matchupIntel ? "Collapse section" : "Expand section"
             }
           >
             <div className="h-px flex-1 bg-yellow-700/30 group-hover:bg-yellow-700/60 transition" />
@@ -1315,7 +1522,13 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
               each fight. Click the header to expand.
             </p>
           )}
-          {openSections.matchupIntel && <MatchupIntel fights={fights} />}
+          {openSections.matchupIntel && (
+            <MatchupIntel
+              fights={fights}
+              focusFightId={focusedFightId}
+              onClearFocus={() => setFocusedFightId(null)}
+            />
+          )}
         </section>
 
         {/* ── Lineup Optimizer ── */}
@@ -1337,159 +1550,141 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
             <div className="h-px flex-1 bg-yellow-700/30 group-hover:bg-yellow-700/60 transition" />
           </div>
           {openSections.optimizer && (
-          <>
-          <p className="text-stone-400 text-center text-sm mb-4">
-            Lock 🔒 fighters to force them in. Exclude ✕ fighters to leave them
-            out. Then build the highest-projected lineup under $50K.
-          </p>
+            <>
+              <p className="text-stone-400 text-center text-sm mb-4">
+                Lock 🔒 fighters to force them in. Exclude ✕ fighters to leave
+                them out. Then build the highest-projected lineup under $50K.
+              </p>
 
-          {/* Exposure slider — only relevant for multi-lineup builds */}
-          <div className="flex flex-col items-center mb-5">
-            <label className="text-stone-300 text-sm mb-1">
-              Max Exposure per Fighter:{" "}
-              <span className="text-yellow-400 font-bold">
-                {exposureLimit}%
-              </span>
-              <span className="text-stone-500 text-xs ml-2">
-                (
-                {exposureLimit === 100
-                  ? "no limit"
-                  : `appears in ≤${Math.ceil((5 * exposureLimit) / 100)} of 5 lineups`}
-                )
-              </span>
-            </label>
-            <input
-              type="range"
-              min="20"
-              max="100"
-              step="10"
-              value={exposureLimit}
-              onChange={(e) => setExposureLimit(Number(e.target.value))}
-              className="w-64 accent-yellow-500"
-            />
-            <div className="flex justify-between w-64 text-xs text-stone-500 mt-0.5">
-              <span>20% (very diverse)</span>
-              <span>100% (no limit)</span>
-            </div>
-          </div>
-          {(locked.size > 0 || excluded.size > 0) && (
-            <div className="flex flex-wrap gap-2 justify-center mb-4">
-              {[...locked].map((name) => (
-                <span
-                  key={name}
-                  className="px-2 py-0.5 rounded bg-yellow-700 text-yellow-100 text-xs font-semibold"
-                >
-                  🔒 {name}
-                </span>
-              ))}
-              {[...excluded].map((name) => (
-                <span
-                  key={name}
-                  className="px-2 py-0.5 rounded bg-red-800 text-red-200 text-xs font-semibold"
-                >
-                  ✕ {name}
-                </span>
-              ))}
-              <button
-                onClick={() => {
-                  setLocked(new Set());
-                  setExcluded(new Set());
-                }}
-                className="px-2 py-0.5 rounded bg-stone-700 text-stone-300 text-xs hover:bg-stone-600"
-              >
-                Clear all
-              </button>
-            </div>
-          )}
-          <div className="flex gap-3 justify-center mb-6 flex-wrap">
-            <button onClick={() => runOptimizer(1)} className="neon-button">
-              Build Optimal Lineup
-            </button>
-            <button
-              onClick={() => runOptimizer(5)}
-              className="neon-button bg-gray-700 hover:bg-gray-600"
-            >
-              Build 5 Diverse Lineups
-            </button>
-            {optimalLineups.length > 0 && (
-              <button
-                onClick={downloadOptimalCSV}
-                className="neon-button bg-green-900 hover:bg-green-800"
-              >
-                Download CSV
-              </button>
-            )}
-          </div>
-          {optimizerError && (
-            <p className="text-red-400 text-center text-sm mb-4">
-              {optimizerError}
-            </p>
-          )}
-          {optimalLineups.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {optimalLineups.map((lineup, idx) => (
-                <div
-                  key={idx}
-                  className="bg-stone-900 border border-yellow-700/40 rounded-lg p-4"
-                >
-                  <h3 className="text-yellow-500 font-bold mb-2 tracking-widest uppercase text-xs">
-                    {optimalLineups.length === 1
-                      ? "Optimal Lineup"
-                      : `Lineup ${idx + 1}`}
-                  </h3>
-                  <ul className="space-y-1 mb-3">
-                    {lineup.team.map((f, fi) => (
-                      <li key={fi} className="flex justify-between text-sm">
-                        <span
-                          className={`font-semibold ${locked.has(f.fighter) ? "text-yellow-400" : "text-stone-100"}`}
-                        >
-                          {f.fighter}
-                          {locked.has(f.fighter) ? " 🔒" : ""}
-                        </span>
-                        <span className="text-stone-400">
-                          ${f.salary.toLocaleString()} · {f.projMid} pts
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="flex justify-between text-xs text-stone-400 border-t border-stone-700 pt-2">
-                    <span>
-                      Total Salary:{" "}
-                      <span className="text-stone-100 font-bold">
-                        ${lineup.totalSalary.toLocaleString()}
-                      </span>
-                    </span>
-                    <span>
-                      Proj Pts:{" "}
-                      <span className="text-yellow-400 font-bold">
-                        {lineup.totalPoints}
-                      </span>
-                    </span>
-                  </div>
+              {/* Exposure slider — only relevant for multi-lineup builds */}
+              <div className="flex flex-col items-center mb-5">
+                <label className="text-stone-300 text-sm mb-1">
+                  Max Exposure per Fighter:{" "}
+                  <span className="text-yellow-400 font-bold">
+                    {exposureLimit}%
+                  </span>
+                  <span className="text-stone-500 text-xs ml-2">
+                    (
+                    {exposureLimit === 100
+                      ? "no limit"
+                      : `appears in ≤${Math.ceil((5 * exposureLimit) / 100)} of 5 lineups`}
+                    )
+                  </span>
+                </label>
+                <input
+                  type="range"
+                  min="20"
+                  max="100"
+                  step="10"
+                  value={exposureLimit}
+                  onChange={(e) => setExposureLimit(Number(e.target.value))}
+                  className="w-64 accent-yellow-500"
+                />
+                <div className="flex justify-between w-64 text-xs text-stone-500 mt-0.5">
+                  <span>20% (very diverse)</span>
+                  <span>100% (no limit)</span>
                 </div>
-              ))}
-            </div>
+              </div>
+              {(locked.size > 0 || excluded.size > 0) && (
+                <div className="flex flex-wrap gap-2 justify-center mb-4">
+                  {[...locked].map((name) => (
+                    <span
+                      key={name}
+                      className="px-2 py-0.5 rounded bg-yellow-700 text-yellow-100 text-xs font-semibold"
+                    >
+                      🔒 {name}
+                    </span>
+                  ))}
+                  {[...excluded].map((name) => (
+                    <span
+                      key={name}
+                      className="px-2 py-0.5 rounded bg-red-800 text-red-200 text-xs font-semibold"
+                    >
+                      ✕ {name}
+                    </span>
+                  ))}
+                  <button
+                    onClick={() => {
+                      setLocked(new Set());
+                      setExcluded(new Set());
+                    }}
+                    className="px-2 py-0.5 rounded bg-stone-700 text-stone-300 text-xs hover:bg-stone-600"
+                  >
+                    Clear all
+                  </button>
+                </div>
+              )}
+              <div className="flex gap-3 justify-center mb-6 flex-wrap">
+                <button onClick={() => runOptimizer(1)} className="neon-button">
+                  Build Optimal Lineup
+                </button>
+                <button
+                  onClick={() => runOptimizer(5)}
+                  className="neon-button bg-gray-700 hover:bg-gray-600"
+                >
+                  Build 5 Diverse Lineups
+                </button>
+                {optimalLineups.length > 0 && (
+                  <button
+                    onClick={downloadOptimalCSV}
+                    className="neon-button bg-green-900 hover:bg-green-800"
+                  >
+                    Download CSV
+                  </button>
+                )}
+              </div>
+              {optimizerError && (
+                <p className="text-red-400 text-center text-sm mb-4">
+                  {optimizerError}
+                </p>
+              )}
+              {optimalLineups.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {optimalLineups.map((lineup, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-stone-900 border border-yellow-700/40 rounded-lg p-4"
+                    >
+                      <h3 className="text-yellow-500 font-bold mb-2 tracking-widest uppercase text-xs">
+                        {optimalLineups.length === 1
+                          ? "Optimal Lineup"
+                          : `Lineup ${idx + 1}`}
+                      </h3>
+                      <ul className="space-y-1 mb-3">
+                        {lineup.team.map((f, fi) => (
+                          <li key={fi} className="flex justify-between text-sm">
+                            <span
+                              className={`font-semibold ${locked.has(f.fighter) ? "text-yellow-400" : "text-stone-100"}`}
+                            >
+                              {f.fighter}
+                              {locked.has(f.fighter) ? " 🔒" : ""}
+                            </span>
+                            <span className="text-stone-400">
+                              ${f.salary.toLocaleString()} · {f.projMid} pts
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="flex justify-between text-xs text-stone-400 border-t border-stone-700 pt-2">
+                        <span>
+                          Total Salary:{" "}
+                          <span className="text-stone-100 font-bold">
+                            ${lineup.totalSalary.toLocaleString()}
+                          </span>
+                        </span>
+                        <span>
+                          Proj Pts:{" "}
+                          <span className="text-yellow-400 font-bold">
+                            {lineup.totalPoints}
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
-          </>
-          )}
-        </section>
-
-        {/* ── Video Vault link ── */}
-        <section id="section-videos" className="text-center pb-10">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-px flex-1 bg-yellow-700/30" />
-            <span className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600">
-              HANDICAPPER BREAKDOWNS
-            </span>
-            <div className="h-px flex-1 bg-yellow-700/30" />
-          </div>
-          <p className="text-stone-400 mb-4 text-sm">
-            Watch expert fight breakdowns and handicapper picks in the Video
-            Vault.
-          </p>
-          <a href="/video-vault" className="neon-button inline-block">
-            Go to Video Vault
-          </a>
         </section>
       </div>
     </div>

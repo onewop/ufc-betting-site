@@ -116,14 +116,14 @@ const ManualTeams = () => {
         </span>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-10">
+      <div className="max-w-6xl mx-auto px-4 py-4 md:py-10">
         {/* Page header */}
         <div className="text-center mb-8">
           <p className="text-xs text-stone-500 tracking-[0.5em] uppercase mb-2">
             ◆ OPERATION COMBAT VAULT — COMMAND CENTER ◆
           </p>
           <h1
-            className="text-4xl md:text-5xl font-black text-stone-100 tracking-wider uppercase"
+            className="text-3xl md:text-5xl font-black text-stone-100 tracking-wider uppercase"
             style={{
               fontFamily: "'Impact', sans-serif",
               textShadow: "2px 2px 0 #4a5240, 0 0 40px rgba(100,120,80,0.3)",
@@ -146,7 +146,39 @@ const ManualTeams = () => {
             <h2 className="text-sm font-bold tracking-[0.4em] uppercase text-yellow-600 mb-4">
               ◈ AVAILABLE FIGHTERS
             </h2>
-            <ul className="space-y-2">
+
+            <details
+              className="md:hidden rounded border border-stone-700 bg-stone-950/60"
+              open
+            >
+              <summary className="px-3 py-2 text-xs font-bold uppercase tracking-widest text-yellow-500">
+                Available Fighters ({filteredFighters.length})
+              </summary>
+              <ul className="space-y-2 p-3 border-t border-stone-700 max-h-[24rem] overflow-y-auto">
+                {filteredFighters.map((fighter, idx) => (
+                  <li key={`mobile-${fighter.id}`} className="mobile-data-card">
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <span className="text-stone-200 text-sm font-semibold block leading-snug">
+                          {fighter.name}
+                        </span>
+                        <span className="text-yellow-500/80 text-xs">
+                          ${fighter.salary} · #{idx + 1}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => addToTeam(fighter)}
+                        className="min-h-[40px] px-3 text-yellow-400 hover:text-yellow-300 text-xs font-bold tracking-widest uppercase border border-yellow-700/40 rounded hover:bg-yellow-900/20 transition"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </details>
+
+            <ul className="space-y-2 hidden md:block overflow-y-auto max-h-96">
               {filteredFighters.map((fighter) => (
                 <li
                   key={fighter.id}
@@ -220,33 +252,70 @@ const ManualTeams = () => {
             <h2 className="text-sm font-bold tracking-[0.4em] uppercase text-yellow-600 mb-4">
               ◈ SAVED TEAMS
             </h2>
-            {savedTeams.map((team, index) => (
-              <div
-                key={index}
-                className="mb-4 pb-4 border-b border-stone-800 last:border-0"
-              >
-                <h3 className="text-yellow-500 font-bold tracking-wider uppercase text-xs mb-2">
-                  TEAM {index + 1}
-                </h3>
-                <ul className="space-y-1">
-                  {team.map((f) => (
-                    <li key={f.id} className="flex justify-between text-sm">
-                      <span className="text-stone-200">{f.name}</span>
-                      <span className="text-yellow-500/80">${f.salary}</span>
-                    </li>
-                  ))}
-                </ul>
-                <p className="text-stone-400 text-xs mt-2">
-                  Total:{" "}
-                  <span className="text-yellow-400 font-bold">
-                    $
-                    {team
-                      .reduce((sum, f) => sum + f.salary, 0)
-                      .toLocaleString()}
-                  </span>
-                </p>
-              </div>
-            ))}
+
+            <div className="md:hidden space-y-2">
+              {savedTeams.map((team, index) => (
+                <details
+                  key={`mobile-saved-${index}`}
+                  className="rounded border border-stone-700 bg-stone-950/60"
+                >
+                  <summary className="px-3 py-2 text-xs font-bold tracking-widest uppercase text-yellow-500">
+                    Team {index + 1}
+                  </summary>
+                  <div className="p-3 border-t border-stone-700">
+                    <ul className="space-y-1">
+                      {team.map((f) => (
+                        <li key={f.id} className="flex justify-between text-sm">
+                          <span className="text-stone-200">{f.name}</span>
+                          <span className="text-yellow-500/80">
+                            ${f.salary}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="text-stone-400 text-xs mt-2">
+                      Total:{" "}
+                      <span className="text-yellow-400 font-bold">
+                        $
+                        {team
+                          .reduce((sum, f) => sum + f.salary, 0)
+                          .toLocaleString()}
+                      </span>
+                    </p>
+                  </div>
+                </details>
+              ))}
+            </div>
+
+            <div className="hidden md:block">
+              {savedTeams.map((team, index) => (
+                <div
+                  key={index}
+                  className="mb-4 pb-4 border-b border-stone-800 last:border-0"
+                >
+                  <h3 className="text-yellow-500 font-bold tracking-wider uppercase text-xs mb-2">
+                    TEAM {index + 1}
+                  </h3>
+                  <ul className="space-y-1">
+                    {team.map((f) => (
+                      <li key={f.id} className="flex justify-between text-sm">
+                        <span className="text-stone-200">{f.name}</span>
+                        <span className="text-yellow-500/80">${f.salary}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-stone-400 text-xs mt-2">
+                    Total:{" "}
+                    <span className="text-yellow-400 font-bold">
+                      $
+                      {team
+                        .reduce((sum, f) => sum + f.salary, 0)
+                        .toLocaleString()}
+                    </span>
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="bg-stone-900 border border-yellow-700/40 rounded-lg p-5">
             <h2 className="text-sm font-bold tracking-[0.4em] uppercase text-yellow-600 mb-4">

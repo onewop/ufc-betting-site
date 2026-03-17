@@ -145,40 +145,71 @@ const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
     };
 
     // Build one diversity-aware candidate team that fits the salary cap.
-    // Inner loop: up to 500 tries per team to find a valid salary combo.
-    // Strategy per try:
-    //   1. shuffleFresh the fights for true randomness each attempt.
-    //   2. Sort selected fights by avg usage (under-used fights first).
-    //   3. Per fight: prefer cheaper fighter to help budget, but blend with
-    //      usage preference — pick the fighter with the lower (salary + usage*500)
-    //      composite score, random tie-break.
-    // Returns a random salary-valid team.
-    // KEY DESIGN: shuffleFresh() provides ALL fight-combo diversity — 924 possible
-    // combos from 12 fights choose 6. We do NOT sort after shuffling because sorting
-    // completely erases the shuffle and converges every call to the same 6 cheapest
-    // fights, which is why only 2-5 teams were ever produced.
-    // Fighter selection: salary + usage*600 — cheap fighters first, but after ~3
-    // uses a fighter's score nudges the picker toward unused teammates, spreading
-    // usage naturally. Every fight averages $8,100; cheapest-fighter teams land
-    // ~$44-46k, giving $4-6k of headroom to absorb the usage nudge.
-    const buildTeam = () => {
-      const innerMax = 50; // safety net only — cap violations are rare with cheap-first picks
+    // teamsRemaining: how many more teams still need to be generated.
+    //
+    // Step 1: Force-include fights that contain a fighter with an unmet min.
+    //   A fighter's "shortfall" is max(0, min - currentCount).
+    //   A fight is "urgent" if any fighter in it has shortfall > 0 AND
+    //   urgency (shortfall / teamsRemaining) >= 1, meaning we MUST include
+    //   them in every remaining team to hit the target. If shortfall > 0 we
+    //   also bias toward including those fights.
+    // Step 2: Fill remaining slots with random fights (shuffled).
+    // Step 3: Within each fight, pick the fighter with the lowest composite
+    //   score (salary + usage*600 - urgencyBonus), giving min-required fighters
+    //   priority within their slot.
+    const buildTeam = (teamsRemaining) => {
+      const innerMax = 100;
       for (let inner = 0; inner < innerMax; inner++) {
-        // Shuffle gives a random fight ordering — take first 6 as-is, NO sort
-        const selected = shuffleFresh(availableFights).slice(0, 6);
+        // Identify fights that must be included (have a fighter with unmet min)
+        const urgentFights = [];
+        const nonUrgentFights = [];
+        availableFights.forEach((fg) => {
+          const hasShortfall = fg.some((f) => {
+            const minReq = fighterLimits[String(f.id)]?.min || 0;
+            return (usageCounts[f.id] || 0) < minReq;
+          });
+          if (hasShortfall) {
+            urgentFights.push(fg);
+          } else {
+            nonUrgentFights.push(fg);
+          }
+        });
+
+        // Force-include urgent fights first (up to 6), fill rest randomly
+        const forcedCount = Math.min(urgentFights.length, 6);
+        const shuffledUrgent = shuffleFresh(urgentFights).slice(0, forcedCount);
+        const remaining = 6 - forcedCount;
+        const shuffledRest = shuffleFresh(nonUrgentFights).slice(0, remaining);
+        const selected = [...shuffledUrgent, ...shuffledRest];
+
+        // If we somehow don't have 6 fights (very few fights on card), bail
+        if (selected.length < 6) continue;
+
         const team = selected.map((fg) => {
-          // salary + usage*600: prefer cheap, rotate after ~3 uses
-          const scored = [...fg].map((f) => ({
-            f,
-            score: f.salary + (usageCounts[f.id] ?? 0) * 600,
-          }));
+          const scored = [...fg].map((f) => {
+            const minReq = fighterLimits[String(f.id)]?.min || 0;
+            const currentCount = usageCounts[f.id] || 0;
+            const shortfall = Math.max(0, minReq - currentCount);
+            const urgency =
+              teamsRemaining > 0
+                ? shortfall / teamsRemaining
+                : shortfall > 0
+                  ? 1
+                  : 0;
+            const urgencyAdj = urgency > 0 ? -urgency * 9000 : 0;
+            return {
+              f,
+              score: f.salary + (usageCounts[f.id] ?? 0) * 600 + urgencyAdj,
+            };
+          });
           scored.sort((a, b) => a.score - b.score);
           return scored[0].f;
         });
+
         const totalSalary = team.reduce((sum, f) => sum + f.salary, 0);
         if (totalSalary <= 50000) return team;
       }
-      console.log(`buildTeam: all ${50} attempts over salary cap`);
+      console.log(`buildTeam: all ${100} attempts over salary cap`);
       return null;
     };
 
@@ -199,7 +230,7 @@ const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
 
     while (attempts < maxAttempts && selectedTeams.length < numTeams) {
       attempts++;
-      const team = buildTeam();
+      const team = buildTeam(numTeams - selectedTeams.length);
 
       // buildTeam returns null if it couldn't find a salary-valid team
       if (!team) continue;
@@ -292,22 +323,66 @@ const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
   const downloadCSV = () => {
     if (randomTeams.length === 0) return;
 
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      "Team Number,Fighter 1,Fighter 2,Fighter 3,Fighter 4,Fighter 5,Fighter 6\n" +
-      randomTeams
-        .map(
-          (team, index) => `${index + 1},` + team.map((f) => f.name).join(","),
-        )
-        .join("\n");
+    const skipped = [];
+    const lineupRows = [];
 
-    const encodedUri = encodeURI(csvContent);
+    for (let i = 0; i < randomTeams.length; i++) {
+      const team = randomTeams[i];
+      if (team.length !== 6) {
+        skipped.push(`Lineup ${i + 1}: only ${team.length} fighters (need 6)`);
+        continue;
+      }
+      // f.id is already the DK numeric player ID (set from dk_id in this_weeks_stats.json)
+      lineupRows.push(team.map((f) => f.id));
+    }
+
+    if (skipped.length > 0) {
+      alert(
+        `Warning — ${skipped.length} lineup(s) skipped:\n\n${skipped.join("\n")}`,
+      );
+    }
+    if (lineupRows.length === 0) {
+      alert("No valid lineups to export.");
+      return;
+    }
+
+    const INSTRUCTIONS = [
+      "1. Locate the player you want to select in the list below",
+      "2. Copy the ID of your player (you can use the Name + ID column or the ID column)",
+      "3. Paste the ID into the roster position desired",
+      "4. You must include an ID for each player; you cannot use just the player's name",
+      "5. You can create up to 500 lineups per file",
+    ];
+
+    const rightSide = [
+      ...INSTRUCTIONS,
+      "",
+      "Position,Name + ID,Name,ID,Roster Position,Salary,Game Info,TeamAbbrev,AvgPointsPerGame",
+      ...fighters.map(
+        (f) => `F,${f.name} (${f.id}),${f.name},${f.id},F,${f.salary},,, `,
+      ),
+    ];
+
+    const csvRows = ["F,F,F,F,F,F,,Instructions"];
+    const totalRows = Math.max(lineupRows.length, rightSide.length);
+    for (let i = 0; i < totalRows; i++) {
+      const left = lineupRows[i] ? lineupRows[i].join(",") : ",,,,,";
+      const right = rightSide[i] !== undefined ? rightSide[i] : "";
+      csvRows.push(`${left},,${right}`);
+    }
+
+    // application/octet-stream forces download instead of opening in LibreOffice
+    const csvBlob = new Blob([csvRows.join("\r\n")], {
+      type: "application/octet-stream",
+    });
+    const url = URL.createObjectURL(csvBlob);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "dfs_teams.csv");
+    link.href = url;
+    link.download = `dk-ufc-lineups-${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const filteredFighters = fighters.filter((f) =>
@@ -344,7 +419,7 @@ const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
         </span>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-10">
+      <div className="max-w-6xl mx-auto px-4 py-4 md:py-10">
         {error && (
           <div className="text-center text-red-400 mb-4 p-3 border border-red-900/60 rounded bg-red-950/30">
             {error}
@@ -357,7 +432,7 @@ const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
             ◆ OPERATION COMBAT VAULT — DFS DIVISION ◆
           </p>
           <h1
-            className="text-4xl md:text-5xl font-black text-stone-100 tracking-wider uppercase"
+            className="text-3xl md:text-5xl font-black text-stone-100 tracking-wider uppercase"
             style={{
               fontFamily: "'Impact', sans-serif",
               textShadow: "2px 2px 0 #4a5240, 0 0 40px rgba(100,120,80,0.3)",
@@ -395,7 +470,72 @@ const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <div className="overflow-y-auto h-96 border border-yellow-700/30 rounded">
+
+            <details
+              className="md:hidden mb-3 border border-yellow-700/30 rounded bg-stone-900/70"
+              open={false}
+            >
+              <summary
+                className="px-3 py-2 text-xs tracking-widest uppercase text-yellow-500"
+                aria-label="Toggle fighter limits list"
+              >
+                Show Fighter Limits ({filteredFighters.length})
+              </summary>
+              <div className="max-h-96 overflow-y-auto space-y-2 p-3 border-t border-stone-700">
+                {filteredFighters.map((fighter, idx) => (
+                  <article
+                    key={`mobile-limit-${fighter.id}`}
+                    className="mobile-data-card"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-semibold text-stone-100 leading-snug">
+                          {fighter.name}
+                        </p>
+                        <p className="text-xs text-yellow-500 mt-0.5">
+                          ${fighter.salary}
+                        </p>
+                      </div>
+                      <span className="text-[10px] text-stone-500 uppercase tracking-wider">
+                        #{idx + 1}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 mt-3">
+                      <label className="text-[11px] text-stone-500 uppercase tracking-wide">
+                        Min
+                        <input
+                          type="number"
+                          value={fighterLimits[fighter.id]?.min || ""}
+                          onChange={(e) =>
+                            handleLimitChange(fighter.id, "min", e.target.value)
+                          }
+                          className="w-full mt-1 h-10 bg-stone-800 text-stone-100 border border-stone-600 rounded text-center"
+                          min="0"
+                        />
+                      </label>
+                      <label className="text-[11px] text-stone-500 uppercase tracking-wide">
+                        Max
+                        <input
+                          type="number"
+                          value={
+                            fighterLimits[fighter.id]?.max === Infinity
+                              ? ""
+                              : fighterLimits[fighter.id]?.max
+                          }
+                          onChange={(e) =>
+                            handleLimitChange(fighter.id, "max", e.target.value)
+                          }
+                          className="w-full mt-1 h-10 bg-stone-800 text-stone-100 border border-stone-600 rounded text-center"
+                          min="0"
+                        />
+                      </label>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </details>
+
+            <div className="hidden md:block overflow-x-auto overflow-y-auto h-96 border border-yellow-700/30 rounded">
               <table className="w-full text-left text-stone-300">
                 <thead className="sticky top-0 bg-stone-800">
                   <tr>
@@ -430,7 +570,7 @@ const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
                           onChange={(e) =>
                             handleLimitChange(fighter.id, "min", e.target.value)
                           }
-                          className="w-16 bg-stone-800 text-stone-100 border border-stone-600 rounded"
+                          className="w-14 h-9 bg-stone-800 text-stone-100 border border-stone-600 rounded text-center"
                           min="0"
                         />
                       </td>
@@ -445,7 +585,7 @@ const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
                           onChange={(e) =>
                             handleLimitChange(fighter.id, "max", e.target.value)
                           }
-                          className="w-16 bg-stone-800 text-stone-100 border border-stone-600 rounded"
+                          className="w-14 h-9 bg-stone-800 text-stone-100 border border-stone-600 rounded text-center"
                           min="0"
                         />
                       </td>
