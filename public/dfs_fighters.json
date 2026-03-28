@@ -1,0 +1,170 @@
+[
+  {
+    "id": 1,
+    "name": "Mario Pinto",
+    "salary": 9700,
+    "fight_id": 1
+  },
+  {
+    "id": 2,
+    "name": "Felipe Franco",
+    "salary": 6500,
+    "fight_id": 1
+  },
+  {
+    "id": 3,
+    "name": "Mantas Kondratavicius",
+    "salary": 9600,
+    "fight_id": 2
+  },
+  {
+    "id": 4,
+    "name": "Antonio Trocoli",
+    "salary": 6600,
+    "fight_id": 2
+  },
+  {
+    "id": 5,
+    "name": "Iwo Baraniewski",
+    "salary": 9500,
+    "fight_id": 3
+  },
+  {
+    "id": 6,
+    "name": "Austen Lane",
+    "salary": 6700,
+    "fight_id": 3
+  },
+  {
+    "id": 7,
+    "name": "Shanelle Dyer",
+    "salary": 9400,
+    "fight_id": 4
+  },
+  {
+    "id": 8,
+    "name": "Ravena Oliveira",
+    "salary": 6800,
+    "fight_id": 4
+  },
+  {
+    "id": 9,
+    "name": "Christian Leroy Duncan",
+    "salary": 9300,
+    "fight_id": 5
+  },
+  {
+    "id": 10,
+    "name": "Roman Dolidze",
+    "salary": 6900,
+    "fight_id": 5
+  },
+  {
+    "id": 11,
+    "name": "Luke Riley",
+    "salary": 9100,
+    "fight_id": 6
+  },
+  {
+    "id": 12,
+    "name": "Michael Aswell Jr.",
+    "salary": 7100,
+    "fight_id": 6
+  },
+  {
+    "id": 13,
+    "name": "Brando Pericic",
+    "salary": 9000,
+    "fight_id": 7
+  },
+  {
+    "id": 14,
+    "name": "Louie Sutherland",
+    "salary": 7200,
+    "fight_id": 7
+  },
+  {
+    "id": 15,
+    "name": "Movsar Evloev",
+    "salary": 8900,
+    "fight_id": 8
+  },
+  {
+    "id": 16,
+    "name": "Lerone Murphy",
+    "salary": 7300,
+    "fight_id": 8
+  },
+  {
+    "id": 17,
+    "name": "Kurtis Campbell",
+    "salary": 8800,
+    "fight_id": 9
+  },
+  {
+    "id": 18,
+    "name": "Danny Silva",
+    "salary": 7400,
+    "fight_id": 9
+  },
+  {
+    "id": 19,
+    "name": "Losene Keita",
+    "salary": 8700,
+    "fight_id": 10
+  },
+  {
+    "id": 20,
+    "name": "Nathaniel Wood",
+    "salary": 7500,
+    "fight_id": 10
+  },
+  {
+    "id": 21,
+    "name": "Michael Page",
+    "salary": 8600,
+    "fight_id": 11
+  },
+  {
+    "id": 22,
+    "name": "Sam Patterson",
+    "salary": 7600,
+    "fight_id": 11
+  },
+  {
+    "id": 23,
+    "name": "Mason Jones",
+    "salary": 8400,
+    "fight_id": 12
+  },
+  {
+    "id": 24,
+    "name": "Axel Sola",
+    "salary": 7800,
+    "fight_id": 12
+  },
+  {
+    "id": 25,
+    "name": "Abdul-Kareem Al-Selwady",
+    "salary": 8300,
+    "fight_id": 13
+  },
+  {
+    "id": 26,
+    "name": "Shem Rock",
+    "salary": 7900,
+    "fight_id": 13
+  },
+  {
+    "id": 27,
+    "name": "Luana Carolina",
+    "salary": 8200,
+    "fight_id": 14
+  },
+  {
+    "id": 28,
+    "name": "Melissa Mullins",
+    "salary": 8000,
+    "fight_id": 14
+  }
+]

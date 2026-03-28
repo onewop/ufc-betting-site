@@ -12,8 +12,10 @@ import FightAnalyzer from "./components/FightAnalyzer";
 import VideoVault from "./components/VideoVault";
 import ManualTeams from "./components/ManualTeams";
 import DFSPicksProjections from "./components/DFSPicksProjections";
+import DisasterPicks from "./components/DisasterPicks";
 import VideosV2 from "./components/VideosV2";
 import LatestOdds from "./components/LatestOdds";
+import VideoStudio from "./components/VideoStudio";
 import Footer from "./components/Footer";
 
 // Updated navLinks with event context for current card
@@ -28,9 +30,11 @@ const navLinks = [
   { to: "/video-vault", label: "Video Vault" },
   { to: "/odds", label: "Live Odds" },
   { to: "/predictions", label: "Predictions & Projections" },
+  { to: "/disaster-picks", label: "💀 Disaster Picks" },
+  { to: "/video-studio", label: "Creator Studio" },
 ];
 
-const currentEvent = "UFC Fight Night - March 14, 2026";
+const currentEvent = "UFC Fight Night: Evloev vs. Murphy — March 21, 2026";
 
 const mobileNavLinks = [
   { to: "/", label: "Home", icon: "⌂" },
@@ -183,6 +187,11 @@ const AppShell = () => {
           path="/predictions"
           element={<DFSPicksProjections eventTitle={eventTitle} />}
         />
+        <Route
+          path="/disaster-picks"
+          element={<DisasterPicks eventTitle={eventTitle} />}
+        />
+        <Route path="/video-studio" element={<VideoStudio />} />
       </Routes>
       <Footer />
 

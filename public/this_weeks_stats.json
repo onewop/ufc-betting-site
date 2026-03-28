@@ -8,14 +8,14 @@
     {
       "fight_id": 0,
       "matchup": "Al-Selwady vs. Rock",
-      "weight_class": "Lightweight",
+      "weight_class": "Middleweight",
       "fighters": [
         {
           "name": "Abdul-Kareem Al-Selwady",
           "dk_id": "42305454",
           "salary": 8300,
           "avgPointsPerGame": 37.52,
-          "nickname": null,
+          "nickname": "Pride of Palestine",
           "record": "15-4-0",
           "height": "5'8\"",
           "reach": "69\"",
@@ -29,13 +29,20 @@
             "td_defense": "20%",
             "striking_accuracy": 34.0,
             "td_accuracy": 30.0,
+            "subs_conceded": 0,
             "avg_kd_per_fight": 0.0,
             "avg_ctrl_secs": 82.0,
             "grappling_control_pct": 10.6,
+            "head_str_pct": 59,
+            "body_str_pct": 21,
+            "leg_str_pct": 21,
+            "distance_str_pct": 93,
+            "clinch_str_pct": 7,
+            "ground_str_pct": 0,
             "avg_opp_ctrl_secs": 103.5,
             "avg_reversals_per_fight": 0.0,
-            "opp_sub_attempts_vs": 0,
-            "subs_conceded": 0
+            "implied_sub_def_pct": 100.0,
+            "opp_sub_attempts_vs": 0
           },
           "wins": 15,
           "losses": 4,
@@ -50,7 +57,7 @@
           "wins_decision": 5,
           "finish_rate_pct": 66.7,
           "decision_rate_pct": 33.3,
-          "submission_wins_pct": 13.3,
+          "submission_wins_pct": 0.0,
           "avg_sub_attempts": 0.0,
           "total_title_bouts": 0,
           "avg_fight_duration": 10.8,
@@ -61,7 +68,59 @@
           "record_last_10": "0-1",
           "ufc_ranking": "N/A",
           "nationality": "United States",
-          "team": "Fortis MMA"
+          "team": "Fortis MMA",
+          "fight_history": [
+            {
+              "result": "loss",
+              "opponent": "Loik Radzhabov",
+              "method": "KO (Punches)",
+              "method_detail": "Chris Tognoni",
+              "event": "UFC Fight Night 238 - Rozenstruik vs. Gaziev",
+              "date": "Mar 02 2024",
+              "round": "3",
+              "time": "0:49"
+            },
+            {
+              "result": "win",
+              "opponent": "George Hardwick",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Herb Dean",
+              "event": "Dana White's Contender Series - Contender Series 2023: Week 2",
+              "date": "Aug 15 2023",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Micheal Murphy",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Joel Ojeda",
+              "event": "Fury FC 75 - Fury Fighting Championship 75: Cutts vs. Hafez",
+              "date": "Feb 17 2023",
+              "round": "5",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Chris Pecero",
+              "method": "TKO (Submission to Punches)",
+              "method_detail": "Joe Coca",
+              "event": "Fury FC 69 - Fury Fighting Championship 69: Jones vs. Cutts",
+              "date": "Sep 23 2022",
+              "round": "1",
+              "time": "2:44"
+            },
+            {
+              "result": "win",
+              "opponent": "Nick Compton",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Steve Armstrong",
+              "event": "Fury FC 58 - Fury Fighting Championship 58",
+              "date": "Feb 27 2022",
+              "round": "3",
+              "time": "5:00"
+            }
+          ]
         },
         {
           "name": "Shem Rock",
@@ -70,10 +129,10 @@
           "avgPointsPerGame": 30.16,
           "nickname": "Shem",
           "record": "11-2-1",
-          "height": "6'0\"",
-          "reach": "N/A",
-          "stance": "N/A",
-          "dob": "Nov 5, 1993",
+          "height": "5' 11\"",
+          "reach": "73\"",
+          "stance": "Southpaw",
+          "dob": "Nov 05, 1993",
           "stats": {
             "slpm": 2.93,
             "sapm": 3.4,
@@ -84,11 +143,20 @@
             "avg_kd_per_fight": 0.0,
             "avg_ctrl_secs": 224.0,
             "grappling_control_pct": 24.9,
+            "head_str_pct": 73,
+            "body_str_pct": 20,
+            "leg_str_pct": 8,
+            "distance_str_pct": 84,
+            "clinch_str_pct": 14,
+            "ground_str_pct": 2,
             "avg_opp_ctrl_secs": 32.0,
             "avg_reversals_per_fight": 0.0,
-            "opp_sub_attempts_vs": 0,
-            "subs_conceded": 0
+            "implied_sub_def_pct": 100.0,
+            "opp_sub_attempts_vs": 0
           },
+          "avg_sub_attempts": 0.0,
+          "age": 32,
+          "weight_class": "Middleweight",
           "nationality": "England",
           "team": "Monarchy MMA",
           "wins": 11,
@@ -99,7 +167,58 @@
           "wins_decision": 1,
           "finish_rate_pct": 90.9,
           "decision_rate_pct": 9.1,
-          "submission_wins_pct": 72.7
+          "fight_history": [
+            {
+              "result": "loss",
+              "opponent": "Nurullo Aliev",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Lukasz Bosacki",
+              "event": "UFC Fight Night 265 - Tsarukyan vs. Hooker",
+              "date": "Nov 22 2025",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Attila Korkmaz",
+              "method": "Decision (Split)",
+              "method_detail": "Nic Skunde",
+              "event": "Oktagon MMA - Oktagon 71: Poppeck vs. Langer",
+              "date": "May 17 2025",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Jaroslav Pokorny",
+              "method": "Technical Submission (Rear-Naked Choke)",
+              "method_detail": "Marc Goddard",
+              "event": "Oktagon MMA - Oktagon 58: Vemola vs. Vegh 2",
+              "date": "Jun 08 2024",
+              "round": "1",
+              "time": "3:06"
+            },
+            {
+              "result": "win",
+              "opponent": "Stefano Catacoli",
+              "method": "Submission (Rear-Naked Choke)",
+              "method_detail": "Marc Goddard",
+              "event": "Oktagon MMA - Oktagon 56: Aby vs. Creasey",
+              "date": "Apr 20 2024",
+              "round": "1",
+              "time": "1:47"
+            },
+            {
+              "result": "win",
+              "opponent": "Jan Malach",
+              "method": "Submission (Rear-Naked Choke)",
+              "method_detail": "Gerd Richter",
+              "event": "Oktagon MMA - Oktagon 45: Special",
+              "date": "Jul 28 2023",
+              "round": "1",
+              "time": "2:08"
+            }
+          ]
         }
       ],
       "betting_odds": {
@@ -130,9 +249,9 @@
           "avgPointsPerGame": 87.25,
           "nickname": null,
           "record": "12-0-0",
-          "height": "5'9\"",
-          "reach": "N/A",
-          "stance": "N/A",
+          "height": "5' 9\"",
+          "reach": "69\"",
+          "stance": "Orthodox",
           "dob": "Jun 30, 1999",
           "stats": {
             "slpm": 2.55,
@@ -144,11 +263,20 @@
             "avg_kd_per_fight": 1.0,
             "avg_ctrl_secs": 235.0,
             "grappling_control_pct": 71.2,
+            "head_str_pct": 86,
+            "body_str_pct": 14,
+            "leg_str_pct": 0,
+            "distance_str_pct": 14,
+            "clinch_str_pct": 29,
+            "ground_str_pct": 57,
             "avg_opp_ctrl_secs": 15.0,
             "avg_reversals_per_fight": 0.0,
-            "opp_sub_attempts_vs": 0,
-            "subs_conceded": 0
+            "implied_sub_def_pct": 100.0,
+            "opp_sub_attempts_vs": 0
           },
+          "avg_sub_attempts": 0.0,
+          "age": 26,
+          "weight_class": "Featherweight",
           "nationality": "England",
           "team": "Next Generation MMA Liverpool",
           "wins": 12,
@@ -159,28 +287,143 @@
           "wins_decision": 3,
           "finish_rate_pct": 75.0,
           "decision_rate_pct": 25.0,
-          "submission_wins_pct": 0.0,
-          "weight_class": "Featherweight"
+          "fight_history": [
+            {
+              "result": "win",
+              "opponent": "Bogdan Grad",
+              "method": "KO (Punches)",
+              "method_detail": "Marc Goddard",
+              "event": "UFC Fight Night 265 - Tsarukyan vs. Hooker",
+              "date": "Nov 22 2025",
+              "round": "2",
+              "time": "0:30"
+            },
+            {
+              "result": "win",
+              "opponent": "Tariel Abbasov",
+              "method": "TKO (Knee and Punches)",
+              "method_detail": "Marc Goddard",
+              "event": "CW 185 - Cage Warriors 185: Manchester",
+              "date": "Mar 15 2025",
+              "round": "2",
+              "time": "3:09"
+            },
+            {
+              "result": "win",
+              "opponent": "Alexandre dos Santos Junior",
+              "method": "KO (Punches)",
+              "method_detail": "Marc Goddard",
+              "event": "CW 178 - Cage Warriors 178: Manchester",
+              "date": "Sep 21 2024",
+              "round": "1",
+              "time": "2:05"
+            },
+            {
+              "result": "win",
+              "opponent": "John de Jesus",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Marc Goddard",
+              "event": "CW 168 - Cage Warriors 168: Manchester",
+              "date": "Mar 16 2024",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Alexander Loof",
+              "method": "TKO (Punches)",
+              "method_detail": "Marc Goddard",
+              "event": "CW 160 - Cage Warriors 160: Manchester",
+              "date": "Sep 29 2023",
+              "round": "3",
+              "time": "0:58"
+            }
+          ]
         },
         {
           "name": "Michael Aswell Jr.",
           "dk_id": "42305455",
           "salary": 7100,
           "avgPointsPerGame": 85.22,
-          "nickname": null,
-          "record": "N/A",
-          "height": "N/A",
-          "reach": "N/A",
-          "stance": "N/A",
-          "dob": "N/A",
+          "nickname": "The Texas Kid",
+          "record": "11-3-0",
+          "height": "5' 8\"",
+          "reach": "69\"",
+          "stance": "Orthodox",
+          "dob": "Sep 27, 2000",
           "stats": {
-            "slpm": 0.0,
-            "sapm": 0.0,
-            "striking_defense": "N/A",
+            "slpm": 9.56,
+            "sapm": 7.79,
+            "striking_defense": "54%",
             "td_avg": 0.0,
-            "td_defense": "N/A"
+            "td_defense": "57%",
+            "td_accuracy": 0.0
           },
-          "weight_class": "Featherweight"
+          "avg_sub_attempts": 0.0,
+          "age": 25,
+          "weight_class": "Featherweight",
+          "nationality": "United States",
+          "team": "4oz. Fight Club",
+          "wins": 11,
+          "losses": 3,
+          "draws": 0,
+          "wins_ko_tko": 6,
+          "wins_submission": 0,
+          "wins_decision": 5,
+          "finish_rate_pct": 54.5,
+          "decision_rate_pct": 45.5,
+          "fight_history": [
+            {
+              "result": "win",
+              "opponent": "Lucas Almeida",
+              "method": "TKO (Punches and Elbow)",
+              "method_detail": "Jason Herzog",
+              "event": "UFC Fight Night 261 - Oliveira vs. Gamrot",
+              "date": "Oct 11 2025",
+              "round": "1",
+              "time": "1:42"
+            },
+            {
+              "result": "loss",
+              "opponent": "Bolaji Oki",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Herb Dean",
+              "event": "UFC on ESPN 68 - Blanchfield vs. Barber",
+              "date": "May 31 2025",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Dorian Ramos",
+              "method": "Decision (Split)",
+              "method_detail": "Joe Soliz",
+              "event": "Fury FC 99 - Fury Fighting Championship 99: Aswell vs. Ramos",
+              "date": "Dec 15 2024",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "loss",
+              "opponent": "Bogdan Grad",
+              "method": "Decision (Split)",
+              "method_detail": "Eric McMahon",
+              "event": "Dana White's Contender Series - Contender Series 2024: Week 3",
+              "date": "Aug 27 2024",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Nate Richardson",
+              "method": "KO (Punches)",
+              "method_detail": "Joe Soliz",
+              "event": "Fury FC 89 - Fury Fighting Championship 89: Richardson vs. Aswell",
+              "date": "Apr 21 2024",
+              "round": "1",
+              "time": "1:08"
+            }
+          ]
         }
       ],
       "betting_odds": {
@@ -201,135 +444,6 @@
     },
     {
       "fight_id": 2,
-      "matchup": "Carolina vs. Mullins",
-      "weight_class": "Catchweight",
-      "fighters": [
-        {
-          "name": "Luana Carolina",
-          "dk_id": "42305460",
-          "salary": 8200,
-          "avgPointsPerGame": 58.09,
-          "nickname": "Dread",
-          "record": "11-5-0",
-          "height": "5'6\"",
-          "reach": "69\"",
-          "stance": "Orthodox",
-          "dob": "Jun 11, 1993",
-          "stats": {
-            "slpm": 4.81,
-            "sapm": 3.46,
-            "striking_defense": "51%",
-            "td_avg": 0.34,
-            "td_defense": "68%",
-            "striking_accuracy": 50.0,
-            "td_accuracy": 37.0,
-            "avg_kd_per_fight": 0.0,
-            "avg_ctrl_secs": 274.4,
-            "grappling_control_pct": 30.5,
-            "avg_opp_ctrl_secs": 147.8,
-            "avg_reversals_per_fight": 0.2,
-            "implied_sub_def_pct": 100.0,
-            "opp_sub_attempts_vs": 4,
-            "subs_conceded": 0
-          },
-          "wins": 11,
-          "losses": 5,
-          "draws": 0,
-          "age": 31,
-          "weight_class": "Women's Flyweight",
-          "current_win_streak": 3,
-          "current_loss_streak": 0,
-          "longest_win_streak": 2,
-          "wins_ko_tko": 3,
-          "wins_submission": 1,
-          "wins_decision": 7,
-          "finish_rate_pct": 36.4,
-          "decision_rate_pct": 63.6,
-          "submission_wins_pct": 9.1,
-          "avg_sub_attempts": 0.62,
-          "total_title_bouts": 0,
-          "avg_fight_duration": 12.9,
-          "first_round_wins": 0,
-          "career_longevity_years": 5.2,
-          "last_fight_result": "W \u2013 U-DEC",
-          "record_last_5": "3-2",
-          "record_last_10": "6-3",
-          "ufc_ranking": "N/A",
-          "nationality": "Brazil",
-          "team": "Capital da Luta"
-        },
-        {
-          "name": "Melissa Mullins",
-          "dk_id": "42305459",
-          "salary": 8000,
-          "avgPointsPerGame": 60.97,
-          "nickname": "No Mess",
-          "record": "7-2-0",
-          "height": "5'7\"",
-          "reach": "68\"",
-          "stance": "Orthodox",
-          "dob": "Jul 23, 1991",
-          "stats": {
-            "slpm": 3.43,
-            "sapm": 4.39,
-            "striking_defense": "52%",
-            "td_avg": 1.53,
-            "td_defense": "85%",
-            "striking_accuracy": 56.0,
-            "td_accuracy": 37.0,
-            "avg_kd_per_fight": 0.0,
-            "avg_ctrl_secs": 134.0,
-            "grappling_control_pct": 20.1,
-            "avg_opp_ctrl_secs": 191.0,
-            "avg_reversals_per_fight": 0.0,
-            "opp_sub_attempts_vs": 0,
-            "subs_conceded": 0
-          },
-          "wins": 7,
-          "losses": 2,
-          "draws": 0,
-          "age": 33,
-          "weight_class": "Women's Bantamweight",
-          "current_win_streak": 1,
-          "current_loss_streak": 0,
-          "longest_win_streak": 1,
-          "wins_ko_tko": 4,
-          "wins_submission": 0,
-          "wins_decision": 3,
-          "finish_rate_pct": 57.1,
-          "decision_rate_pct": 42.9,
-          "submission_wins_pct": 0.0,
-          "avg_sub_attempts": 0.3,
-          "total_title_bouts": 0,
-          "avg_fight_duration": 9.8,
-          "first_round_wins": 0,
-          "career_longevity_years": 1.1,
-          "last_fight_result": "W \u2013 Punches",
-          "record_last_5": "2-1",
-          "record_last_10": "2-1",
-          "ufc_ranking": "N/A",
-          "nationality": "England",
-          "team": "Lions Gym Coventry"
-        }
-      ],
-      "betting_odds": {
-        "fighter1_name": "Luana Carolina",
-        "fighter2_name": "Melissa Mullins",
-        "fighter1_moneyline": "N/A",
-        "fighter2_moneyline": "N/A",
-        "over_under_rounds": "N/A",
-        "over_odds": "N/A",
-        "under_odds": "N/A",
-        "fighter1_ko_odds": "N/A",
-        "fighter2_ko_odds": "N/A",
-        "fighter1_sub_odds": "N/A",
-        "fighter2_sub_odds": "N/A",
-        "fighter1_decision_odds": "N/A",
-        "fighter2_decision_odds": "N/A"
-      }
-    },
-    {
-      "fight_id": 3,
       "matchup": "Duncan vs. Dolidze",
       "weight_class": "Middleweight",
       "fighters": [
@@ -338,7 +452,7 @@
           "dk_id": "42305445",
           "salary": 9300,
           "avgPointsPerGame": 82.44,
-          "nickname": null,
+          "nickname": "CLD",
           "record": "13-2-0",
           "height": "6'2\"",
           "reach": "79\"",
@@ -351,14 +465,21 @@
             "td_avg": 0.31,
             "td_defense": "69%",
             "striking_accuracy": 62.0,
-            "td_accuracy": 14.0,
+            "td_accuracy": 20.0,
+            "subs_conceded": 0,
             "avg_kd_per_fight": 0.4,
             "avg_ctrl_secs": 144.8,
             "grappling_control_pct": 24.5,
+            "head_str_pct": 51,
+            "body_str_pct": 20,
+            "leg_str_pct": 29,
+            "distance_str_pct": 63,
+            "clinch_str_pct": 24,
+            "ground_str_pct": 12,
             "avg_opp_ctrl_secs": 172.8,
             "avg_reversals_per_fight": 0.0,
-            "opp_sub_attempts_vs": 0,
-            "subs_conceded": 0
+            "implied_sub_def_pct": 100.0,
+            "opp_sub_attempts_vs": 0
           },
           "wins": 13,
           "losses": 2,
@@ -373,7 +494,7 @@
           "wins_decision": 2,
           "finish_rate_pct": 84.6,
           "decision_rate_pct": 15.4,
-          "submission_wins_pct": 7.7,
+          "submission_wins_pct": 0.0,
           "avg_sub_attempts": 0.0,
           "total_title_bouts": 0,
           "avg_fight_duration": 9.6,
@@ -384,7 +505,59 @@
           "record_last_10": "3-2",
           "ufc_ranking": "N/A",
           "nationality": "England",
-          "team": "Range Martial Arts Academy"
+          "team": "Range Martial Arts Academy",
+          "fight_history": [
+            {
+              "result": "win",
+              "opponent": "Marco Tulio",
+              "method": "KO (Spinning Backfist and Punches)",
+              "method_detail": "Mark Smith",
+              "event": "UFC Fight Night 264 - Bonfim vs. Brown",
+              "date": "Nov 08 2025",
+              "round": "2",
+              "time": "3:20"
+            },
+            {
+              "result": "win",
+              "opponent": "Eryk Anders",
+              "method": "KO (Spinning Back Elbow and Punches)",
+              "method_detail": "Mark Smith",
+              "event": "UFC on ESPN 72 - Dolidze vs. Hernandez",
+              "date": "Aug 09 2025",
+              "round": "1",
+              "time": "3:53"
+            },
+            {
+              "result": "win",
+              "opponent": "Andrey Pulyaev",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Jason Herzog",
+              "event": "UFC Fight Night 255 - Edwards vs. Brady",
+              "date": "Mar 22 2025",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "loss",
+              "opponent": "Gregory Rodrigues",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Daniel Movahedi",
+              "event": "UFC 304 - Edwards vs. Muhammad 2",
+              "date": "Jul 27 2024",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Claudio Ribeiro",
+              "method": "TKO (Elbows and Punches)",
+              "method_detail": "Mark Smith",
+              "event": "UFC Fight Night 238 - Rozenstruik vs. Gaziev",
+              "date": "Mar 02 2024",
+              "round": "2",
+              "time": "1:57"
+            }
+          ]
         },
         {
           "name": "Roman Dolidze",
@@ -404,15 +577,21 @@
             "td_avg": 1.33,
             "td_defense": "26%",
             "striking_accuracy": 42.0,
-            "td_accuracy": 42.0,
+            "td_accuracy": 39.0,
+            "subs_conceded": 0,
             "avg_kd_per_fight": 0.0,
             "avg_ctrl_secs": 165.2,
             "grappling_control_pct": 15.7,
+            "head_str_pct": 61,
+            "body_str_pct": 10,
+            "leg_str_pct": 28,
+            "distance_str_pct": 92,
+            "clinch_str_pct": 2,
+            "ground_str_pct": 6,
             "avg_opp_ctrl_secs": 185.6,
             "avg_reversals_per_fight": 0.2,
             "implied_sub_def_pct": 100.0,
-            "opp_sub_attempts_vs": 2,
-            "subs_conceded": 0
+            "opp_sub_attempts_vs": 2
           },
           "wins": 15,
           "losses": 4,
@@ -427,8 +606,8 @@
           "wins_decision": 4,
           "finish_rate_pct": 73.3,
           "decision_rate_pct": 26.7,
-          "submission_wins_pct": 20.0,
-          "avg_sub_attempts": 0.62,
+          "submission_wins_pct": 0.0,
+          "avg_sub_attempts": 0.8,
           "total_title_bouts": 0,
           "avg_fight_duration": 10.4,
           "first_round_wins": 4,
@@ -438,7 +617,59 @@
           "record_last_10": "7-3",
           "ufc_ranking": 10,
           "nationality": "Georgia",
-          "team": "Xtreme Couture"
+          "team": "Xtreme Couture",
+          "fight_history": [
+            {
+              "result": "loss",
+              "opponent": "Anthony Hernandez",
+              "method": "Submission (Rear-Naked Choke)",
+              "method_detail": "Herb Dean",
+              "event": "UFC on ESPN 72 - Dolidze vs. Hernandez",
+              "date": "Aug 09 2025",
+              "round": "4",
+              "time": "2:45"
+            },
+            {
+              "result": "win",
+              "opponent": "Marvin Vettori",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Herb Dean",
+              "event": "UFC Fight Night 254 - Vettori vs. Dolidze 2",
+              "date": "Mar 15 2025",
+              "round": "5",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Kevin Holland",
+              "method": "TKO (Corner Stoppage)",
+              "method_detail": "Jason Herzog",
+              "event": "UFC 307 - Pereira vs. Rountree",
+              "date": "Oct 05 2024",
+              "round": "1",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Anthony Smith",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Marc Goddard",
+              "event": "UFC 303 - Pereira vs. Prochazka 2",
+              "date": "Jun 29 2024",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "loss",
+              "opponent": "Nassourdine Imavov",
+              "method": "Decision (Majority)",
+              "method_detail": "Herb Dean",
+              "event": "UFC Fight Night 235 - Dolidze vs. Imavov",
+              "date": "Feb 03 2024",
+              "round": "5",
+              "time": "5:00"
+            }
+          ]
         }
       ],
       "betting_odds": {
@@ -458,9 +689,9 @@
       }
     },
     {
-      "fight_id": 4,
+      "fight_id": 3,
       "matchup": "Franco vs. Pinto",
-      "weight_class": "Light Heavyweight",
+      "weight_class": "Featherweight",
       "fighters": [
         {
           "name": "Mario Pinto",
@@ -469,9 +700,9 @@
           "avgPointsPerGame": 106.49,
           "nickname": null,
           "record": "11-0-0",
-          "height": "6'5\"",
-          "reach": "N/A",
-          "stance": "N/A",
+          "height": "6' 5\"",
+          "reach": "79\"",
+          "stance": "Orthodox",
           "dob": "Mar 14, 1998",
           "stats": {
             "slpm": 3.39,
@@ -483,12 +714,20 @@
             "avg_kd_per_fight": 0.67,
             "avg_ctrl_secs": 20.7,
             "grappling_control_pct": 6.2,
+            "head_str_pct": 45,
+            "body_str_pct": 38,
+            "leg_str_pct": 18,
+            "distance_str_pct": 98,
+            "clinch_str_pct": 2,
+            "ground_str_pct": 0,
             "avg_opp_ctrl_secs": 156.0,
             "avg_reversals_per_fight": 0.33,
             "implied_sub_def_pct": 100.0,
-            "opp_sub_attempts_vs": 2,
-            "subs_conceded": 0
+            "opp_sub_attempts_vs": 2
           },
+          "avg_sub_attempts": 1.8,
+          "age": 28,
+          "weight_class": "Featherweight",
           "nationality": "Portugal",
           "team": "Urban Warriors",
           "wins": 11,
@@ -499,8 +738,58 @@
           "wins_decision": 3,
           "finish_rate_pct": 72.7,
           "decision_rate_pct": 27.3,
-          "submission_wins_pct": 9.1,
-          "weight_class": "Light Heavyweight"
+          "fight_history": [
+            {
+              "result": "win",
+              "opponent": "Jhonata Diniz",
+              "method": "TKO (Punches)",
+              "method_detail": "Joao Claudio Soares",
+              "event": "UFC Fight Night 261 - Oliveira vs. Gamrot",
+              "date": "Oct 11 2025",
+              "round": "2",
+              "time": "4:10"
+            },
+            {
+              "result": "win",
+              "opponent": "Austen Lane",
+              "method": "KO (Punch)",
+              "method_detail": "Mark Smith",
+              "event": "UFC Fight Night 253 - Kape vs. Almabayev",
+              "date": "Mar 01 2025",
+              "round": "2",
+              "time": "0:39"
+            },
+            {
+              "result": "win",
+              "opponent": "Lucas Triverio Camacho",
+              "method": "KO (Punches)",
+              "method_detail": "Mike Beltran",
+              "event": "Dana White's Contender Series - Contender Series 2024: Week 9",
+              "date": "Oct 08 2024",
+              "round": "1",
+              "time": "1:43"
+            },
+            {
+              "result": "win",
+              "opponent": "Kasim Aras",
+              "method": "Decision (Unanimous)",
+              "method_detail": "",
+              "event": "LFL 11 - Levels Fight League 11",
+              "date": "Feb 18 2024",
+              "round": "5",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Benjamin Sehic",
+              "method": "TKO (Punches)",
+              "method_detail": "",
+              "event": "LFL 10 - Levels Fight League 10",
+              "date": "Oct 29 2023",
+              "round": "3",
+              "time": "1:18"
+            }
+          ]
         },
         {
           "name": "Felipe Franco",
@@ -509,9 +798,9 @@
           "avgPointsPerGame": 0.0,
           "nickname": "Negao",
           "record": "10-1-0",
-          "height": "6'1\"",
-          "reach": "N/A",
-          "stance": "N/A",
+          "height": "6' 1\"",
+          "reach": "76\"",
+          "stance": "Orthodox",
           "dob": "Jan 22, 2001",
           "stats": {
             "slpm": 2.23,
@@ -523,12 +812,20 @@
             "avg_kd_per_fight": 0.0,
             "avg_ctrl_secs": 364.0,
             "grappling_control_pct": 41.0,
+            "head_str_pct": 55,
+            "body_str_pct": 33,
+            "leg_str_pct": 12,
+            "distance_str_pct": 42,
+            "clinch_str_pct": 55,
+            "ground_str_pct": 3,
             "avg_opp_ctrl_secs": 259.0,
             "avg_reversals_per_fight": 0.0,
             "implied_sub_def_pct": 100.0,
-            "opp_sub_attempts_vs": 1,
-            "subs_conceded": 0
+            "opp_sub_attempts_vs": 1
           },
+          "avg_sub_attempts": 0.0,
+          "age": 25,
+          "weight_class": "Featherweight",
           "nationality": "Brazil",
           "team": "Galpao da Luta",
           "wins": 10,
@@ -539,8 +836,58 @@
           "wins_decision": 0,
           "finish_rate_pct": 100.0,
           "decision_rate_pct": 0.0,
-          "submission_wins_pct": 40.0,
-          "weight_class": "Light Heavyweight"
+          "fight_history": [
+            {
+              "result": "win",
+              "opponent": "Douglas Felipe Santos",
+              "method": "Submission (Rear-Naked Choke)",
+              "method_detail": "Cristiano Maia",
+              "event": "MFC 10 - Mamute Fight Champion",
+              "date": "Feb 07 2026",
+              "round": "1",
+              "time": "4:05"
+            },
+            {
+              "result": "win",
+              "opponent": "Kleberson Tavares",
+              "method": "TKO (Punches)",
+              "method_detail": "Flavio Almendra",
+              "event": "CEF 14 - Coliseu Extreme Fight 14",
+              "date": "Dec 11 2025",
+              "round": "1",
+              "time": "0:32"
+            },
+            {
+              "result": "loss",
+              "opponent": "Freddy Vidal",
+              "method": "Submission (Rear-Naked Choke)",
+              "method_detail": "Mark Smith",
+              "event": "Dana White's Contender Series - Contender Series 2025: Week 5",
+              "date": "Sep 09 2025",
+              "round": "3",
+              "time": "4:48"
+            },
+            {
+              "result": "win",
+              "opponent": "Murilo dos Santos Ferreira",
+              "method": "Submission (Arm-Triangle Choke)",
+              "method_detail": "",
+              "event": "Qualify Combat - Qualify Combat 14",
+              "date": "Aug 31 2024",
+              "round": "1",
+              "time": "1:10"
+            },
+            {
+              "result": "win",
+              "opponent": "Luis Henrique Araujo Conceicao",
+              "method": "TKO (Punch)",
+              "method_detail": "",
+              "event": "PFN - Penedo Fight Night 2",
+              "date": "Jul 13 2024",
+              "round": "1",
+              "time": "2:21"
+            }
+          ]
         }
       ],
       "betting_odds": {
@@ -560,7 +907,7 @@
       }
     },
     {
-      "fight_id": 5,
+      "fight_id": 4,
       "matchup": "Keita vs. Wood",
       "weight_class": "Featherweight",
       "fighters": [
@@ -571,9 +918,9 @@
           "avgPointsPerGame": 0.0,
           "nickname": "Black Panther",
           "record": "16-1-0",
-          "height": "5'9\"",
-          "reach": "N/A",
-          "stance": "N/A",
+          "height": "5' 8\"",
+          "reach": "72\"",
+          "stance": "Orthodox",
           "dob": "Dec 30, 1997",
           "stats": {
             "slpm": 0.0,
@@ -583,6 +930,9 @@
             "td_defense": "0%",
             "td_accuracy": 0.0
           },
+          "avg_sub_attempts": 0.0,
+          "age": 28,
+          "weight_class": "Featherweight",
           "nationality": "Belgium",
           "team": "Lamiro Fight Club",
           "wins": 16,
@@ -593,7 +943,58 @@
           "wins_decision": 6,
           "finish_rate_pct": 62.5,
           "decision_rate_pct": 37.5,
-          "submission_wins_pct": 0.0
+          "fight_history": [
+            {
+              "result": "win",
+              "opponent": "Ronald Paradeiser",
+              "method": "TKO (Elbow and Punches)",
+              "method_detail": "Marc Goddard",
+              "event": "Oktagon MMA - Oktagon 65: Paradeiser vs. Keita 2",
+              "date": "Dec 29 2024",
+              "round": "2",
+              "time": "4:02"
+            },
+            {
+              "result": "win",
+              "opponent": "Mateusz Legierski",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Pavel Tous",
+              "event": "Oktagon MMA - Oktagon 61: Paradeiser vs. Duque",
+              "date": "Sep 21 2024",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Predrag Bogdanovic",
+              "method": "TKO (Punch to the Body)",
+              "method_detail": "Jan Vobornik",
+              "event": "Oktagon MMA - Oktagon 59: Paradeiser vs. Torres",
+              "date": "Jul 20 2024",
+              "round": "2",
+              "time": "4:15"
+            },
+            {
+              "result": "win",
+              "opponent": "Agy Sardari",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Jan Vobornik",
+              "event": "Oktagon MMA - Oktagon 57: Eckerlin vs. Broz",
+              "date": "May 04 2024",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Niko Samsonidse",
+              "method": "KO (Punches)",
+              "method_detail": "Jan Vobornik",
+              "event": "Oktagon MMA - Oktagon 50: Ostrava",
+              "date": "Dec 09 2023",
+              "round": "2",
+              "time": "0:23"
+            }
+          ]
         },
         {
           "name": "Nathaniel Wood",
@@ -605,7 +1006,7 @@
           "height": "5'6\"",
           "reach": "69\"",
           "stance": "Orthodox",
-          "dob": "Aug 5, 1993",
+          "dob": "May 08, 1993",
           "stats": {
             "slpm": 5.75,
             "sapm": 4.32,
@@ -613,14 +1014,21 @@
             "td_avg": 1.56,
             "td_defense": "73%",
             "striking_accuracy": 51.0,
-            "td_accuracy": 48.0,
+            "td_accuracy": 50.0,
+            "subs_conceded": 0,
             "avg_kd_per_fight": 0.8,
             "avg_ctrl_secs": 122.2,
             "grappling_control_pct": 13.6,
+            "head_str_pct": 58,
+            "body_str_pct": 11,
+            "leg_str_pct": 31,
+            "distance_str_pct": 84,
+            "clinch_str_pct": 4,
+            "ground_str_pct": 12,
             "avg_opp_ctrl_secs": 240.2,
             "avg_reversals_per_fight": 0.2,
-            "opp_sub_attempts_vs": 0,
-            "subs_conceded": 0
+            "implied_sub_def_pct": 100.0,
+            "opp_sub_attempts_vs": 0
           },
           "wins": 22,
           "losses": 6,
@@ -635,8 +1043,8 @@
           "wins_decision": 9,
           "finish_rate_pct": 59.1,
           "decision_rate_pct": 40.9,
-          "submission_wins_pct": 22.7,
-          "avg_sub_attempts": 0.68,
+          "submission_wins_pct": 30.0,
+          "avg_sub_attempts": 0.5,
           "total_title_bouts": 0,
           "avg_fight_duration": 13.0,
           "first_round_wins": 0,
@@ -646,7 +1054,59 @@
           "record_last_10": "7-3",
           "ufc_ranking": "N/A",
           "nationality": "England",
-          "team": "Great Britain Top Team"
+          "team": "Great Britain Top Team",
+          "fight_history": [
+            {
+              "result": "win",
+              "opponent": "Jose Delgado",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Jason Herzog",
+              "event": "UFC 321 - Aspinall vs. Gane",
+              "date": "Oct 25 2025",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Morgan Charriere",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Marc Goddard",
+              "event": "UFC Fight Night 255 - Edwards vs. Brady",
+              "date": "Mar 22 2025",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Daniel Pineda",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Mike Beltran",
+              "event": "UFC 304 - Edwards vs. Muhammad 2",
+              "date": "Jul 27 2024",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "loss",
+              "opponent": "Muhammadjon Naimov",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Lukasz Bosacki",
+              "event": "UFC 294 - Makhachev vs. Volkanovski 2",
+              "date": "Oct 21 2023",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Andre Fili",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Marc Goddard",
+              "event": "UFC Fight Night 224 - Aspinall vs. Tybura",
+              "date": "Jul 22 2023",
+              "round": "3",
+              "time": "5:00"
+            }
+          ]
         }
       ],
       "betting_odds": {
@@ -666,7 +1126,7 @@
       }
     },
     {
-      "fight_id": 6,
+      "fight_id": 5,
       "matchup": "Lane vs. Baraniewski",
       "weight_class": "Heavyweight",
       "fighters": [
@@ -677,9 +1137,9 @@
           "avgPointsPerGame": 120.33,
           "nickname": "Rudy",
           "record": "7-0-0",
-          "height": "6'0\"",
-          "reach": "N/A",
-          "stance": "N/A",
+          "height": "6' 0\"",
+          "reach": "73\"",
+          "stance": "Orthodox",
           "dob": "Nov 20, 1998",
           "stats": {
             "slpm": 14.31,
@@ -691,11 +1151,20 @@
             "avg_kd_per_fight": 1.5,
             "avg_ctrl_secs": 5.5,
             "grappling_control_pct": 10.1,
+            "head_str_pct": 75,
+            "body_str_pct": 17,
+            "leg_str_pct": 8,
+            "distance_str_pct": 33,
+            "clinch_str_pct": 25,
+            "ground_str_pct": 42,
             "avg_opp_ctrl_secs": 4.0,
             "avg_reversals_per_fight": 0.0,
-            "opp_sub_attempts_vs": 0,
-            "subs_conceded": 0
+            "implied_sub_def_pct": 100.0,
+            "opp_sub_attempts_vs": 0
           },
+          "avg_sub_attempts": 0.0,
+          "age": 27,
+          "weight_class": "Heavyweight",
           "nationality": "Poland",
           "team": "Aligatores Fight Club",
           "wins": 7,
@@ -706,7 +1175,58 @@
           "wins_decision": 0,
           "finish_rate_pct": 100.0,
           "decision_rate_pct": 0.0,
-          "submission_wins_pct": 28.6
+          "fight_history": [
+            {
+              "result": "win",
+              "opponent": "Ibo Aslan",
+              "method": "KO (Punches)",
+              "method_detail": "Marc Goddard",
+              "event": "UFC 323 - Dvalishvili vs. Yan 2",
+              "date": "Dec 06 2025",
+              "round": "1",
+              "time": "1:29"
+            },
+            {
+              "result": "win",
+              "opponent": "Mahamed Aly",
+              "method": "KO (Punches)",
+              "method_detail": "Mike Beltran",
+              "event": "Dana White's Contender Series - Contender Series 2025: Week 6",
+              "date": "Sep 16 2025",
+              "round": "1",
+              "time": "0:20"
+            },
+            {
+              "result": "win",
+              "opponent": "Kamil Stachura",
+              "method": "TKO (Elbows and Punches)",
+              "method_detail": "Szymon Bonkowski",
+              "event": "Babilon MMA 51 - Kolecki vs. Mysiala",
+              "date": "Mar 14 2025",
+              "round": "1",
+              "time": "3:02"
+            },
+            {
+              "result": "win",
+              "opponent": "Sylwester Borys",
+              "method": "TKO (Punches)",
+              "method_detail": "Tomasz Bronder",
+              "event": "Babilon MMA 49 - Politylo vs. Majdan",
+              "date": "Nov 22 2024",
+              "round": "1",
+              "time": "3:01"
+            },
+            {
+              "result": "win",
+              "opponent": "Cemey dos Santos",
+              "method": "TKO (Punches)",
+              "method_detail": "Piotr Jarosz",
+              "event": "Babilon MMA 47 - Dudek vs. Hunanyan",
+              "date": "Sep 28 2024",
+              "round": "1",
+              "time": "1:11"
+            }
+          ]
         },
         {
           "name": "Austen Lane",
@@ -718,7 +1238,7 @@
           "height": "6'6\"",
           "reach": "80\"",
           "stance": "Orthodox",
-          "dob": "Nov 9, 1987",
+          "dob": "Nov 09, 1987",
           "stats": {
             "slpm": 2.47,
             "sapm": 2.23,
@@ -726,14 +1246,21 @@
             "td_avg": 2.03,
             "td_defense": "33%",
             "striking_accuracy": 50.0,
-            "td_accuracy": 30.0,
+            "td_accuracy": 28.0,
+            "subs_conceded": 0,
             "avg_kd_per_fight": 0.2,
             "avg_ctrl_secs": 209.6,
             "grappling_control_pct": 52.2,
+            "head_str_pct": 58,
+            "body_str_pct": 24,
+            "leg_str_pct": 17,
+            "distance_str_pct": 77,
+            "clinch_str_pct": 1,
+            "ground_str_pct": 22,
             "avg_opp_ctrl_secs": 10.0,
             "avg_reversals_per_fight": 0.0,
-            "opp_sub_attempts_vs": 0,
-            "subs_conceded": 0
+            "implied_sub_def_pct": 100.0,
+            "opp_sub_attempts_vs": 0
           },
           "wins": 13,
           "losses": 7,
@@ -748,7 +1275,7 @@
           "wins_decision": 1,
           "finish_rate_pct": 92.3,
           "decision_rate_pct": 7.7,
-          "submission_wins_pct": 7.7,
+          "submission_wins_pct": 0.0,
           "avg_sub_attempts": 0.0,
           "total_title_bouts": 0,
           "avg_fight_duration": 7.9,
@@ -759,7 +1286,59 @@
           "record_last_10": "1-2",
           "ufc_ranking": "N/A",
           "nationality": "United States",
-          "team": "Bulldog Boxing"
+          "team": "Bulldog Boxing",
+          "fight_history": [
+            {
+              "result": "loss",
+              "opponent": "Vitor Petrino",
+              "method": "Submission (Rear-Naked Choke)",
+              "method_detail": "Jimmy Neely",
+              "event": "UFC on ESPN 70 - Lewis vs. Teixeira",
+              "date": "Jul 12 2025",
+              "round": "1",
+              "time": "4:16"
+            },
+            {
+              "result": "loss",
+              "opponent": "Mario Pinto",
+              "method": "KO (Punch)",
+              "method_detail": "Mark Smith",
+              "event": "UFC Fight Night 253 - Kape vs. Almabayev",
+              "date": "Mar 01 2025",
+              "round": "2",
+              "time": "0:39"
+            },
+            {
+              "result": "win",
+              "opponent": "Robelis Despaigne",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Mark Smith",
+              "event": "UFC Fight Night 245 - Hernandez vs. Pereira",
+              "date": "Oct 19 2024",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "loss",
+              "opponent": "Jhonata Diniz",
+              "method": "KO (Punches)",
+              "method_detail": "Mark Smith",
+              "event": "UFC on ESPN 55 - Nicolau vs. Perez",
+              "date": "Apr 27 2024",
+              "round": "2",
+              "time": "2:12"
+            },
+            {
+              "result": "loss",
+              "opponent": "Justin Tafa",
+              "method": "KO (Punches)",
+              "method_detail": "Jim Perdios",
+              "event": "UFC 293 - Adesanya vs. Strickland",
+              "date": "Sep 09 2023",
+              "round": "1",
+              "time": "1:22"
+            }
+          ]
         }
       ],
       "betting_odds": {
@@ -779,7 +1358,7 @@
       }
     },
     {
-      "fight_id": 7,
+      "fight_id": 6,
       "matchup": "Murphy vs. Evloev",
       "weight_class": "Featherweight",
       "fighters": [
@@ -801,15 +1380,21 @@
             "td_avg": 4.75,
             "td_defense": "61%",
             "striking_accuracy": 48.0,
-            "td_accuracy": 46.0,
+            "td_accuracy": 48.0,
+            "subs_conceded": 0,
             "avg_kd_per_fight": 0.0,
             "avg_ctrl_secs": 285.4,
             "grappling_control_pct": 31.7,
+            "head_str_pct": 77,
+            "body_str_pct": 16,
+            "leg_str_pct": 7,
+            "distance_str_pct": 65,
+            "clinch_str_pct": 11,
+            "ground_str_pct": 24,
             "avg_opp_ctrl_secs": 210.2,
             "avg_reversals_per_fight": 0.2,
             "implied_sub_def_pct": 100.0,
-            "opp_sub_attempts_vs": 4,
-            "subs_conceded": 0
+            "opp_sub_attempts_vs": 4
           },
           "wins": 19,
           "losses": 0,
@@ -818,14 +1403,14 @@
           "weight_class": "Featherweight",
           "current_win_streak": 9,
           "current_loss_streak": 0,
-          "longest_win_streak": 8,
+          "longest_win_streak": 9,
           "wins_ko_tko": 3,
           "wins_submission": 4,
           "wins_decision": 12,
           "finish_rate_pct": 36.8,
           "decision_rate_pct": 63.2,
-          "submission_wins_pct": 21.1,
-          "avg_sub_attempts": 0.35,
+          "submission_wins_pct": 0.0,
+          "avg_sub_attempts": 0.2,
           "total_title_bouts": 0,
           "avg_fight_duration": 15.0,
           "first_round_wins": 0,
@@ -835,14 +1420,66 @@
           "record_last_10": "9-0",
           "ufc_ranking": 5,
           "nationality": "Russia",
-          "team": "American Top Team"
+          "team": "American Top Team",
+          "fight_history": [
+            {
+              "result": "win",
+              "opponent": "Aljamain Sterling",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Jason Herzog",
+              "event": "UFC 310 - Pantoja vs. Asakura",
+              "date": "Dec 07 2024",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Arnold Allen",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Marc Goddard",
+              "event": "UFC 297 - Strickland vs. Du Plessis",
+              "date": "Jan 20 2024",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Diego Lopes",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Keith Peterson",
+              "event": "UFC 288 - Sterling vs. Cejudo",
+              "date": "May 06 2023",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Dan Ige",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Keith Peterson",
+              "event": "UFC Fight Night 207 - Volkov vs. Rozenstruik",
+              "date": "Jun 04 2022",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Hakeem Dawodu",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Mike Beltran",
+              "event": "UFC 263 - Adesanya vs. Vettori 2",
+              "date": "Jun 12 2021",
+              "round": "3",
+              "time": "5:00"
+            }
+          ]
         },
         {
           "name": "Lerone Murphy",
           "dk_id": "42305442",
           "salary": 7300,
           "avgPointsPerGame": 87.25,
-          "nickname": "The Iceman",
+          "nickname": "The Miracle",
           "record": "17-0-1",
           "height": "5'9\"",
           "reach": "73\"",
@@ -856,13 +1493,20 @@
             "td_defense": "51%",
             "striking_accuracy": 54.0,
             "td_accuracy": 54.0,
+            "subs_conceded": 0,
             "avg_kd_per_fight": 0.4,
             "avg_ctrl_secs": 166.2,
             "grappling_control_pct": 16.6,
+            "head_str_pct": 60,
+            "body_str_pct": 22,
+            "leg_str_pct": 18,
+            "distance_str_pct": 77,
+            "clinch_str_pct": 12,
+            "ground_str_pct": 11,
             "avg_opp_ctrl_secs": 164.6,
             "avg_reversals_per_fight": 0.0,
-            "opp_sub_attempts_vs": 0,
-            "subs_conceded": 0
+            "implied_sub_def_pct": 100.0,
+            "opp_sub_attempts_vs": 0
           },
           "wins": 17,
           "losses": 0,
@@ -871,14 +1515,14 @@
           "weight_class": "Featherweight",
           "current_win_streak": 7,
           "current_loss_streak": 0,
-          "longest_win_streak": 6,
+          "longest_win_streak": 7,
           "wins_ko_tko": 8,
           "wins_submission": 0,
           "wins_decision": 9,
           "finish_rate_pct": 47.1,
           "decision_rate_pct": 52.9,
           "submission_wins_pct": 0.0,
-          "avg_sub_attempts": 0.76,
+          "avg_sub_attempts": 0.5,
           "total_title_bouts": 0,
           "avg_fight_duration": 13.3,
           "first_round_wins": 1,
@@ -888,7 +1532,59 @@
           "record_last_10": "7-0",
           "ufc_ranking": 12,
           "nationality": "England",
-          "team": "Manchester Top Team"
+          "team": "Manchester Top Team",
+          "fight_history": [
+            {
+              "result": "win",
+              "opponent": "Aaron Pico",
+              "method": "KO (Spinning Back Elbow)",
+              "method_detail": "Herb Dean",
+              "event": "UFC 319 - Du Plessis vs. Chimaev",
+              "date": "Aug 16 2025",
+              "round": "1",
+              "time": "3:21"
+            },
+            {
+              "result": "win",
+              "opponent": "Josh Emmett",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Jason Herzog",
+              "event": "UFC on ESPN 65 - Emmett vs. Murphy",
+              "date": "Apr 05 2025",
+              "round": "5",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Dan Ige",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Mark Smith",
+              "event": "UFC 308 - Topuria vs. Holloway",
+              "date": "Oct 26 2024",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Edson Barboza",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Herb Dean",
+              "event": "UFC Fight Night 241 - Barboza vs. Murphy",
+              "date": "May 18 2024",
+              "round": "5",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Joshua Culibao",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Loic Pora",
+              "event": "UFC Fight Night 224 - Aspinall vs. Tybura",
+              "date": "Jul 22 2023",
+              "round": "3",
+              "time": "5:00"
+            }
+          ]
         }
       ],
       "betting_odds": {
@@ -908,9 +1604,9 @@
       }
     },
     {
-      "fight_id": 8,
+      "fight_id": 7,
       "matchup": "Oliveira vs. Dyer",
-      "weight_class": "Women's Bantamweight",
+      "weight_class": "Women's Strawweight",
       "fighters": [
         {
           "name": "Shanelle Dyer",
@@ -919,9 +1615,9 @@
           "avgPointsPerGame": 0.0,
           "nickname": "The Nightmare",
           "record": "6-1-0",
-          "height": "5'6\"",
-          "reach": "N/A",
-          "stance": "N/A",
+          "height": "5' 6\"",
+          "reach": "65\"",
+          "stance": "Orthodox",
           "dob": "Apr 23, 2001",
           "stats": {
             "slpm": 7.67,
@@ -933,11 +1629,20 @@
             "avg_kd_per_fight": 0.0,
             "avg_ctrl_secs": 35.0,
             "grappling_control_pct": 3.9,
+            "head_str_pct": 54,
+            "body_str_pct": 31,
+            "leg_str_pct": 15,
+            "distance_str_pct": 94,
+            "clinch_str_pct": 6,
+            "ground_str_pct": 0,
             "avg_opp_ctrl_secs": 2.0,
             "avg_reversals_per_fight": 0.0,
-            "opp_sub_attempts_vs": 0,
-            "subs_conceded": 0
+            "implied_sub_def_pct": 100.0,
+            "opp_sub_attempts_vs": 0
           },
+          "avg_sub_attempts": 0.0,
+          "age": 24,
+          "weight_class": "Women's Strawweight",
           "nationality": "England",
           "team": "Great Britain Top Team",
           "wins": 6,
@@ -948,7 +1653,58 @@
           "wins_decision": 2,
           "finish_rate_pct": 66.7,
           "decision_rate_pct": 33.3,
-          "submission_wins_pct": 0.0
+          "fight_history": [
+            {
+              "result": "loss",
+              "opponent": "Carol Foro",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Mark Smith",
+              "event": "Dana White's Contender Series - Contender Series 2025: Week 5",
+              "date": "Sep 09 2025",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Valentina Scatizzi",
+              "method": "Decision (Split)",
+              "method_detail": "Derek Hickey",
+              "event": "Professional Fighters League - PFL Europe 3: 2024 Playoffs",
+              "date": "Sep 28 2024",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Mariam Torchinava",
+              "method": "KO (Head Kick)",
+              "method_detail": "Derek Hickey",
+              "event": "Professional Fighters League - PFL Europe 2: 2024 Regular Season",
+              "date": "Jun 08 2024",
+              "round": "1",
+              "time": "3:53"
+            },
+            {
+              "result": "win",
+              "opponent": "Liliya Kazak",
+              "method": "TKO (Punches)",
+              "method_detail": "Tomasz Bronder",
+              "event": "Ares 18 - Shiguemoto vs. Augen",
+              "date": "Dec 15 2023",
+              "round": "3",
+              "time": "1:08"
+            },
+            {
+              "result": "win",
+              "opponent": "Luisa Fernanda Cifuentes",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Derek Hickey",
+              "event": "Professional Fighters League - PFL Europe 3: 2023 Playoffs",
+              "date": "Sep 30 2023",
+              "round": "3",
+              "time": "5:00"
+            }
+          ]
         },
         {
           "name": "Ravena Oliveira",
@@ -969,13 +1725,20 @@
             "td_defense": "50%",
             "striking_accuracy": 48.0,
             "td_accuracy": 66.0,
+            "subs_conceded": 0,
             "avg_kd_per_fight": 0.0,
             "avg_ctrl_secs": 294.0,
             "grappling_control_pct": 35.2,
+            "head_str_pct": 40,
+            "body_str_pct": 28,
+            "leg_str_pct": 32,
+            "distance_str_pct": 68,
+            "clinch_str_pct": 21,
+            "ground_str_pct": 12,
             "avg_opp_ctrl_secs": 161.0,
             "avg_reversals_per_fight": 0.0,
-            "opp_sub_attempts_vs": 0,
-            "subs_conceded": 0
+            "implied_sub_def_pct": 100.0,
+            "opp_sub_attempts_vs": 0
           },
           "wins": 7,
           "losses": 3,
@@ -990,7 +1753,7 @@
           "wins_decision": 0,
           "finish_rate_pct": 100.0,
           "decision_rate_pct": 0.0,
-          "submission_wins_pct": 14.3,
+          "submission_wins_pct": 0.0,
           "avg_sub_attempts": 0.0,
           "total_title_bouts": 0,
           "avg_fight_duration": 15.0,
@@ -1001,7 +1764,59 @@
           "record_last_10": "0-1",
           "ufc_ranking": "N/A",
           "nationality": "Brazil",
-          "team": "Life MMA"
+          "team": "Life MMA",
+          "fight_history": [
+            {
+              "result": "loss",
+              "opponent": "Stephanie Luciano",
+              "method": "Submission (Rear-Naked Choke)",
+              "method_detail": "Mitchell Cadlick",
+              "event": "UFC Fight Night 262 - De Ridder vs. Allen",
+              "date": "Oct 18 2025",
+              "round": "3",
+              "time": "2:50"
+            },
+            {
+              "result": "loss",
+              "opponent": "Tainara Lisboa",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Chris Tognoni",
+              "event": "UFC Fight Night 230 - Yusuff vs. Barboza",
+              "date": "Oct 14 2023",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Simone da Silva",
+              "method": "TKO (Punch)",
+              "method_detail": "Alexandre Camera",
+              "event": "LKC 5 - Liberty Kombat Champion 5",
+              "date": "Aug 12 2023",
+              "round": "3",
+              "time": "4:16"
+            },
+            {
+              "result": "win",
+              "opponent": "Sara Raquel Braga de Andrade",
+              "method": "TKO (Punch)",
+              "method_detail": "",
+              "event": "MC Fight 1 - Encontro de Campeoes",
+              "date": "Jul 15 2023",
+              "round": "1",
+              "time": "0:27"
+            },
+            {
+              "result": "win",
+              "opponent": "Sheila  Santos Amaral",
+              "method": "Submission Tiago Jacare",
+              "method_detail": "Tiago Jacare",
+              "event": "DF - Demo Fight 11",
+              "date": "Jan 29 2022",
+              "round": "3",
+              "time": "1:38"
+            }
+          ]
         }
       ],
       "betting_odds": {
@@ -1021,7 +1836,7 @@
       }
     },
     {
-      "fight_id": 9,
+      "fight_id": 8,
       "matchup": "Patterson vs. Page",
       "weight_class": "Welterweight",
       "fighters": [
@@ -1035,7 +1850,7 @@
           "height": "6'3\"",
           "reach": "79\"",
           "stance": "Switch",
-          "dob": "Apr 7, 1987",
+          "dob": "Apr 07, 1987",
           "stats": {
             "slpm": 2.38,
             "sapm": 1.68,
@@ -1043,14 +1858,21 @@
             "td_avg": 0.44,
             "td_defense": "66%",
             "striking_accuracy": 65.0,
-            "td_accuracy": 25.0,
+            "td_accuracy": 16.0,
+            "subs_conceded": 0,
             "avg_kd_per_fight": 0.0,
             "avg_ctrl_secs": 311.2,
             "grappling_control_pct": 34.6,
+            "head_str_pct": 39,
+            "body_str_pct": 26,
+            "leg_str_pct": 35,
+            "distance_str_pct": 68,
+            "clinch_str_pct": 15,
+            "ground_str_pct": 17,
             "avg_opp_ctrl_secs": 62.2,
             "avg_reversals_per_fight": 0.0,
-            "opp_sub_attempts_vs": 0,
-            "subs_conceded": 0
+            "implied_sub_def_pct": 100.0,
+            "opp_sub_attempts_vs": 0
           },
           "wins": 24,
           "losses": 3,
@@ -1065,7 +1887,7 @@
           "wins_decision": 8,
           "finish_rate_pct": 66.7,
           "decision_rate_pct": 33.3,
-          "submission_wins_pct": 12.5,
+          "submission_wins_pct": 0.0,
           "avg_sub_attempts": 0.0,
           "total_title_bouts": 0,
           "avg_fight_duration": 15.0,
@@ -1076,7 +1898,59 @@
           "record_last_10": "1-1",
           "ufc_ranking": 14,
           "nationality": "England",
-          "team": "London Shootfighters"
+          "team": "London Shootfighters",
+          "fight_history": [
+            {
+              "result": "win",
+              "opponent": "Jared Cannonier",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Marc Goddard",
+              "event": "UFC 319 - Du Plessis vs. Chimaev",
+              "date": "Aug 16 2025",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Sharabutdin Magomedov",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Jason Herzog",
+              "event": "UFC Fight Night 250 - Adesanya vs. Imavov",
+              "date": "Feb 01 2025",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "loss",
+              "opponent": "Ian Garry",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Mark Smith",
+              "event": "UFC 303 - Pereira vs. Prochazka 2",
+              "date": "Jun 29 2024",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Kevin Holland",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Andrew Glenn",
+              "event": "UFC 299 - O'Malley vs. Vera 2",
+              "date": "Mar 09 2024",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Goiti Yamauchi",
+              "method": "TKO (Leg Kick)",
+              "method_detail": "Edward Collantes",
+              "event": "Bellator 292 - Nurmagomedov vs. Henderson",
+              "date": "Mar 10 2023",
+              "round": "1",
+              "time": "0:26"
+            }
+          ]
         },
         {
           "name": "Sam Patterson",
@@ -1097,14 +1971,20 @@
             "td_defense": "33%",
             "striking_accuracy": 37.0,
             "td_accuracy": 100.0,
+            "subs_conceded": 0,
             "avg_kd_per_fight": 0.2,
             "avg_ctrl_secs": 12.2,
             "grappling_control_pct": 8.3,
+            "head_str_pct": 79,
+            "body_str_pct": 6,
+            "leg_str_pct": 15,
+            "distance_str_pct": 100,
+            "clinch_str_pct": 0,
+            "ground_str_pct": 0,
             "avg_opp_ctrl_secs": 13.2,
             "avg_reversals_per_fight": 0.0,
             "implied_sub_def_pct": 100.0,
-            "opp_sub_attempts_vs": 1,
-            "subs_conceded": 0
+            "opp_sub_attempts_vs": 1
           },
           "wins": 14,
           "losses": 2,
@@ -1113,14 +1993,14 @@
           "weight_class": "Welterweight",
           "current_win_streak": 2,
           "current_loss_streak": 0,
-          "longest_win_streak": 1,
+          "longest_win_streak": 2,
           "wins_ko_tko": 6,
           "wins_submission": 7,
           "wins_decision": 1,
           "finish_rate_pct": 92.9,
           "decision_rate_pct": 7.1,
-          "submission_wins_pct": 50.0,
-          "avg_sub_attempts": 2.77,
+          "submission_wins_pct": 66.7,
+          "avg_sub_attempts": 2.8,
           "total_title_bouts": 0,
           "avg_fight_duration": 2.0,
           "first_round_wins": 2,
@@ -1130,7 +2010,59 @@
           "record_last_10": "2-1",
           "ufc_ranking": "N/A",
           "nationality": "England",
-          "team": "Team Crossface"
+          "team": "Team Crossface",
+          "fight_history": [
+            {
+              "result": "win",
+              "opponent": "Trey Waters",
+              "method": "TKO (Punches)",
+              "method_detail": "Rich Mitchell",
+              "event": "UFC Fight Night 258 - Imavov vs. Borralho",
+              "date": "Sep 06 2025",
+              "round": "1",
+              "time": "3:01"
+            },
+            {
+              "result": "win",
+              "opponent": "Danny Barlow",
+              "method": "KO (Punches)",
+              "method_detail": "Mike Beltran",
+              "event": "UFC Fight Night 253 - Kape vs. Almabayev",
+              "date": "Mar 01 2025",
+              "round": "1",
+              "time": "3:10"
+            },
+            {
+              "result": "win",
+              "opponent": "Kiefer Crosbie",
+              "method": "Submission (Arm-Triangle Choke)",
+              "method_detail": "Lukasz Bosacki",
+              "event": "UFC 304 - Edwards vs. Muhammad 2",
+              "date": "Jul 27 2024",
+              "round": "1",
+              "time": "2:50"
+            },
+            {
+              "result": "win",
+              "opponent": "Yohan Lainesse",
+              "method": "Submission (Rear-Naked Choke)",
+              "method_detail": "Brian Beauchamp",
+              "event": "UFC 297 - Strickland vs. Du Plessis",
+              "date": "Jan 20 2024",
+              "round": "1",
+              "time": "2:03"
+            },
+            {
+              "result": "loss",
+              "opponent": "Yanal Ashmouz",
+              "method": "KO (Punches)",
+              "method_detail": "Marc Goddard",
+              "event": "UFC 286 - Edwards vs. Usman 3",
+              "date": "Mar 18 2023",
+              "round": "1",
+              "time": "1:15"
+            }
+          ]
         }
       ],
       "betting_odds": {
@@ -1150,9 +2082,9 @@
       }
     },
     {
-      "fight_id": 10,
+      "fight_id": 9,
       "matchup": "Pericic vs. Sutherland",
-      "weight_class": "Heavyweight",
+      "weight_class": "Lightweight",
       "fighters": [
         {
           "name": "Brando Pericic",
@@ -1161,10 +2093,10 @@
           "avgPointsPerGame": 102.67,
           "nickname": "The Balkan Bear",
           "record": "5-1-0",
-          "height": "6'5\"",
-          "reach": "N/A",
-          "stance": "N/A",
-          "dob": "Aug 3, 1994",
+          "height": "6' 5\"",
+          "reach": "79\"",
+          "stance": "Orthodox",
+          "dob": "Aug 03, 1994",
           "stats": {
             "slpm": 15.13,
             "sapm": 1.57,
@@ -1175,11 +2107,20 @@
             "avg_kd_per_fight": 0.0,
             "avg_ctrl_secs": 29.0,
             "grappling_control_pct": 25.2,
+            "head_str_pct": 79,
+            "body_str_pct": 7,
+            "leg_str_pct": 14,
+            "distance_str_pct": 38,
+            "clinch_str_pct": 41,
+            "ground_str_pct": 21,
             "avg_opp_ctrl_secs": 13.0,
             "avg_reversals_per_fight": 0.0,
-            "opp_sub_attempts_vs": 0,
-            "subs_conceded": 0
+            "implied_sub_def_pct": 100.0,
+            "opp_sub_attempts_vs": 0
           },
+          "avg_sub_attempts": 0.0,
+          "age": 31,
+          "weight_class": "Lightweight",
           "nationality": "Australia",
           "team": "City Kickboxing",
           "wins": 5,
@@ -1190,20 +2131,70 @@
           "wins_decision": 0,
           "finish_rate_pct": 100.0,
           "decision_rate_pct": 0.0,
-          "submission_wins_pct": 20.0,
-          "weight_class": "Heavyweight"
+          "fight_history": [
+            {
+              "result": "win",
+              "opponent": "Elisha Ellison",
+              "method": "KO (Punches)",
+              "method_detail": "Mike Beltran",
+              "event": "UFC Fight Night 260 - Ulberg vs. Reyes",
+              "date": "Sep 27 2025",
+              "round": "1",
+              "time": "1:55"
+            },
+            {
+              "result": "win",
+              "opponent": "Orion Kenny",
+              "method": "TKO (Punches)",
+              "method_detail": "",
+              "event": "Supremacy Fighting Championship - SFC: Rebirth",
+              "date": "Nov 02 2024",
+              "round": "1",
+              "time": "1:08"
+            },
+            {
+              "result": "win",
+              "opponent": "Tumanako Phillips",
+              "method": "TKO (Punches)",
+              "method_detail": "",
+              "event": "SFL 1 - Stealth Fighters League",
+              "date": "Oct 25 2024",
+              "round": "1",
+              "time": "0:17"
+            },
+            {
+              "result": "loss",
+              "opponent": "Randall Rayment",
+              "method": "Submission (Rear-Naked Choke)",
+              "method_detail": "",
+              "event": "HFS - Hex Fight Series 30",
+              "date": "May 04 2024",
+              "round": "2",
+              "time": "1:36"
+            },
+            {
+              "result": "win",
+              "opponent": "Kelvin Fitial",
+              "method": "Submission (Rear-Naked Choke)",
+              "method_detail": "",
+              "event": "SFS 17 - Shuriken Fight Series 17",
+              "date": "Apr 20 2024",
+              "round": "1",
+              "time": "3:26"
+            }
+          ]
         },
         {
           "name": "Louie Sutherland",
           "dk_id": "42305458",
           "salary": 7200,
           "avgPointsPerGame": 1.2,
-          "nickname": "The Vanilla Gorilla",
+          "nickname": "Vanilla Gorilla",
           "record": "10-4-0",
-          "height": "6'3\"",
-          "reach": "N/A",
-          "stance": "N/A",
-          "dob": "Feb 8, 1994",
+          "height": "6' 3\"",
+          "reach": "76\"",
+          "stance": "Orthodox",
+          "dob": "Feb 08, 1994",
           "stats": {
             "slpm": 2.14,
             "sapm": 3.57,
@@ -1214,11 +2205,20 @@
             "avg_kd_per_fight": 0.0,
             "avg_ctrl_secs": 31.0,
             "grappling_control_pct": 36.9,
+            "head_str_pct": 0,
+            "body_str_pct": 40,
+            "leg_str_pct": 60,
+            "distance_str_pct": 100,
+            "clinch_str_pct": 0,
+            "ground_str_pct": 0,
             "avg_opp_ctrl_secs": 0.0,
             "avg_reversals_per_fight": 0.0,
-            "opp_sub_attempts_vs": 0,
-            "subs_conceded": 0
+            "implied_sub_def_pct": 100.0,
+            "opp_sub_attempts_vs": 0
           },
+          "avg_sub_attempts": 0.0,
+          "age": 32,
+          "weight_class": "Lightweight",
           "nationality": "England",
           "team": "Great Britain Top Team",
           "wins": 10,
@@ -1229,8 +2229,58 @@
           "wins_decision": 2,
           "finish_rate_pct": 80.0,
           "decision_rate_pct": 20.0,
-          "submission_wins_pct": 0.0,
-          "weight_class": "Heavyweight"
+          "fight_history": [
+            {
+              "result": "loss",
+              "opponent": "Valter Walker",
+              "method": "Submission (Heel Hook)",
+              "method_detail": "Kerry Hatley",
+              "event": "UFC 321 - Aspinall vs. Gane",
+              "date": "Oct 25 2025",
+              "round": "1",
+              "time": "1:24"
+            },
+            {
+              "result": "win",
+              "opponent": "Luke Newland",
+              "method": "TKO (Punches)",
+              "method_detail": "Danial Sharifi",
+              "event": "LFL 18 - Levels Fight League 18",
+              "date": "Jun 15 2025",
+              "round": "1",
+              "time": "2:50"
+            },
+            {
+              "result": "win",
+              "opponent": "Matusalem Santos",
+              "method": "Decision (Unanimous)",
+              "method_detail": "",
+              "event": "LFL 17 - Levels Fight League 17",
+              "date": "Apr 13 2025",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Luis Carlos Brito",
+              "method": "KO (Elbows)",
+              "method_detail": "Danial Sharifi",
+              "event": "LFL 16 - Levels Fight League 16",
+              "date": "Feb 16 2025",
+              "round": "1",
+              "time": "3:25"
+            },
+            {
+              "result": "win",
+              "opponent": "Renato Rangel",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Danial Sharifi",
+              "event": "LFL 15 - Levels Fight League 15",
+              "date": "Dec 08 2024",
+              "round": "3",
+              "time": "5:00"
+            }
+          ]
         }
       ],
       "betting_odds": {
@@ -1250,9 +2300,9 @@
       }
     },
     {
-      "fight_id": 11,
+      "fight_id": 10,
       "matchup": "Silva vs. Campbell",
-      "weight_class": "Featherweight",
+      "weight_class": "Lightweight",
       "fighters": [
         {
           "name": "Kurtis Campbell",
@@ -1261,9 +2311,9 @@
           "avgPointsPerGame": 0.0,
           "nickname": "The Pink Panther",
           "record": "8-0-0",
-          "height": "5'9\"",
-          "reach": "N/A",
-          "stance": "N/A",
+          "height": "5' 9\"",
+          "reach": "72\"",
+          "stance": "Switch",
           "dob": "Jul 29, 2002",
           "stats": {
             "slpm": 5.25,
@@ -1275,11 +2325,20 @@
             "avg_kd_per_fight": 0.0,
             "avg_ctrl_secs": 50.0,
             "grappling_control_pct": 62.5,
+            "head_str_pct": 57,
+            "body_str_pct": 43,
+            "leg_str_pct": 0,
+            "distance_str_pct": 29,
+            "clinch_str_pct": 29,
+            "ground_str_pct": 43,
             "avg_opp_ctrl_secs": 0.0,
             "avg_reversals_per_fight": 0.0,
-            "opp_sub_attempts_vs": 0,
-            "subs_conceded": 0
+            "implied_sub_def_pct": 100.0,
+            "opp_sub_attempts_vs": 0
           },
+          "avg_sub_attempts": 0.0,
+          "age": 23,
+          "weight_class": "Lightweight",
           "nationality": "England",
           "team": "The MMA Academy Liverpool",
           "wins": 8,
@@ -1290,14 +2349,65 @@
           "wins_decision": 2,
           "finish_rate_pct": 75.0,
           "decision_rate_pct": 25.0,
-          "submission_wins_pct": 12.5
+          "fight_history": [
+            {
+              "result": "win",
+              "opponent": "Demba Seck",
+              "method": "TKO (Elbows and Punches)",
+              "method_detail": "Jonathan Romero",
+              "event": "Dana White's Contender Series - Contender Series 2025: Week 8",
+              "date": "Sep 30 2025",
+              "round": "1",
+              "time": "1:20"
+            },
+            {
+              "result": "win",
+              "opponent": "Marcio Valerio",
+              "method": "Submission (Rear-Naked Choke)",
+              "method_detail": "Paul Crossley",
+              "event": "FCC 41 - Full Contact Contender 41",
+              "date": "Mar 01 2025",
+              "round": "2",
+              "time": "0:44"
+            },
+            {
+              "result": "win",
+              "opponent": "Daniel Matusic",
+              "method": "TKO (Punches)",
+              "method_detail": "",
+              "event": "FCC 40 - Full Contact Contender 40",
+              "date": "Nov 30 2024",
+              "round": "1",
+              "time": "2:49"
+            },
+            {
+              "result": "win",
+              "opponent": "Matheus Lima",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Paul Crossley",
+              "event": "FCC 39 - Full Contact Contender 39",
+              "date": "Sep 07 2024",
+              "round": "5",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Karl Fletcher",
+              "method": "TKO (Leg Kick)",
+              "method_detail": "",
+              "event": "FCC 37 - Full Contact Contender 37",
+              "date": "Mar 09 2024",
+              "round": "1",
+              "time": "0:45"
+            }
+          ]
         },
         {
           "name": "Danny Silva",
           "dk_id": "42305449",
           "salary": 7400,
           "avgPointsPerGame": 61.32,
-          "nickname": "Puma",
+          "nickname": "El Puma",
           "record": "10-2-0",
           "height": "5'11\"",
           "reach": "70\"",
@@ -1310,15 +2420,21 @@
             "td_avg": 3.0,
             "td_defense": "81%",
             "striking_accuracy": 58.0,
-            "td_accuracy": 50.0,
+            "td_accuracy": 33.0,
+            "subs_conceded": 0,
             "avg_kd_per_fight": 0.25,
             "avg_ctrl_secs": 18.5,
             "grappling_control_pct": 2.1,
+            "head_str_pct": 67,
+            "body_str_pct": 24,
+            "leg_str_pct": 9,
+            "distance_str_pct": 91,
+            "clinch_str_pct": 8,
+            "ground_str_pct": 0,
             "avg_opp_ctrl_secs": 116.2,
             "avg_reversals_per_fight": 0.0,
             "implied_sub_def_pct": 100.0,
-            "opp_sub_attempts_vs": 1,
-            "subs_conceded": 0
+            "opp_sub_attempts_vs": 1
           },
           "wins": 10,
           "losses": 2,
@@ -1334,7 +2450,7 @@
           "finish_rate_pct": 50.0,
           "decision_rate_pct": 50.0,
           "submission_wins_pct": 0.0,
-          "avg_sub_attempts": 0.5,
+          "avg_sub_attempts": 0.2,
           "total_title_bouts": 0,
           "avg_fight_duration": 15.0,
           "first_round_wins": 0,
@@ -1344,7 +2460,59 @@
           "record_last_10": "1-0",
           "ufc_ranking": "N/A",
           "nationality": "United States",
-          "team": "CSW"
+          "team": "CSW",
+          "fight_history": [
+            {
+              "result": "loss",
+              "opponent": "Kevin Vallejos",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Chris Tognoni",
+              "event": "UFC on ESPN 71 - Taira vs. Park",
+              "date": "Aug 02 2025",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Lucas Almeida",
+              "method": "Decision (Split)",
+              "method_detail": "Mike Beltran",
+              "event": "UFC Fight Night 253 - Kape vs. Almabayev",
+              "date": "Mar 01 2025",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Joshua Culibao",
+              "method": "Decision (Split)",
+              "method_detail": "Mark Smith",
+              "event": "UFC Fight Night 239 - Tuivasa vs. Tybura",
+              "date": "Mar 16 2024",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Angel Pacheco",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Mark Smith",
+              "event": "Dana White's Contender Series - Contender Series 2023: Week 8",
+              "date": "Sep 26 2023",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Alex Valentino Arteaga",
+              "method": "TKO (Punches)",
+              "method_detail": "Jonathan Romero",
+              "event": "LFA 161 - Davis vs. Siqueira",
+              "date": "Jun 23 2023",
+              "round": "1",
+              "time": "4:13"
+            }
+          ]
         }
       ],
       "betting_odds": {
@@ -1364,7 +2532,7 @@
       }
     },
     {
-      "fight_id": 12,
+      "fight_id": 11,
       "matchup": "Sola vs. Jones",
       "weight_class": "Lightweight",
       "fighters": [
@@ -1386,15 +2554,21 @@
             "td_avg": 3.16,
             "td_defense": "81%",
             "striking_accuracy": 44.0,
-            "td_accuracy": 45.0,
+            "td_accuracy": 55.0,
+            "subs_conceded": 0,
             "avg_kd_per_fight": 0.2,
             "avg_ctrl_secs": 142.4,
             "grappling_control_pct": 19.6,
+            "head_str_pct": 60,
+            "body_str_pct": 29,
+            "leg_str_pct": 12,
+            "distance_str_pct": 78,
+            "clinch_str_pct": 16,
+            "ground_str_pct": 6,
             "avg_opp_ctrl_secs": 243.4,
             "avg_reversals_per_fight": 0.0,
             "implied_sub_def_pct": 100.0,
-            "opp_sub_attempts_vs": 1,
-            "subs_conceded": 0
+            "opp_sub_attempts_vs": 1
           },
           "wins": 17,
           "losses": 2,
@@ -1409,8 +2583,8 @@
           "wins_decision": 6,
           "finish_rate_pct": 64.7,
           "decision_rate_pct": 35.3,
-          "submission_wins_pct": 17.6,
-          "avg_sub_attempts": 0.0,
+          "submission_wins_pct": 0.0,
+          "avg_sub_attempts": 0.2,
           "total_title_bouts": 0,
           "avg_fight_duration": 15.0,
           "first_round_wins": 0,
@@ -1420,7 +2594,59 @@
           "record_last_10": "2-1",
           "ufc_ranking": "N/A",
           "nationality": "Wales",
-          "team": "Pedro Bessa BJJ"
+          "team": "Pedro Bessa BJJ",
+          "fight_history": [
+            {
+              "result": "win",
+              "opponent": "Bolaji Oki",
+              "method": "TKO (Elbows)",
+              "method_detail": "Rich Mitchell",
+              "event": "UFC Fight Night 258 - Imavov vs. Borralho",
+              "date": "Sep 06 2025",
+              "round": "2",
+              "time": "3:18"
+            },
+            {
+              "result": "win",
+              "opponent": "Jeremy Stephens",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Mike Beltran",
+              "event": "UFC on ESPN 67 - Sandhagen vs. Figueiredo",
+              "date": "May 03 2025",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Michael Pagani",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Daniel Movahedi",
+              "event": "CW 175 - Cage Warriors 175: Manchester",
+              "date": "Jul 25 2024",
+              "round": "3",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Bryce Logan",
+              "method": "TKO (Punches and Knees)",
+              "method_detail": "Jonathan Romero",
+              "event": "CW 166 - Cage Warriors 166: San Diego",
+              "date": "Feb 23 2024",
+              "round": "2",
+              "time": "2:45"
+            },
+            {
+              "result": "win",
+              "opponent": "Yann Liasse",
+              "method": "TKO (Punches)",
+              "method_detail": "Rich Mitchell",
+              "event": "CW 161 - Cage Warriors 161: Dublin",
+              "date": "Oct 14 2023",
+              "round": "2",
+              "time": "4:24"
+            }
+          ]
         },
         {
           "name": "Axel Sola",
@@ -1429,9 +2655,9 @@
           "avgPointsPerGame": 84.95,
           "nickname": null,
           "record": "11-0-1",
-          "height": "5'11\"",
-          "reach": "N/A",
-          "stance": "N/A",
+          "height": "6' 2\"",
+          "reach": "74\"",
+          "stance": "Southpaw",
           "dob": "Sep 17, 1997",
           "stats": {
             "slpm": 3.74,
@@ -1443,11 +2669,20 @@
             "avg_kd_per_fight": 1.0,
             "avg_ctrl_secs": 185.0,
             "grappling_control_pct": 25.6,
+            "head_str_pct": 89,
+            "body_str_pct": 11,
+            "leg_str_pct": 0,
+            "distance_str_pct": 80,
+            "clinch_str_pct": 11,
+            "ground_str_pct": 9,
             "avg_opp_ctrl_secs": 0.0,
             "avg_reversals_per_fight": 0.0,
-            "opp_sub_attempts_vs": 0,
-            "subs_conceded": 0
+            "implied_sub_def_pct": 100.0,
+            "opp_sub_attempts_vs": 0
           },
+          "avg_sub_attempts": 0.0,
+          "age": 28,
+          "weight_class": "Lightweight",
           "nationality": "France",
           "team": "Boxing Squad",
           "wins": 11,
@@ -1458,7 +2693,58 @@
           "wins_decision": 4,
           "finish_rate_pct": 63.6,
           "decision_rate_pct": 36.4,
-          "submission_wins_pct": 9.1
+          "fight_history": [
+            {
+              "result": "win",
+              "opponent": "Rhys McKee",
+              "method": "TKO (Punches)",
+              "method_detail": "Herb Dean",
+              "event": "UFC Fight Night 258 - Imavov vs. Borralho",
+              "date": "Sep 06 2025",
+              "round": "3",
+              "time": "2:02"
+            },
+            {
+              "result": "win",
+              "opponent": "Ghiles Oudelha",
+              "method": "Decision (Unanimous)",
+              "method_detail": "Mourad Benseghir",
+              "event": "Ares 31 - Sola vs. Oudelha",
+              "date": "Jun 14 2025",
+              "round": "5",
+              "time": "5:00"
+            },
+            {
+              "result": "win",
+              "opponent": "Lucas Caio",
+              "method": "TKO (Punches and Elbows)",
+              "method_detail": "Marc Goddard",
+              "event": "Ares 28 - Sola vs. Caio",
+              "date": "Jan 18 2025",
+              "round": "2",
+              "time": "3:43"
+            },
+            {
+              "result": "win",
+              "opponent": "Soslan Gagloev",
+              "method": "TKO (Punches)",
+              "method_detail": "Marc Goddard",
+              "event": "Ares 25 - Sola vs. Gagloev",
+              "date": "Sep 26 2024",
+              "round": "2",
+              "time": "4:59"
+            },
+            {
+              "result": "draw",
+              "opponent": "Daguir Imavov",
+              "method": "Decision (Majority)",
+              "method_detail": "Marc Goddard",
+              "event": "Ares 22 - Sola vs. Imavov",
+              "date": "Jun 14 2024",
+              "round": "5",
+              "time": "5:00"
+            }
+          ]
         }
       ],
       "betting_odds": {
@@ -1478,7 +2764,7 @@
       }
     },
     {
-      "fight_id": 13,
+      "fight_id": 12,
       "matchup": "Trocoli vs. Kondratavicius",
       "weight_class": "Middleweight",
       "fighters": [
@@ -1489,9 +2775,9 @@
           "avgPointsPerGame": 0.0,
           "nickname": null,
           "record": "8-1-0",
-          "height": "6'2\"",
-          "reach": "N/A",
-          "stance": "N/A",
+          "height": "6' 2\"",
+          "reach": "75\"",
+          "stance": "Orthodox",
           "dob": "Jul 17, 1999",
           "stats": {
             "slpm": 4.55,
@@ -1503,11 +2789,20 @@
             "avg_kd_per_fight": 1.0,
             "avg_ctrl_secs": 27.0,
             "grappling_control_pct": 40.9,
+            "head_str_pct": 75,
+            "body_str_pct": 25,
+            "leg_str_pct": 0,
+            "distance_str_pct": 50,
+            "clinch_str_pct": 50,
+            "ground_str_pct": 0,
             "avg_opp_ctrl_secs": 15.0,
             "avg_reversals_per_fight": 1.0,
-            "opp_sub_attempts_vs": 0,
-            "subs_conceded": 0
+            "implied_sub_def_pct": 100.0,
+            "opp_sub_attempts_vs": 0
           },
+          "avg_sub_attempts": 0.0,
+          "age": 26,
+          "weight_class": "Middleweight",
           "nationality": "Lithuania",
           "team": "Fighter House",
           "wins": 8,
@@ -1518,7 +2813,58 @@
           "wins_decision": 0,
           "finish_rate_pct": 100.0,
           "decision_rate_pct": 0.0,
-          "submission_wins_pct": 25.0
+          "fight_history": [
+            {
+              "result": "win",
+              "opponent": "Djani Barbir",
+              "method": "TKO (Punches)",
+              "method_detail": "Kerry Hatley",
+              "event": "Dana White's Contender Series - Contender Series 2025: Week 7",
+              "date": "Sep 23 2025",
+              "round": "1",
+              "time": "1:06"
+            },
+            {
+              "result": "win",
+              "opponent": "Michael Tchamou",
+              "method": "KO (Punches)",
+              "method_detail": "Paul Crossley",
+              "event": "CW 184 - Cage Warriors 184: Unplugged",
+              "date": "Mar 14 2025",
+              "round": "1",
+              "time": "0:47"
+            },
+            {
+              "result": "win",
+              "opponent": "Kirill Andreev",
+              "method": "Submission (Armbar)",
+              "method_detail": "",
+              "event": "CAGE 61 - Cage MMA Finland 61",
+              "date": "Feb 10 2024",
+              "round": "1",
+              "time": "0:00"
+            },
+            {
+              "result": "loss",
+              "opponent": "Virgil Augen",
+              "method": "Submission (Rear-Naked Choke)",
+              "method_detail": "Loic Pora",
+              "event": "Ares 16 - Chamsoudinov vs. Escudero",
+              "date": "Jun 23 2023",
+              "round": "2",
+              "time": "4:01"
+            },
+            {
+              "result": "win",
+              "opponent": "Nicolai Garbuz",
+              "method": "KO (Flying Knee)",
+              "method_detail": "",
+              "event": "KOK - World Series in Kaunas",
+              "date": "Nov 05 2022",
+              "round": "1",
+              "time": "0:06"
+            }
+          ]
         },
         {
           "name": "Antonio Trocoli",
@@ -1530,7 +2876,7 @@
           "height": "6'6\"",
           "reach": "79\"",
           "stance": "Orthodox",
-          "dob": "Dec 6, 1990",
+          "dob": "Dec 06, 1990",
           "stats": {
             "slpm": 1.29,
             "sapm": 5.55,
@@ -1538,15 +2884,21 @@
             "td_avg": 0.84,
             "td_defense": "33%",
             "striking_accuracy": 50.0,
-            "td_accuracy": 11.0,
+            "td_accuracy": 10.0,
+            "subs_conceded": 1,
             "avg_kd_per_fight": 0.0,
             "avg_ctrl_secs": 26.0,
             "grappling_control_pct": 9.2,
+            "head_str_pct": 29,
+            "body_str_pct": 23,
+            "leg_str_pct": 49,
+            "distance_str_pct": 69,
+            "clinch_str_pct": 30,
+            "ground_str_pct": 1,
             "avg_opp_ctrl_secs": 73.8,
             "avg_reversals_per_fight": 0.0,
             "implied_sub_def_pct": 100.0,
-            "opp_sub_attempts_vs": 1,
-            "subs_conceded": 0
+            "opp_sub_attempts_vs": 1
           },
           "wins": 12,
           "losses": 6,
@@ -1561,8 +2913,8 @@
           "wins_decision": 4,
           "finish_rate_pct": 66.7,
           "decision_rate_pct": 33.3,
-          "submission_wins_pct": 41.7,
-          "avg_sub_attempts": 0.85,
+          "submission_wins_pct": 0.0,
+          "avg_sub_attempts": 0.8,
           "total_title_bouts": 0,
           "avg_fight_duration": 6.9,
           "first_round_wins": 0,
@@ -1572,7 +2924,59 @@
           "record_last_10": "0-2",
           "ufc_ranking": "N/A",
           "nationality": "Brazil",
-          "team": "LG System"
+          "team": "LG System",
+          "fight_history": [
+            {
+              "result": "loss",
+              "opponent": "Mansur Abdul-Malik",
+              "method": "Submission (Guillotine Choke)",
+              "method_detail": "Mark Smith",
+              "event": "UFC 323 - Dvalishvili vs. Yan 2",
+              "date": "Dec 06 2025",
+              "round": "1",
+              "time": "1:09"
+            },
+            {
+              "result": "loss",
+              "opponent": "Tresean Gore",
+              "method": "Submission (Guillotine Choke)",
+              "method_detail": "Kerry Hatley",
+              "event": "UFC Fight Night 247 - Magny vs. Prates",
+              "date": "Nov 09 2024",
+              "round": "1",
+              "time": "1:23"
+            },
+            {
+              "result": "loss",
+              "opponent": "Sharabutdin Magomedov",
+              "method": "TKO (Knee and Punches)",
+              "method_detail": "Marc Goddard",
+              "event": "UFC on ABC 6 - Whittaker vs. Aliskerov",
+              "date": "Jun 22 2024",
+              "round": "3",
+              "time": "2:27"
+            },
+            {
+              "result": "win",
+              "opponent": "Reslley  Menezes",
+              "method": "Technical Submission (Rear Naked Choke)",
+              "method_detail": "",
+              "event": "BFS 3 - Brazilian Fighting Series 3",
+              "date": "Nov 21 2021",
+              "round": "1",
+              "time": "2:10"
+            },
+            {
+              "result": "nc",
+              "opponent": "Kenneth Bergh",
+              "method": "No Contest (Overturned by NSAC)",
+              "method_detail": "Chris Tognoni",
+              "event": "Dana White's Contender Series - Season 3, Episode 3",
+              "date": "Jul 09 2019",
+              "round": "1",
+              "time": "3:57"
+            }
+          ]
         }
       ],
       "betting_odds": {

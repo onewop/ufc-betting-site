@@ -1,15 +1,14 @@
-RedFighter,BlueFighter,RedOdds,BlueOdds,RKOOdds,BKOOdds,RSubOdds,BSubOdds,RedDecOdds,BlueDecOdds
-Shem Rock,Abdul-Kareem Al-Selwady,,,,,,,,
-Luke Riley,Michael Aswell Jr.,,,,,,,,
-Melissa Mullins,Luana Carolina,,,,,,,,
-Roman Dolidze,Christian Leroy Duncan,,,,,,,,
-Mario Pinto,Felipe Franco,,,,,,,,
-Nathaniel Wood,Losene Keita,,,,,,,,
-Iwo Baraniewski,Austen Lane,,,,,,,,
-Movsar Evloev,Lerone Murphy,,,,,,,,
-Shanelle Dyer,Ravena Oliveira,,,,,,,,
-Michael Page,Sam Patterson,,,,,,,,
-Louie Sutherland,Brando Pericic,,,,,,,,
-Kurtis Campbell,Danny Silva,,,,,,,,
-Mason Jones,Axel Sola,,,,,,,,
-Mantas Kondratavicius,Antonio Trocoli,,,,,,,,
+RedFighter,BlueFighter,RedOdds,BlueOdds,RKOOdds,BKOOdds,RSubOdds,BSubOdds,RedDecOdds,BlueDecOdds,WeightClass
+Shem Rock,Abdul-Kareem Al-Selwady,,,,,,,,,Middleweight
+Luke Riley,Michael Aswell Jr.,,,,,,,,,Featherweight
+Roman Dolidze,Christian Leroy Duncan,,,,,,,,,Middleweight
+Mario Pinto,Felipe Franco,,,,,,,,,Featherweight
+Nathaniel Wood,Losene Keita,,,,,,,,,Featherweight
+Iwo Baraniewski,Austen Lane,,,,,,,,,Heavyweight
+Movsar Evloev,Lerone Murphy,,,,,,,,,Featherweight
+Shanelle Dyer,Ravena Oliveira,,,,,,,,,Women's Strawweight
+Michael Page,Sam Patterson,,,,,,,,,Welterweight
+Louie Sutherland,Brando Pericic,,,,,,,,,Lightweight
+Kurtis Campbell,Danny Silva,,,,,,,,,Lightweight
+Mason Jones,Axel Sola,,,,,,,,,Lightweight
+Mantas Kondratavicius,Antonio Trocoli,,,,,,,,,Middleweight

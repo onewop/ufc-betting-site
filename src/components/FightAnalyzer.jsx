@@ -60,46 +60,37 @@ const _evalAngle = (label, attackerVal, defenderDefPct) => {
   };
 };
 
-// Evaluate submission threat: no "sub defense %" exists in UFCStats data.
-// We compare each fighter's avg_sub_attempts head-to-head — higher ratio = more
-// one-sided mat threat.
-const _evalSubAngle = (attackerSub, defenderSub) => {
+// Evaluate submission threat using actual career submission wins as the primary
+// metric. avg_sub_attempts is shown as secondary context only.
+const _evalSubAngle = (
+  attackerWins,
+  attackerAttempts,
+  defenderWins,
+  defenderAttempts,
+) => {
   const label = "Submissions";
-  const a = attackerSub ?? 0;
-  const d = defenderSub ?? 0;
-  if (a === 0)
-    return { level: "neutral", label, tip: "No submission attempts on record" };
-  if (d === 0)
+  const wins = attackerWins ?? 0;
+  const atts = Number((attackerAttempts ?? 0).toFixed(1));
+  const oppWins = defenderWins ?? 0;
+  const tip = `${wins} sub win${wins !== 1 ? "s" : ""} (${atts} attempts/fight)`;
+  if (wins === 0)
     return {
-      level: "strong",
+      level: "neutral",
       label,
-      tip: `${a} sub attempts/fight vs opponent's 0 — clear one-sided mat threat`,
+      tip: `0 sub wins (${atts} attempts/fight)`,
     };
-  const ratio = a / d;
-  if (ratio >= 2.0)
-    return {
-      level: "strong",
-      label,
-      tip: `${a} vs ${d} sub attempts/fight — dominant submission threat`,
-    };
-  if (ratio >= 1.4)
-    return {
-      level: "moderate",
-      label,
-      tip: `${a} vs ${d} sub attempts/fight — more active submission game`,
-    };
-  return {
-    level: "neutral",
-    label,
-    tip: `${a} vs ${d} sub attempts/fight — similar mat activity`,
-  };
+  if (wins >= 3 && wins >= oppWins * 2) return { level: "strong", label, tip };
+  if (wins > oppWins) return { level: "moderate", label, tip };
+  return { level: "neutral", label, tip };
 };
 
 const _computeAngles = (f1, f2) => {
   const s1 = f1.stats || {};
   const s2 = f2.stats || {};
-  const subAtt1 = s1.avg_sub_attempts ?? f1.avg_sub_attempts ?? 0;
-  const subAtt2 = s2.avg_sub_attempts ?? f2.avg_sub_attempts ?? 0;
+  const subWins1 = f1.wins_submission ?? 0;
+  const subWins2 = f2.wins_submission ?? 0;
+  const subAtt1 = f1.avg_sub_attempts ?? s1.avg_sub_attempts ?? 0;
+  const subAtt2 = f2.avg_sub_attempts ?? s2.avg_sub_attempts ?? 0;
   return [
     {
       attacker: f1.name,
@@ -107,7 +98,7 @@ const _computeAngles = (f1, f2) => {
       angles: [
         _evalAngle("Striking", s1.slpm, _parsePct(s2.striking_defense)),
         _evalAngle("Wrestling", s1.td_avg, _parsePct(s2.td_defense)),
-        _evalSubAngle(subAtt1, subAtt2),
+        _evalSubAngle(subWins1, subAtt1, subWins2, subAtt2),
       ],
     },
     {
@@ -116,7 +107,7 @@ const _computeAngles = (f1, f2) => {
       angles: [
         _evalAngle("Striking", s2.slpm, _parsePct(s1.striking_defense)),
         _evalAngle("Wrestling", s2.td_avg, _parsePct(s1.td_defense)),
-        _evalSubAngle(subAtt2, subAtt1),
+        _evalSubAngle(subWins2, subAtt2, subWins1, subAtt1),
       ],
     },
   ];
@@ -294,7 +285,7 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
 
     // Load live odds from localStorage cache (populated by LatestOdds page)
     try {
-      const cached = JSON.parse(localStorage.getItem("ufc_odds_cache_v2"));
+      const cached = JSON.parse(localStorage.getItem("ufc_odds_cache_v3"));
       if (cached?.data) setCachedOdds(cached.data);
     } catch (_) {}
 
@@ -392,6 +383,10 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
             <tbody>{rows}</tbody>
           </table>
         </div>
+        <p className="mt-2 text-xs text-stone-600 italic">
+          Per-fight rates (SLpM, SApM, TDs, accuracy) = UFC bouts only &middot;
+          Record &amp; finish counts = full pro career
+        </p>
         {summary && (
           <p className="mt-3 text-sm text-stone-300 border-t border-stone-700 pt-3 leading-relaxed">
             {summary}
@@ -878,9 +873,10 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
             rows={
               <>
                 <StatRow
-                  label="Overall Record (W-L-D)"
+                  label="Pro Career Record (W-L-D)"
                   v1={f1.record || `${f1.wins}-${f1.losses}-${f1.draws}`}
                   v2={f2.record || `${f2.wins}-${f2.losses}-${f2.draws}`}
+                  note="Full pro career (all promotions)"
                   winner={null}
                 />
                 <StatRow
@@ -910,27 +906,31 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                   winner={null}
                 />
                 <StatRow
-                  label="Record (Last 5)"
+                  label="UFC Record (Last 5)"
                   v1={f1.record_last_5 ?? "N/A"}
                   v2={f2.record_last_5 ?? "N/A"}
+                  note="UFC fights only"
                   winner={null}
                 />
                 <StatRow
-                  label="Record (Last 10)"
+                  label="UFC Record (Last 10)"
                   v1={f1.record_last_10 ?? "N/A"}
                   v2={f2.record_last_10 ?? "N/A"}
+                  note="UFC fights only"
                   winner={null}
                 />
                 <StatRow
                   label="KO / TKO Wins"
                   v1={fmt(num(f1.wins_ko_tko))}
                   v2={fmt(num(f2.wins_ko_tko))}
+                  note="Pro career total"
                   winner={edgeName(num(f1.wins_ko_tko), num(f2.wins_ko_tko))}
                 />
                 <StatRow
                   label="Submission Wins"
                   v1={fmt(num(f1.wins_submission))}
                   v2={fmt(num(f2.wins_submission))}
+                  note="Pro career total"
                   winner={edgeName(
                     num(f1.wins_submission),
                     num(f2.wins_submission),
@@ -1120,15 +1120,17 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                   winner={null}
                 />
                 <StatRow
-                  label="Record (Last 5)"
+                  label="UFC Record (Last 5)"
                   v1={f1.record_last_5 ?? "N/A"}
                   v2={f2.record_last_5 ?? "N/A"}
+                  note="UFC fights only"
                   winner={null}
                 />
                 <StatRow
-                  label="Record (Last 10)"
+                  label="UFC Record (Last 10)"
                   v1={f1.record_last_10 ?? "N/A"}
                   v2={f2.record_last_10 ?? "N/A"}
+                  note="UFC fights only"
                   winner={null}
                 />
                 <StatRow
@@ -1335,9 +1337,11 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
         if (td1 != null && td2 != null && tdD1 != null && tdD2 != null) {
           const ws1 = td1 * (1 - tdD2 / 100),
             ws2 = td2 * (1 - tdD1 / 100);
+          const wrestW = ws1 > ws2 ? f1.name : ws2 > ws1 ? f2.name : "Even";
+          const [wVal, lVal] = ws1 >= ws2 ? [ws1, ws2] : [ws2, ws1];
           award(
-            ws1 > ws2 ? f1.name : ws2 > ws1 ? f2.name : "Even",
-            `Better wrestling effectiveness vs. opponent's defense`,
+            wrestW,
+            `Better wrestling effectiveness (${wVal.toFixed(2)} vs ${lVal.toFixed(2)} adj. TDs per 15 min vs opponent's defense)`,
           );
         } else if (td1 != null && td2 != null) {
           award(
@@ -1356,7 +1360,7 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
         // Finish rate
         award(
           edgeName(fin1, fin2),
-          `Higher finish rate (${fin1 ?? "N/A"}% vs ${fin2 ?? "N/A"}%)`,
+          `Higher finish rate (${f1.name.split(" ").pop()}: ${fin1 ?? "N/A"}% vs ${f2.name.split(" ").pop()}: ${fin2 ?? "N/A"}%)`,
         );
 
         const total = sc[f1.name] + sc[f2.name];
@@ -1377,14 +1381,29 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
               {[f1, f2].map((fx) => {
                 const s = sc[fx.name];
                 const isW = fx.name === predictedW;
+                const ufcFightCount = (() => {
+                  const m = (fx.record || "").match(/^(\d+)-(\d+)-(\d+)/);
+                  return m
+                    ? parseInt(m[1]) + parseInt(m[2]) + parseInt(m[3])
+                    : null;
+                })();
+                const smallSample = ufcFightCount !== null && ufcFightCount < 3;
                 return (
                   <div
                     key={fx.name}
                     className={`rounded-lg border p-3 ${isW ? "border-green-700/60 bg-green-950/20" : "border-stone-700 bg-stone-900"}`}
                   >
-                    <div className="font-bold text-sm text-stone-100 mb-1 truncate">
+                    <div className="font-bold text-sm text-stone-100 mb-1 break-words">
                       {fx.name}
                     </div>
+                    {smallSample && (
+                      <div className="text-xs text-yellow-500/80 mb-1.5 leading-tight">
+                        ⚠ Only {ufcFightCount} UFC fight
+                        {ufcFightCount !== 1 ? "s" : ""} on record — stats are
+                        based on a very small sample and may not reflect true
+                        tendencies.
+                      </div>
+                    )}
                     <div
                       className={`text-2xl font-black ${isW ? "text-green-400" : "text-stone-500"}`}
                     >
@@ -1783,6 +1802,38 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                     isPct: true,
                   },
                 ],
+                strikeDistribution: [
+                  {
+                    label: "Head % (of landed sig strikes)",
+                    key: "stats.head_str_pct",
+                    isPct: true,
+                  },
+                  {
+                    label: "Body % (of landed sig strikes)",
+                    key: "stats.body_str_pct",
+                    isPct: true,
+                  },
+                  {
+                    label: "Leg % (of landed sig strikes)",
+                    key: "stats.leg_str_pct",
+                    isPct: true,
+                  },
+                  {
+                    label: "Distance % (of strikes by position)",
+                    key: "stats.distance_str_pct",
+                    isPct: true,
+                  },
+                  {
+                    label: "Clinch % (of strikes by position)",
+                    key: "stats.clinch_str_pct",
+                    isPct: true,
+                  },
+                  {
+                    label: "Ground % (of strikes by position)",
+                    key: "stats.ground_str_pct",
+                    isPct: true,
+                  },
+                ],
                 grappling: [
                   {
                     label: "TD Avg (Takedowns per 15 min)",
@@ -1861,14 +1912,23 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                     key: "current_loss_streak",
                   },
                   { label: "Last Fight Result", key: "last_fight_result" },
-                  { label: "Record (Last 5)", key: "record_last_5" },
-                  { label: "Record (Last 10)", key: "record_last_10" },
+                  { label: "UFC Record (Last 5 fights)", key: "record_last_5" },
                   {
-                    label: "Wins by KO/TKO (Knockout/Technical Knockout)",
+                    label: "UFC Record (Last 10 fights)",
+                    key: "record_last_10",
+                  },
+                  {
+                    label: "Wins by KO/TKO — pro career total",
                     key: "wins_ko_tko",
                   },
-                  { label: "Wins by Submission (Sub)", key: "wins_submission" },
-                  { label: "Wins by Decision (Dec)", key: "wins_decision" },
+                  {
+                    label: "Wins by Submission — pro career total",
+                    key: "wins_submission",
+                  },
+                  {
+                    label: "Wins by Decision — pro career total",
+                    key: "wins_decision",
+                  },
                   {
                     label: "Finish Rate %",
                     key: "finish_rate_pct",
@@ -1915,10 +1975,23 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
 
               const stats = statsList[tabKey] || statsList.basics;
 
+              // Fixed N/A spam: compute display-value for each stat so that
+              // string "N/A" values coming from the data (e.g. debut fighters)
+              // are treated as missing — not as real values — for the allNull check.
+              const getDisplayVal = (stat) => {
+                const rawVal = getValue(fighter, stat.key);
+                if (stat.isMoney) return rawVal != null ? `$${rawVal}` : null;
+                if (stat.isPct) {
+                  const f = formatPct(rawVal);
+                  return f === "N/A" ? null : f;
+                }
+                return rawVal != null ? rawVal : null;
+              };
+
               // For record/award tabs, check if all values are null — show a
               // helpful message instead of a column of N/As for unmatched fighters
               const allNull = stats.every(
-                (stat) => (getValue(fighter, stat.key) ?? null) === null,
+                (stat) => getDisplayVal(stat) === null,
               );
               if (allNull && tabKey !== "basics") {
                 return (
@@ -1934,29 +2007,92 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
 
               return (
                 <div key={tabKey} className="space-y-2">
-                  {stats.map((stat, i) => (
-                    <div
-                      key={`${tabKey}-${i}`}
-                      className="flex items-baseline justify-between gap-2 py-1 border-b border-stone-700/50"
-                    >
-                      <span className="text-stone-500 text-sm flex-1 min-w-0">
-                        {stat.label}:
-                      </span>
-                      <span
-                        className={`font-semibold shrink-0 text-right ${
-                          stat.isMoney || stat.isHighlight
-                            ? "text-yellow-400"
-                            : "text-stone-200"
-                        }`}
+                  {stats.map((stat, i) => {
+                    // Compute display string (reuses getDisplayVal helper above)
+                    const displayVal = getDisplayVal(stat);
+
+                    // For the Defensive Grappling tab: skip rows with no data
+                    // entirely so users don't see a column of N/As for
+                    // fighters whose advanced stats haven't been scraped yet.
+                    if (tabKey === "defGrappling" && displayVal === null) {
+                      return null;
+                    }
+                    // Same for strikeDistribution — only show when data exists
+                    if (
+                      tabKey === "strikeDistribution" &&
+                      displayVal === null
+                    ) {
+                      return null;
+                    }
+
+                    return (
+                      <div
+                        key={`${tabKey}-${i}`}
+                        className="flex items-baseline justify-between gap-2 py-1 border-b border-stone-700/50"
                       >
-                        {stat.isMoney
-                          ? `$${getValue(fighter, stat.key) ?? "N/A"}`
-                          : stat.isPct
-                            ? formatPct(getValue(fighter, stat.key))
-                            : (getValue(fighter, stat.key) ?? "N/A")}
-                      </span>
-                    </div>
-                  ))}
+                        <span className="text-stone-500 text-sm flex-1 min-w-0">
+                          {stat.label}:
+                        </span>
+                        {displayVal !== null ? (
+                          <span
+                            className={`font-semibold shrink-0 text-right ${
+                              stat.isMoney || stat.isHighlight
+                                ? "text-yellow-400"
+                                : "text-stone-200"
+                            }`}
+                          >
+                            {displayVal}
+                          </span>
+                        ) : (
+                          // For non-defGrappling tabs: show muted "No data"
+                          // instead of "N/A" so it's clear data is absent,
+                          // not a real zero.
+                          <span className="text-stone-600 text-sm italic shrink-0">
+                            No data
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {tabKey === "recordAwards" &&
+                    fighter.fight_history?.length > 0 && (
+                      <div className="mt-4 pt-3 border-t border-stone-700">
+                        <p className="text-stone-500 text-xs font-bold mb-2 uppercase tracking-wider">
+                          Recent Fights (Sherdog)
+                        </p>
+                        {fighter.fight_history.map((fh, hi) => (
+                          <div
+                            key={hi}
+                            className="flex items-center gap-1.5 py-1.5 border-b border-stone-800 text-xs"
+                          >
+                            <span
+                              className={`w-6 shrink-0 font-bold uppercase ${
+                                fh.result === "win"
+                                  ? "text-green-400"
+                                  : fh.result === "loss"
+                                    ? "text-red-400"
+                                    : "text-stone-500"
+                              }`}
+                            >
+                              {fh.result?.charAt(0)?.toUpperCase() || "?"}
+                            </span>
+                            <span className="text-stone-300 flex-1 min-w-0 truncate">
+                              {fh.opponent}
+                            </span>
+                            <span className="text-stone-500 shrink-0">
+                              {fh.method}
+                              {fh.method_detail ? ` (${fh.method_detail})` : ""}
+                            </span>
+                            <span className="text-stone-600 shrink-0">
+                              {fh.round ? `R${fh.round}` : ""}
+                            </span>
+                            <span className="text-stone-600 shrink-0 hidden sm:block">
+                              {fh.date}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                 </div>
               );
             };
@@ -1989,6 +2125,7 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                       {[
                         { id: "basics", label: "Basics" },
                         { id: "striking", label: "Striking" },
+                        { id: "strikeDistribution", label: "Strike Dist." },
                         { id: "grappling", label: "Grappling" },
                         { id: "defGrappling", label: "Def. Grappling" },
                         { id: "recordAwards", label: "Record & Awards" },
@@ -2013,6 +2150,10 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                       {[
                         { id: "basics", label: "Basics" },
                         { id: "striking", label: "Striking" },
+                        {
+                          id: "strikeDistribution",
+                          label: "Strike Distribution",
+                        },
                         { id: "grappling", label: "Grappling" },
                         { id: "defGrappling", label: "Defensive Grappling" },
                         { id: "recordAwards", label: "Record & Awards" },
@@ -2064,8 +2205,10 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                     </div>
 
                     <p className="text-xs text-stone-600 mt-4 italic text-center tracking-wide leading-relaxed">
-                      ✓ Stats from DraftKings, UFCStats, Sherdog, Tapology.
-                      Public sources only. Not betting advice.
+                      ✓ Stats from DraftKings, UFCStats, Sherdog. Per-fight
+                      rates (SLpM, SApM, TDs) = UFC bouts only. Record &amp;
+                      finish counts = full pro career. Public sources only. Not
+                      betting advice.
                     </p>
                   </div>
                 </details>

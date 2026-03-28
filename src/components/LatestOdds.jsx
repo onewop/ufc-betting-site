@@ -27,8 +27,8 @@ const bestOdds = (bookmakers, name) => {
   return best;
 };
 
-const CACHE_KEY = "ufc_odds_cache_v2"; // v2 = american odds format
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const CACHE_KEY = "ufc_odds_cache_v3"; // bump version to bust stale cache
+const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 const ALERTS_KEY = "ufc_local_alerts_v1";
 const ALERTS_ENABLED_KEY = "ufc_local_alerts_enabled_v1";
 const ALERT_POLL_MS = 120000;
@@ -225,9 +225,15 @@ const LatestOdds = () => {
       if (response.data.length === 0) {
         setError("No UFC events currently available. Try again later.");
       } else {
-        const sorted = [...response.data].sort(
-          (a, b) => new Date(a.commence_time) - new Date(b.commence_time),
-        );
+        const now = Date.now();
+        const sorted = [...response.data]
+          .filter(
+            (e) =>
+              new Date(e.commence_time).getTime() > now - 3 * 60 * 60 * 1000,
+          ) // only upcoming + events started < 3h ago
+          .sort(
+            (a, b) => new Date(a.commence_time) - new Date(b.commence_time),
+          );
         const timestamp = Date.now();
         localStorage.setItem(
           CACHE_KEY,
@@ -326,13 +332,28 @@ const LatestOdds = () => {
               : ""}
           </p>
         </div>
-        <button
-          onClick={() => fetchOdds(true)}
-          disabled={loading}
-          className="border border-yellow-700/60 text-yellow-400 px-4 py-1.5 text-xs tracking-widest uppercase hover:bg-yellow-900/20 transition disabled:opacity-40"
-        >
-          {loading ? "Loading..." : "↻ Refresh"}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => fetchOdds(true)}
+            disabled={loading}
+            className="border border-yellow-700/60 text-yellow-400 px-4 py-1.5 text-xs tracking-widest uppercase hover:bg-yellow-900/20 transition disabled:opacity-40"
+          >
+            {loading ? "Loading..." : "↻ Refresh"}
+          </button>
+          <button
+            onClick={() => {
+              // Wipe ALL ufc_odds_cache_* keys so no stale version survives
+              Object.keys(localStorage)
+                .filter((k) => k.startsWith("ufc_odds_cache"))
+                .forEach((k) => localStorage.removeItem(k));
+              fetchOdds(true);
+            }}
+            disabled={loading}
+            className="border border-red-700/60 text-red-400 px-4 py-1.5 text-xs tracking-widest uppercase hover:bg-red-900/20 transition disabled:opacity-40"
+          >
+            ✕ Clear Cache
+          </button>
+        </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-4">

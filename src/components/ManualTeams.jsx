@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { DK_PLAYERS, DK_BY_NAME } from "../data/dkSlate";
 
 const ManualTeams = () => {
   const [fighters, setFighters] = useState([]);
@@ -71,6 +72,95 @@ const ManualTeams = () => {
     currentTeam.forEach((f) => updatedCounts[f.id]++);
     setFighterCounts(updatedCounts);
     setCurrentTeam([]);
+  };
+
+  const downloadCSV = () => {
+    if (savedTeams.length === 0) {
+      alert("No saved teams to export. Save at least one team first.");
+      return;
+    }
+
+    const skipped = [];
+    const lineupRows = [];
+
+    for (let i = 0; i < savedTeams.length; i++) {
+      const team = savedTeams[i];
+
+      if (team.length !== 6) {
+        skipped.push(`Lineup ${i + 1}: only ${team.length} fighters (need 6)`);
+        continue;
+      }
+
+      const dkEntries = team.map((f) => {
+        const dk = DK_BY_NAME[f.name.toLowerCase()];
+        if (!dk) {
+          skipped.push(
+            `Lineup ${i + 1}: "${f.name}" not found in DK slate — update src/data/dkSlate.js`,
+          );
+          return null;
+        }
+        return dk;
+      });
+
+      if (dkEntries.some((e) => e === null)) continue;
+
+      lineupRows.push(dkEntries.map((dk) => dk.dkId));
+    }
+
+    if (skipped.length > 0) {
+      alert(
+        `Warning — ${skipped.length} lineup(s) skipped:\n\n${skipped.join("\n")}\n\nUpdate src/data/dkSlate.js if fighters are missing.`,
+      );
+    }
+
+    if (lineupRows.length === 0) {
+      alert(
+        "No valid lineups to export. Check that fighter names match dkSlate.js.",
+      );
+      return;
+    }
+
+    const INSTRUCTIONS = [
+      "1. Locate the player you want to select in the list below",
+      "2. Copy the ID of your player (you can use the Name + ID column or the ID column)",
+      "3. Paste the ID into the roster position desired",
+      "4. You must include an ID for each player; you cannot use just the player's name",
+      "5. You can create up to 500 lineups per file",
+    ];
+
+    const rightSide = [
+      ...INSTRUCTIONS,
+      "",
+      "Position,Name + ID,Name,ID,Roster Position,Salary,Game Info,TeamAbbrev,AvgPointsPerGame",
+      ...DK_PLAYERS.map(
+        (p) =>
+          `F,${p.name} (${p.dkId}),${p.name},${p.dkId},F,${p.salary},${p.gameInfo},${p.teamAbbrev},${p.avgFPPG}`,
+      ),
+    ];
+
+    const csvRows = [];
+    csvRows.push("F,F,F,F,F,F,,Instructions");
+
+    const totalRows = Math.max(lineupRows.length, rightSide.length);
+    for (let i = 0; i < totalRows; i++) {
+      const left = lineupRows[i] ? lineupRows[i].join(",") : ",,,,,";
+      const right = rightSide[i] !== undefined ? rightSide[i] : "";
+      csvRows.push(`${left},,${right}`);
+    }
+
+    const csvContent = csvRows.join("\r\n");
+    // application/octet-stream forces download instead of opening in LibreOffice
+    const csvBlob = new Blob([csvContent], {
+      type: "application/octet-stream",
+    });
+    const url = URL.createObjectURL(csvBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `dk-ufc-lineups-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const filteredFighters = fighters.filter((f) =>
@@ -244,6 +334,9 @@ const ManualTeams = () => {
             </ul>
             <button onClick={saveTeam} className="neon-button w-full">
               Save Team
+            </button>
+            <button onClick={downloadCSV} className="neon-button w-full mt-2">
+              Download CSV
             </button>
           </div>
         </div>

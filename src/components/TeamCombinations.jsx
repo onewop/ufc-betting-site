@@ -9,6 +9,25 @@ const comb = (n, k) => {
   return res;
 };
 
+// ── Ownership tier (salary-based approximation) ─────────────────────────
+const ownershipTier = (salary) => {
+  if (salary >= 8500) return { label: "HIGH", color: "text-red-400" };
+  if (salary >= 7000) return { label: "MED", color: "text-yellow-400" };
+  return { label: "LOW", color: "text-green-400" };
+};
+
+// ── Leverage score (low ownership + decent projection = GPP edge) ─────────
+const leverageLabel = (salary, avgFPPG = 0) => {
+  const own = ownershipTier(salary);
+  if (own.label === "LOW" && avgFPPG >= 18)
+    return { label: "⚡ LEVERAGE", color: "text-green-400" };
+  if (own.label === "LOW") return { label: "VALUE", color: "text-green-300" };
+  if (own.label === "HIGH" && avgFPPG >= 24)
+    return { label: "CEILING", color: "text-orange-400" };
+  if (own.label === "HIGH") return { label: "CHALK", color: "text-red-400" };
+  return { label: "NEUTRAL", color: "text-stone-400" };
+};
+
 const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
   const [fighters, setFighters] = useState([]);
   const numFights = [...new Set(fighters.map((f) => f.fight_id))].length;
@@ -21,6 +40,7 @@ const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
   const [fighterLimits, setFighterLimits] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [generatedCount, setGeneratedCount] = useState(0);
+  const [stackWarnings, setStackWarnings] = useState([]);
   const userSeed = Date.now() + Math.random() * 10000;
 
   useEffect(() => {
@@ -35,6 +55,7 @@ const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
               name: f.name,
               salary: f.salary,
               fight_id: fight.fight_id,
+              avgFPPG: f.avgPointsPerGame ?? f.avgFPPG ?? 0,
             });
           });
         });
@@ -318,6 +339,19 @@ const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
 
     setRandomTeams(selectedTeams);
     setFighterCounts(finalCounts);
+
+    // Stacking check: flag any team where a fight_id appears more than once
+    // (should never trigger since 1-per-fight is enforced by buildTeam)
+    const sWarnings = [];
+    selectedTeams.forEach((team, idx) => {
+      const fightIdCounts = {};
+      team.forEach((f) => {
+        fightIdCounts[f.fight_id] = (fightIdCounts[f.fight_id] || 0) + 1;
+      });
+      const violated = Object.values(fightIdCounts).some((c) => c > 1);
+      if (violated) sWarnings.push(`Team ${idx + 1}`);
+    });
+    setStackWarnings(sWarnings);
   };
 
   const downloadCSV = () => {
@@ -458,6 +492,28 @@ const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
         <p className="text-stone-400 mb-6 text-center text-sm tracking-wide">
           Max 6 fighters per team, $50,000 salary cap, one fighter per fight.
         </p>
+        <p className="text-stone-600 mb-6 text-center text-xs tracking-wide border border-stone-800 rounded py-2 px-4 max-w-xl mx-auto">
+          ℹ️ Basic optimizer with diversity balancing, exposure limits, and
+          stacking validation. For Monte Carlo sims and live ownership data, see{" "}
+          <a
+            href="https://www.saberism.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-stone-400 underline"
+          >
+            SaberSim
+          </a>
+          {" / "}
+          <a
+            href="https://www.fantasylabs.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-stone-400 underline"
+          >
+            FantasyLabs
+          </a>
+          .
+        </p>
         <div className="flex flex-col md:flex-row gap-6 mb-8">
           <div className="md:w-2/3">
             <h2 className="text-sm font-bold tracking-[0.4em] uppercase text-yellow-600 mb-3">
@@ -546,6 +602,12 @@ const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
                       Salary
                     </th>
                     <th className="p-2 text-stone-400 text-xs tracking-wider uppercase">
+                      Own
+                    </th>
+                    <th className="p-2 text-stone-400 text-xs tracking-wider uppercase">
+                      Leverage
+                    </th>
+                    <th className="p-2 text-stone-400 text-xs tracking-wider uppercase">
                       Min
                     </th>
                     <th className="p-2 text-stone-400 text-xs tracking-wider uppercase">
@@ -562,6 +624,16 @@ const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
                       <td className="p-2 text-stone-200">{fighter.name}</td>
                       <td className="p-2 text-yellow-500 text-sm">
                         ${fighter.salary}
+                      </td>
+                      <td
+                        className={`p-2 text-xs font-bold ${ownershipTier(fighter.salary).color}`}
+                      >
+                        {ownershipTier(fighter.salary).label}
+                      </td>
+                      <td
+                        className={`p-2 text-xs font-bold ${leverageLabel(fighter.salary, fighter.avgFPPG).color}`}
+                      >
+                        {leverageLabel(fighter.salary, fighter.avgFPPG).label}
                       </td>
                       <td className="p-2">
                         <input
@@ -639,16 +711,48 @@ const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
                 key={index}
                 className="mb-4 pb-4 border-b border-stone-800 last:border-0"
               >
-                <h3 className="text-yellow-500 font-bold tracking-wider uppercase text-xs mb-2">
-                  TEAM {index + 1}
-                </h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="text-yellow-500 font-bold tracking-wider uppercase text-xs">
+                    TEAM {index + 1}
+                  </h3>
+                  {stackWarnings.includes(`Team ${index + 1}`) ? (
+                    <span className="text-[10px] text-red-400 font-bold">
+                      ⚠ STACKING
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-green-500">
+                      ✓ stacking ok
+                    </span>
+                  )}
+                </div>
                 <ul className="space-y-1">
-                  {team.map((f) => (
-                    <li key={f.id} className="flex justify-between text-sm">
-                      <span className="text-stone-200">{f.name}</span>
-                      <span className="text-yellow-500/80">${f.salary}</span>
-                    </li>
-                  ))}
+                  {team.map((f) => {
+                    const own = ownershipTier(f.salary);
+                    const lev = leverageLabel(f.salary, f.avgFPPG);
+                    return (
+                      <li
+                        key={f.id}
+                        className="flex items-center justify-between text-sm gap-1"
+                      >
+                        <span className="text-stone-200 truncate">
+                          {f.name}
+                        </span>
+                        <span className="flex items-center gap-1.5 shrink-0">
+                          <span
+                            className={`text-[10px] font-bold ${own.color}`}
+                          >
+                            {own.label}
+                          </span>
+                          <span className={`text-[10px] ${lev.color}`}>
+                            {lev.label}
+                          </span>
+                          <span className="text-yellow-500/80">
+                            ${f.salary.toLocaleString()}
+                          </span>
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
                 <p className="text-stone-400 text-xs mt-2 tracking-wide">
                   Total:{" "}

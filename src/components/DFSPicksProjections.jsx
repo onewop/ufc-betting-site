@@ -233,18 +233,33 @@ const buildReasoning = (fighter, projMid, ownerNum) => {
   // ── Recent form / loss context ─────────────────────────────────────────
   // Adds a second sentence with loss signals so users can see both ceiling
   // (wins above) and floor/risk (recent form below) at a glance.
-  // Source: record_last_5, last_fight_result, current_loss_streak from
-  // this_weeks_stats.json. No per-method loss counts are available in the
-  // data, so we use last_fight_result (e.g. "L – KO/TKO") as a proxy.
+  // Source: record_last_5, last_fight_result, current_loss_streak,
+  // and stats.subs_conceded from this_weeks_stats.json.
   const formParts = [];
-  if (fighter.record_last_5) formParts.push(`last 5: ${fighter.record_last_5}`);
+
+  // Last-5 record (e.g. "3-2")
+  if (fighter.record_last_5) formParts.push(`Last 5: ${fighter.record_last_5}`);
+
+  // Most recent fight result — normalize separators ("L – Sub" → "L-Sub")
   if (fighter.last_fight_result) {
-    // Normalize "L – S-DEC" style separators to a compact "L-S-DEC"
     const compact = fighter.last_fight_result.replace(/\s*[–—-]\s*/g, "-");
-    formParts.push(`last fight: ${compact}`);
+    formParts.push(`last: ${compact}`);
   }
+
+  // Submission vulnerability: subs_conceded comes from the stats aggregator
+  // and counts how many times this fighter was submitted in analyzed fights.
+  const subsConceded = fighter.stats?.subs_conceded;
+  if (subsConceded != null && subsConceded > 0) {
+    formParts.push(`submitted ${subsConceded}× in recent fights`);
+  }
+
   const lossStreak = fighter.current_loss_streak || 0;
-  if (lossStreak >= 2) formParts.push(`⚠️ ${lossStreak}-fight loss streak`);
+  // Show all active loss streaks (>= 2) but only add the ⚠️ warning for
+  // serious streaks (> 2, i.e. 3+ consecutive losses).
+  if (lossStreak >= 2) {
+    const warning = lossStreak > 2 ? "⚠️ " : "";
+    formParts.push(`${warning}${lossStreak}-fight loss streak`);
+  }
 
   const ownRisk =
     ownerNum >= 28
@@ -322,40 +337,28 @@ const evalAngle = (
   };
 };
 
-// Evaluate submission threat: compares attacker's avg sub attempts/fight against
-// the opponent's — there is no "sub defense %" stat in UFCStats, so we use the
-// opponent's own avg_sub_attempts as a mat-experience proxy.
-// High ratio (attacker >> opponent) = one-sided submission threat.
-const evalSubAngle = (attackerSub, defenderSub) => {
+// Evaluate submission threat using actual career submission wins as the primary
+// metric. avg_sub_attempts is shown as secondary context only.
+const evalSubAngle = (
+  attackerWins,
+  attackerAttempts,
+  defenderWins,
+  defenderAttempts,
+) => {
   const label = "Submissions";
-  const a = attackerSub ?? 0;
-  const d = defenderSub ?? 0;
-  if (a === 0)
-    return { level: "neutral", label, tip: "No submission attempts on record" };
-  if (d === 0)
+  const wins = attackerWins ?? 0;
+  const atts = Number((attackerAttempts ?? 0).toFixed(1));
+  const oppWins = defenderWins ?? 0;
+  const tip = `${wins} sub win${wins !== 1 ? "s" : ""} (${atts} attempts/fight)`;
+  if (wins === 0)
     return {
-      level: "strong",
+      level: "neutral",
       label,
-      tip: `${a} sub attempts/fight vs opponent's 0 — clear one-sided mat threat`,
+      tip: `0 sub wins (${atts} attempts/fight)`,
     };
-  const ratio = a / d;
-  if (ratio >= 2.0)
-    return {
-      level: "strong",
-      label,
-      tip: `${a} vs ${d} sub attempts/fight — dominant submission threat`,
-    };
-  if (ratio >= 1.4)
-    return {
-      level: "moderate",
-      label,
-      tip: `${a} vs ${d} sub attempts/fight — more active submission game`,
-    };
-  return {
-    level: "neutral",
-    label,
-    tip: `${a} vs ${d} sub attempts/fight — similar mat activity`,
-  };
+  if (wins >= 3 && wins >= oppWins * 2) return { level: "strong", label, tip };
+  if (wins > oppWins) return { level: "moderate", label, tip };
+  return { level: "neutral", label, tip };
 };
 
 // Compute all matchup angles for a fight with two fighter objects.
@@ -372,8 +375,10 @@ const computeMatchupAngles = (f1, f2) => {
   const tdAvg2 = s2.td_avg;
   const tdDef1 = parsePct(s1.td_defense);
   const tdDef2 = parsePct(s2.td_defense);
-  const subAtt1 = s1.avg_sub_attempts ?? f1.avg_sub_attempts ?? 0;
-  const subAtt2 = s2.avg_sub_attempts ?? f2.avg_sub_attempts ?? 0;
+  const subWins1 = f1.wins_submission ?? 0;
+  const subWins2 = f2.wins_submission ?? 0;
+  const subAtt1 = f1.avg_sub_attempts ?? s1.avg_sub_attempts ?? 0;
+  const subAtt2 = f2.avg_sub_attempts ?? s2.avg_sub_attempts ?? 0;
 
   return [
     // ── F1 attacking F2 ──────────────────────────────────────────────────
@@ -383,7 +388,7 @@ const computeMatchupAngles = (f1, f2) => {
       angles: [
         evalAngle("Striking", slpm1, strDef2),
         evalAngle("Wrestling", tdAvg1, tdDef2),
-        evalSubAngle(subAtt1, subAtt2),
+        evalSubAngle(subWins1, subAtt1, subWins2, subAtt2),
       ],
     },
     // ── F2 attacking F1 ──────────────────────────────────────────────────
@@ -393,7 +398,7 @@ const computeMatchupAngles = (f1, f2) => {
       angles: [
         evalAngle("Striking", slpm2, strDef1),
         evalAngle("Wrestling", tdAvg2, tdDef1),
-        evalSubAngle(subAtt2, subAtt1),
+        evalSubAngle(subWins2, subAtt2, subWins1, subAtt1),
       ],
     },
   ];

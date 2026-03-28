@@ -42,6 +42,14 @@ const cards = [
     icon: "⊗",
     tag: "COMMAND",
   },
+  {
+    to: "/video-studio",
+    title: "Creator Studio",
+    desc: "Live on-screen fight breakdowns for YouTube and streaming. VS stats, OBS browser-source ready, facecam PiP zone.",
+    cta: "Go Live",
+    icon: "◉",
+    tag: "BROADCAST",
+  },
 ];
 
 export default function Home() {
@@ -174,6 +182,15 @@ export default function Home() {
                 stripe: "#7c2d12",
                 glow: "rgba(234,140,52,0.4)",
                 label: "V",
+              },
+              {
+                fill: "#0d1a2a",
+                dark: "#060e18",
+                rim: "#1d4ed8",
+                accent: "#60a5fa",
+                stripe: "#1e3a5f",
+                glow: "rgba(96,165,250,0.4)",
+                label: "VI",
               },
             ];
             const p = palette[i];
