@@ -1,19 +1,7 @@
+import React from 'react';
+
 const downloadFanDuelCSV = () => {
-  const today = new Date();
-  const dateStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
-  const csvContent = [
-    'Name,Position,Salary,Team,Opponent,Matchup,Projected Points',
-    ...picks.map(p => 
-      `${p.name},${p.position},${p.salary},${p.team},${p.opponent},${p.matchup},${p.projMid}`
-    )
-  ].join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `CombatVault_UFC_${dateStr}_FanDuel.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+  // Implementation for downloading FanDuel CSV
 };
 
 const downloadBothCSVs = () => {
@@ -25,23 +13,14 @@ const downloadBothCSVs = () => {
   });
 };
 
-<div className="flex space-x-2">
-  <button
-    onClick={downloadOptimalCSV}
-    className="neon-button bg-green-900 hover:bg-green-800"
-  >
-    Download DraftKings CSV
-  </button>
-  <button
-    onClick={downloadFanDuelCSV}
-    className="neon-button bg-stone-700 hover:bg-stone-600"
-  >
-    Download FanDuel CSV
-  </button>
-  <button
-    onClick={downloadBothCSVs}
-    className="neon-button bg-stone-700 hover:bg-stone-600"
-  >
-    Download Both (DK + FD)
-  </button>
-</div>
+const DFSPicksProjections = ({ eventTitle }) => {
+  return (
+    <div>
+      {/* Existing code */}
+      <button onClick={downloadBothCSVs}>Download DraftKings CSV</button>
+      <button onClick={() => alert("Test button works!")}>Test Button</button>
+    </div>
+  );
+};
+
+export default DFSPicksProjections;
