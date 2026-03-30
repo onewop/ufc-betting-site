@@ -5,7 +5,6 @@ const DFSPicksProjections = ({ eventTitle }) => {
     <div>
       {/* Existing code */}
       <button onClick={downloadBothCSVs}>Download DraftKings CSV</button>
-      <button onClick={() => alert("Test button works!")}>Test Button</button>
     </div>
   );
 };
