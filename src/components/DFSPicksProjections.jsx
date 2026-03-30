@@ -2,9 +2,9 @@ const downloadFanDuelCSV = () => {
   const today = new Date();
   const dateStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
   const csvContent = [
-    'Name,Position,Salary,Projected Points,Team,Opponent,Matchup,Projected Points (FD)',
+    'Name,Position,Salary,Team,Opponent,Matchup,Projected Points (FD)',
     ...picks.map(p => 
-      `${p.name},${p.position},${p.salary},${p.projMid},${p.team},${p.opponent},${p.matchup},${p.projMid}`
+      `${p.name},${p.position},${p.salary},${p.team},${p.opponent},${p.matchup},${p.projMid}`
     )
   ].join('\n');
   const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -30,7 +30,7 @@ const downloadBothCSVs = () => {
     onClick={downloadOptimalCSV}
     className="neon-button bg-green-900 hover:bg-green-800"
   >
-    Download CSV
+    Download DraftKings CSV
   </button>
   <button
     onClick={downloadFanDuelCSV}
