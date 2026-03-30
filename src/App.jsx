@@ -12,7 +12,6 @@ import FightAnalyzer from "./components/FightAnalyzer";
 import VideoVault from "./components/VideoVault";
 import ManualTeams from "./components/ManualTeams";
 import DFSPicksProjections from "./components/DFSPicksProjections";
-import DisasterPicks from "./components/DisasterPicks";
 import VideosV2 from "./components/VideosV2";
 import LatestOdds from "./components/LatestOdds";
 import VideoStudio from "./components/VideoStudio";
@@ -27,10 +26,8 @@ const navLinks = [
   },
   { to: "/manual-teams", label: "Manual Teams" },
   { to: "/fight-analyzer", label: "Fight Analyzer - Latest Card" },
-  { to: "/video-vault", label: "Video Vault" },
   { to: "/odds", label: "Live Odds" },
   { to: "/predictions", label: "Predictions & Projections" },
-  { to: "/disaster-picks", label: "💀 Disaster Picks" },
   { to: "/video-studio", label: "Creator Studio" },
 ];
 
@@ -83,18 +80,21 @@ const AppShell = () => {
 
   return (
     <div
-      className={`min-h-screen pb-20 md:pb-0 ${theme === "light" ? "theme-light bg-stone-100 text-stone-900" : "bg-gray-900"}`}
+      className={`min-h-screen pb-20 xl:pb-0 ${theme === "light" ? "theme-light bg-stone-100 text-stone-900" : "bg-gray-900"}`}
     >
       <nav
         className="sticky top-0 z-50 text-stone-100 shadow-lg border-b border-yellow-900/60"
         style={{ backgroundColor: "#92400e" }}
       >
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between md:justify-center flex-col">
-          {/* Desktop nav links */}
-          <ul className="hidden md:flex space-x-8">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between xl:justify-center flex-col">
+          {/* Desktop nav links — visible only at xl (1280px+) */}
+          <ul className="hidden xl:flex flex-wrap justify-center gap-x-5 gap-y-1">
             {navLinks.map(({ to, label }) => (
               <li key={to}>
-                <Link to={to} className="hover:underline whitespace-nowrap">
+                <Link
+                  to={to}
+                  className="text-sm hover:underline whitespace-nowrap"
+                >
                   {label}
                 </Link>
               </li>
@@ -113,8 +113,8 @@ const AppShell = () => {
             </li>
           </ul>
 
-          {/* Mobile: event name + hamburger */}
-          <div className="w-full flex items-center justify-between md:hidden">
+          {/* Hamburger row — visible below xl (< 1280px) */}
+          <div className="w-full flex items-center justify-between xl:hidden">
             <span className="font-bold tracking-wide text-sm sm:text-base truncate pr-2">
               {eventTitle} - Combat Vault
             </span>
@@ -147,9 +147,9 @@ const AppShell = () => {
             </div>
           </div>
 
-          {/* Mobile dropdown */}
+          {/* Hamburger dropdown */}
           {menuOpen && (
-            <ul className="md:hidden flex flex-col border-t border-yellow-900/60 w-full">
+            <ul className="xl:hidden flex flex-col border-t border-yellow-900/60 w-full">
               {navLinks.map(({ to, label }) => (
                 <li key={to}>
                   <Link
@@ -187,16 +187,12 @@ const AppShell = () => {
           path="/predictions"
           element={<DFSPicksProjections eventTitle={eventTitle} />}
         />
-        <Route
-          path="/disaster-picks"
-          element={<DisasterPicks eventTitle={eventTitle} />}
-        />
         <Route path="/video-studio" element={<VideoStudio />} />
       </Routes>
       <Footer />
 
       <nav
-        className={`md:hidden fixed bottom-0 left-0 right-0 z-[60] border-t border-yellow-900/60 backdrop-blur ${theme === "light" ? "bg-amber-100/95" : "bg-stone-950/95"}`}
+        className={`xl:hidden fixed bottom-0 left-0 right-0 z-[60] border-t border-yellow-900/60 backdrop-blur ${theme === "light" ? "bg-amber-100/95" : "bg-stone-950/95"}`}
         aria-label="Mobile quick navigation"
       >
         <ul className="grid grid-cols-5">

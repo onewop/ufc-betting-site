@@ -67,6 +67,8 @@ const LatestOdds = () => {
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [fromCache, setFromCache] = useState(false);
+  const [cacheTimestamp, setCacheTimestamp] = useState(null);
+  const stalenessChecked = useRef(false);
 
   // Alert form state
   const [alertEmail, setAlertEmail] = useState("");
@@ -165,10 +167,37 @@ const LatestOdds = () => {
     setAlertDirection("better");
     setAlertOdds("");
     setTimeout(() => setAlertSubmitted(false), 3500);
+
+    // Save to backend
+    const backendAlert = {
+      email: alert.email,
+      fighter_name: alert.fighter,
+      direction: alert.direction,
+      target_odds: alert.targetOdds,
+      active: alert.active,
+    };
+    fetch("http://localhost:3001/api/save-alert", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(backendAlert),
+    })
+      .then((response) => {
+        if (response.ok) {
+          console.log("Alert saved to backend");
+        } else {
+          console.error("Failed to save alert to backend");
+        }
+      })
+      .catch((error) => {
+        console.error("Error saving alert:", error);
+      });
   };
 
-  const selectFighterForAlert = (name) => {
+  const selectFighterForAlert = (name, odds = null) => {
     setAlertFighter(name);
+    if (odds != null) {
+      setAlertOdds(odds.toString());
+    }
     setAlertFormOpen(true);
     setTimeout(() => {
       alertFormRef.current?.scrollIntoView({
@@ -191,6 +220,7 @@ const LatestOdds = () => {
       }),
     );
     setFromCache(cached);
+    setCacheTimestamp(timestamp);
 
     if (localAlerts.length > 0) {
       const { nextAlerts, triggered } = evaluateAlerts(sorted, localAlerts);
@@ -314,6 +344,32 @@ const LatestOdds = () => {
       .catch(() => {}); // silently fall back to empty
   }, []);
 
+  // Staleness detection: if cache was loaded but none of the DK fighters
+  // appear in the API events, the cache is stale — clear everything and
+  // force a fresh fetch so we always show the current card.
+  useEffect(() => {
+    if (stalenessChecked.current) return;
+    if (!fromCache || dkFighters.length === 0 || odds.length === 0) return;
+    stalenessChecked.current = true;
+
+    const apiNames = new Set(
+      odds
+        .flatMap((e) => [e.home_team, e.away_team])
+        .filter(Boolean)
+        .map((n) => n.trim().toLowerCase()),
+    );
+    const hasMatch = dkFighters.some((f) =>
+      apiNames.has(f.trim().toLowerCase()),
+    );
+
+    if (!hasMatch) {
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith("ufc_odds_cache"))
+        .forEach((k) => localStorage.removeItem(k));
+      fetchOdds(true);
+    }
+  }, [dkFighters, odds, fromCache]);
+
   return (
     <div
       className="min-h-screen bg-stone-950 text-stone-200"
@@ -354,6 +410,71 @@ const LatestOdds = () => {
             ✕ Clear Cache
           </button>
         </div>
+      </div>
+
+      {/* ── Debug info bar ── */}
+      <div className="max-w-4xl mx-auto px-4 py-2 flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-stone-600 border-b border-stone-800/60">
+        <span>
+          <span className="text-stone-500 font-bold uppercase tracking-wider">
+            API event:{" "}
+          </span>
+          {odds.length > 0
+            ? new Date(odds[0].commence_time).toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
+            : loading
+              ? "loading…"
+              : "—"}
+        </span>
+        <span>
+          <span className="text-stone-500 font-bold uppercase tracking-wider">
+            API fights:{" "}
+          </span>
+          {odds.length}
+        </span>
+        <span>
+          <span className="text-stone-500 font-bold uppercase tracking-wider">
+            DK slate:{" "}
+          </span>
+          {dkFighters.length > 0 ? `${dkFighters.length} fighters` : "loading…"}
+        </span>
+        <span>
+          <span className="text-stone-500 font-bold uppercase tracking-wider">
+            Cache fetched:{" "}
+          </span>
+          {cacheTimestamp
+            ? new Date(cacheTimestamp).toLocaleString("en-US", {
+                month: "short",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+              })
+            : "—"}
+          {fromCache && <span className="ml-1 text-yellow-600">(cached)</span>}
+        </span>
+        {(() => {
+          if (!fromCache || dkFighters.length === 0 || odds.length === 0)
+            return null;
+          const apiNames = new Set(
+            odds
+              .flatMap((e) => [e.home_team, e.away_team])
+              .filter(Boolean)
+              .map((n) => n.trim().toLowerCase()),
+          );
+          const hasMatch = dkFighters.some((f) =>
+            apiNames.has(f.trim().toLowerCase()),
+          );
+          return hasMatch ? (
+            <span className="text-green-600">✓ DK slate matches API</span>
+          ) : (
+            <span className="text-red-500">
+              ⚠ Cache appears stale — auto-refreshing
+            </span>
+          );
+        })()}
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-4">
@@ -629,42 +750,28 @@ const LatestOdds = () => {
                 >
                   <div className="hidden md:grid grid-cols-[1fr_auto_1fr] items-center py-2 px-3 gap-2 hover:bg-stone-900/50 transition">
                     {/* Fighter 1 (left) */}
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-1">
-                        <span className="text-stone-100 text-sm font-semibold leading-tight">
-                          {f1}
+                    <div className="flex items-center gap-2">
+                      <span className="text-stone-100 text-sm font-semibold leading-tight">
+                        {f1}
+                      </span>
+                      <span
+                        className={`text-lg font-black ${f1Fav ? "text-red-400" : "text-green-400"}`}
+                      >
+                        {fmt(best1)}
+                      </span>
+                      {best1 != null && (
+                        <span className="text-stone-600 text-xs">
+                          ({impliedProb(best1)}%)
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => selectFighterForAlert(f1)}
-                          title={`Set alert for ${f1}`}
-                          className="text-stone-600 hover:text-yellow-400 transition text-xs leading-none"
-                        >
-                          🔔
-                        </button>
-                      </div>
-                      <div className="flex items-baseline gap-1.5 mt-0.5">
-                        <span
-                          className={`text-base font-black ${f1Fav ? "text-red-400" : "text-green-400"}`}
-                        >
-                          {fmt(best1)}
-                        </span>
-                        {best1 != null && (
-                          <span className="text-stone-600 text-xs">
-                            {impliedProb(best1)}%
-                          </span>
-                        )}
-                        {f1Fav && (
-                          <span className="text-xs text-red-500/60 uppercase">
-                            FAV
-                          </span>
-                        )}
-                        {!f1Fav && best1 != null && (
-                          <span className="text-xs text-green-500/60 uppercase">
-                            DOG
-                          </span>
-                        )}
-                      </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => selectFighterForAlert(f1, best1)}
+                        title={`Set alert for ${f1}`}
+                        className="text-stone-600 hover:text-yellow-400 transition text-xs leading-none ml-1"
+                      >
+                        🔔
+                      </button>
                     </div>
 
                     {/* VS divider */}
@@ -673,42 +780,28 @@ const LatestOdds = () => {
                     </div>
 
                     {/* Fighter 2 (right) */}
-                    <div className="flex flex-col items-end">
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          type="button"
-                          onClick={() => selectFighterForAlert(f2)}
-                          title={`Set alert for ${f2}`}
-                          className="text-stone-600 hover:text-yellow-400 transition text-xs leading-none"
-                        >
-                          🔔
-                        </button>
-                        <span className="text-stone-100 text-sm font-semibold leading-tight text-right">
-                          {f2}
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => selectFighterForAlert(f2, best2)}
+                        title={`Set alert for ${f2}`}
+                        className="text-stone-600 hover:text-yellow-400 transition text-xs leading-none mr-1"
+                      >
+                        🔔
+                      </button>
+                      {best2 != null && (
+                        <span className="text-stone-600 text-xs">
+                          ({impliedProb(best2)}%)
                         </span>
-                      </div>
-                      <div className="flex items-baseline gap-1.5 mt-0.5">
-                        {f2Fav && (
-                          <span className="text-xs text-red-500/60 uppercase">
-                            FAV
-                          </span>
-                        )}
-                        {!f2Fav && best2 != null && (
-                          <span className="text-xs text-green-500/60 uppercase">
-                            DOG
-                          </span>
-                        )}
-                        {best2 != null && (
-                          <span className="text-stone-600 text-xs">
-                            {impliedProb(best2)}%
-                          </span>
-                        )}
-                        <span
-                          className={`text-base font-black ${f2Fav ? "text-red-400" : "text-green-400"}`}
-                        >
-                          {fmt(best2)}
-                        </span>
-                      </div>
+                      )}
+                      <span
+                        className={`text-lg font-black ${f2Fav ? "text-red-400" : "text-green-400"}`}
+                      >
+                        {fmt(best2)}
+                      </span>
+                      <span className="text-stone-100 text-sm font-semibold leading-tight">
+                        {f2}
+                      </span>
                     </div>
                   </div>
 
@@ -726,7 +819,7 @@ const LatestOdds = () => {
                       <div className="flex items-center gap-2 min-w-0">
                         <button
                           type="button"
-                          onClick={() => selectFighterForAlert(f1)}
+                          onClick={() => selectFighterForAlert(f1, best1)}
                           title={`Set alert for ${f1}`}
                           className="text-stone-500 hover:text-yellow-400 transition text-xs"
                         >
@@ -738,7 +831,7 @@ const LatestOdds = () => {
                       </div>
                       <div className="text-right">
                         <span
-                          className={`text-lg font-black ${f1Fav ? "text-red-400" : "text-green-400"}`}
+                          className={`text-xl font-black ${f1Fav ? "text-red-400" : "text-green-400"}`}
                         >
                           {fmt(best1)}
                         </span>
@@ -754,7 +847,7 @@ const LatestOdds = () => {
                       <div className="flex items-center gap-2 min-w-0">
                         <button
                           type="button"
-                          onClick={() => selectFighterForAlert(f2)}
+                          onClick={() => selectFighterForAlert(f2, best2)}
                           title={`Set alert for ${f2}`}
                           className="text-stone-500 hover:text-yellow-400 transition text-xs"
                         >
@@ -766,7 +859,7 @@ const LatestOdds = () => {
                       </div>
                       <div className="text-right">
                         <span
-                          className={`text-lg font-black ${f2Fav ? "text-red-400" : "text-green-400"}`}
+                          className={`text-xl font-black ${f2Fav ? "text-red-400" : "text-green-400"}`}
                         >
                           {fmt(best2)}
                         </span>

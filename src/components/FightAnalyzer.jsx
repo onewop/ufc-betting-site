@@ -2054,6 +2054,43 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                       </div>
                     );
                   })}
+                  {tabKey === "basics" && (
+                    <div className="mt-5 pt-4 border-t border-stone-700">
+                      <p className="text-stone-500 text-xs font-bold mb-3 uppercase tracking-wider">
+                        ◈ Highlight Reel
+                      </p>
+                      <p className="text-stone-500 text-xs mb-3 italic">
+                        Watch key moments from this fighter's recent bouts
+                      </p>
+                      <div className="flex flex-col gap-4">
+                        <div
+                          className="relative w-full"
+                          style={{ paddingBottom: "56.25%" }}
+                        >
+                          <iframe
+                            className="absolute inset-0 w-full h-full rounded"
+                            src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                            title={`${fighter.name} — Highlight Reel 1`}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                        <div
+                          className="relative w-full"
+                          style={{ paddingBottom: "56.25%" }}
+                        >
+                          <iframe
+                            className="absolute inset-0 w-full h-full rounded"
+                            src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                            title={`${fighter.name} — Highlight Reel 2`}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {tabKey === "recordAwards" &&
                     fighter.fight_history?.length > 0 && (
                       <div className="mt-4 pt-3 border-t border-stone-700">

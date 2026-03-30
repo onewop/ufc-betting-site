@@ -1364,6 +1364,25 @@ def csv_to_json(
                 print(f"⚠️  Skipped {row['Name']} - Game Info has no '@': {row['Game Info']!r}")
             dk_df = dk_df[valid_mask].copy()
 
+        # ── Derive event date from the Game Info column ────────────────────────
+        # Game Info format: "Fighter1@Fighter2 MM/DD/YYYY HH:MMPM ET"
+        # Take the latest fight date on the card as the event date.
+        date_series = dk_df['Game Info'].str.extract(
+            r'(\d{1,2}/\d{1,2}/\d{4})', expand=False
+        ).dropna()
+        event_date_str = "Unknown"
+        if not date_series.empty:
+            from datetime import datetime as _dt
+            parsed_dates = []
+            for d in date_series:
+                try:
+                    parsed_dates.append(_dt.strptime(d, "%m/%d/%Y"))
+                except ValueError:
+                    pass
+            if parsed_dates:
+                latest = max(parsed_dates)
+                event_date_str = latest.strftime("%B %-d, %Y")
+
         # Improved matchup extraction: extract "Fighter1@Fighter2" before the date
         dk_df['matchup_raw'] = dk_df['Game Info'].astype(str).str.strip()
         
@@ -2255,8 +2274,8 @@ def csv_to_json(
 
         data = {
             "event": {
-                "name": event_card_name if (os.environ.get('SHERDOG_EVENT_URL') and event_card_name) else "UFC Fight Night: Evloev vs. Murphy",
-                "date": "March 21, 2026",
+                "name": event_card_name if (os.environ.get('SHERDOG_EVENT_URL') and event_card_name) else "UFC Fight Night",
+                "date": event_date_str,
                 "location": "Las Vegas, Nevada, USA"
             },
             "fights": fights,
@@ -2265,6 +2284,22 @@ def csv_to_json(
 
         save_to_json(data, output_path)
         print(f"Processed {len(fights)} fights! Check public/this_weeks_stats.json")
+
+        # ── Sync DKSalaries.csv → public/ so the React app always reads the current slate ──
+        import shutil as _shutil
+        public_dk = os.path.join(os.path.dirname(os.path.abspath(output_path)), "DKSalaries.csv")
+        _shutil.copy(dk_path, public_dk)
+        print(f"Synced DKSalaries.csv → {public_dk}")
+
+        # ── Write public/current_event.json from the data we already have ──────────
+        event_name_for_banner = data["event"]["name"]
+        banner_title = f"{event_name_for_banner} \u2014 {event_date_str}"
+        current_event_path = os.path.join(
+            os.path.dirname(os.path.abspath(output_path)), "current_event.json"
+        )
+        with open(current_event_path, "w") as _f:
+            json.dump({"title": banner_title}, _f)
+        print(f"Written current_event.json: {banner_title}")
 
     except Exception as e:
         print(f"Error during processing: {e}")

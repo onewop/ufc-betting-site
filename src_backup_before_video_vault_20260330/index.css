@@ -1,0 +1,215 @@
+/* Tailwind CSS directives for PostCSS processing */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .shadow-neon {
+    box-shadow:
+      0 0 10px #ff2d55,
+      0 0 20px #0aff99,
+      0 0 30px rgba(229, 231, 235, 0.3);
+  }
+  .pearl-gradient {
+    background: linear-gradient(135deg, #1f2937, #374151, #e5e7eb);
+  }
+  .pearl-border {
+    border: 2px solid rgba(229, 231, 235, 0.7);
+    border-radius: 8px;
+  }
+  .ufc-overlay {
+    background:
+      linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+      url("https://picsum.photos/1920/1080?blur=2&grayscale");
+    background-size: cover;
+    background-position: center;
+    animation: subtle-pulse 5s ease-in-out infinite;
+  }
+  @keyframes subtle-pulse {
+    0% {
+      opacity: 0.8;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.8;
+    }
+  }
+}
+
+@layer base {
+  html {
+    font-size: 16px;
+  }
+
+  @media (min-width: 768px) {
+    html {
+      font-size: 17px;
+    }
+  }
+
+  body {
+    line-height: 1.5;
+    -webkit-tap-highlight-color: rgba(245, 158, 11, 0.2);
+  }
+
+  details > summary {
+    cursor: pointer;
+    list-style: none;
+    transition: color 0.2s ease;
+  }
+
+  details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  details[open] > *:not(summary) {
+    animation: accordion-reveal 0.3s ease-in-out;
+  }
+
+  @keyframes accordion-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .theme-light {
+    color-scheme: light;
+  }
+
+  .theme-light .bg-gray-900,
+  .theme-light .bg-stone-950,
+  .theme-light .bg-stone-900 {
+    background-color: #f5f2e8 !important;
+  }
+
+  .theme-light .bg-stone-900\/80,
+  .theme-light .bg-stone-900\/90,
+  .theme-light .bg-stone-950\/60,
+  .theme-light .bg-stone-950\/70,
+  .theme-light .bg-stone-950\/80 {
+    background-color: rgba(245, 242, 232, 0.92) !important;
+  }
+
+  .theme-light .text-stone-100,
+  .theme-light .text-stone-200,
+  .theme-light .text-stone-300,
+  .theme-light .text-stone-400 {
+    color: #1c1917 !important;
+  }
+
+  .theme-light .text-stone-500,
+  .theme-light .text-stone-600 {
+    color: #57534e !important;
+  }
+
+  .theme-light .border-stone-700,
+  .theme-light .border-stone-800,
+  .theme-light .border-stone-700\/40,
+  .theme-light .border-stone-700\/50,
+  .theme-light .border-stone-800\/40 {
+    border-color: #d6d3d1 !important;
+  }
+
+  .theme-light .mobile-data-card:nth-child(odd) {
+    background-color: #f0ede2 !important;
+  }
+
+  .theme-light .mobile-data-card:nth-child(even) {
+    background-color: #e7e2d4 !important;
+    border-color: #d6d3d1 !important;
+  }
+}
+
+@layer components {
+  .mobile-data-card {
+    @apply rounded-lg border border-stone-700 bg-stone-900/90 p-3;
+  }
+
+  .mobile-data-card:nth-child(odd) {
+    @apply bg-stone-900;
+  }
+
+  .mobile-data-card:nth-child(even) {
+    @apply bg-stone-800/80 border-stone-600;
+  }
+
+  .mobile-kv-row {
+    @apply flex items-start justify-between gap-3 border-b border-stone-800 py-1.5 last:border-0;
+  }
+
+  .mobile-kv-label {
+    @apply text-[11px] uppercase tracking-wide text-stone-500;
+  }
+
+  .mobile-kv-value {
+    @apply text-sm font-semibold text-stone-100 text-right;
+  }
+}
+
+body {
+  @apply bg-gray-900 text-white font-orbitron;
+  overflow-x: hidden;
+}
+
+.neon-button {
+  @apply bg-gradient-to-r from-red-600 to-pink-500 text-white font-bold py-3 px-4 sm:px-6 rounded-lg shadow-lg transform transition duration-300 hover:scale-105 hover:shadow-neon pearl-border focus:outline-none focus:ring-2 focus:ring-pink-500;
+  min-height: 44px;
+}
+
+.card {
+  @apply bg-gray-800 bg-opacity-90 backdrop-blur-lg pearl-border rounded-xl shadow-lg transform transition duration-300 hover:scale-105 hover:shadow-neon p-4 sm:p-8;
+}
+
+h1,
+h2,
+h3 {
+  @apply text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-500 tracking-tight;
+}
+
+a {
+  @apply text-green-400 hover:text-green-300 transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-400;
+}
+
+.hero-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 1; /* Changed from 0.4 to ensure visibility during testing */
+  /* Removed filter: blur(2px) to ensure visibility */
+}
+
+.hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.6;
+  filter: blur(3px);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  .card {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 380px) {
+  html {
+    font-size: 15px;
+  }
+}

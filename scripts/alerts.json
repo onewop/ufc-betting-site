@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "email": "toscott4321@gmail.com",
+    "fighter_name": "Azamat Bekoev",
+    "direction": "better",
+    "target_odds": -500,
+    "active": true
+  },
+  {
+    "email": "toscott4321@gmail.com",
+    "fighter_name": "Abdul Rakhman Yakhyaev",
+    "direction": "better",
+    "target_odds": -2000,
+    "active": true
+  }
+]
