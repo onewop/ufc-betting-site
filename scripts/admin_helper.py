@@ -12,13 +12,7 @@ RED = "\033[91m"
 RESET = "\033[0m"
 
 def print_welcome():
-    print(f"{GREEN}███████╗██╗   ██╗███╗   ███╗███████╗███████╗██████╗ ██╗   ██╗")
-    print("██╔════╝██║   ██║████╗ ████║██╔════╝██╔════╝██╔══██╗██║   ██║")
-    print("███████╗██║   ██║██╔████╔██║█████╗  ███████╗██████╔╝██║   ██║")
-    print("╚════██║██║   ██║██║╚██╔╝██║██╔══╝  ╚════██║██╔══██╗██║   ██║")
-    print("███████║╚██████╔╝██║ ╚═╝ ██║███████╗███████║██║  ██║╚██████╔╝")
-    print("╚══════╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝ ╚═════╝")
-    print(f"{RESET}UFC Admin Helper - {datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
+    print(f"{GREEN}UFC Site Admin Helper - v1.0{RESET}\n")
 
 def confirm_action(prompt):
     while True:
@@ -52,31 +46,40 @@ def check_site_health():
     
     # Check this_weeks_stats.json
     stats_file = "public/this_weeks_stats.json"
+    zero_salary_count = 0
+    low_avg_points_count = 0
+    
     if os.path.exists(stats_file):
         try:
             with open(stats_file, 'r') as f:
                 data = json.load(f)
                 for fight in data.get("fights", []):
                     for fighter in fight.get("fighters", []):
-                        if fighter.get("salary", 0) <= 0:
-                            issues.append(f"{RED}Fighter {fighter.get('name')} has 0 salary{RESET}")
-                        if fighter.get("avgPointsPerGame", 0) < 5:
-                            issues.append(f"{YELLOW}Fighter {fighter.get('name')} has low avgPointsPerGame: {fighter.get('avgPointsPerGame')}{RESET}")
+                        if fighter.get("salary", 0) == 0:
+                            zero_salary_count += 1
+                        if fighter.get("avgPointsPerGame", 0) < 10:
+                            low_avg_points_count += 1
         except Exception as e:
             issues.append(f"{RED}Error reading {stats_file}: {e}{RESET}")
     else:
         issues.append(f"{RED}File missing: {stats_file}{RESET}")
+    
+    # Add findings to issues
+    if zero_salary_count > 0:
+        issues.append(f"{RED}Found {zero_salary_count} fighter(s) with zero salary.{RESET}")
+    if low_avg_points_count > 0:
+        issues.append(f"{YELLOW}Found {low_avg_points_count} fighter(s) with avgPointsPerGame < 10.{RESET}")
 
     # Check current_event.json
     event_file = "public/current_event.json"
+    event_title = "N/A"
     if not os.path.exists(event_file):
         issues.append(f"{RED}File missing: {event_file}{RESET}")
     else:
         try:
             with open(event_file, 'r') as f:
                 data = json.load(f)
-                if not data.get("title"):
-                    issues.append(f"{RED}current_event.json has no title field{RESET}")
+                event_title = data.get("title", "N/A")
         except Exception as e:
             issues.append(f"{RED}Error reading {event_file}: {e}{RESET}")
 
@@ -141,7 +144,7 @@ def show_current_status():
     last_update = "N/A"
     if os.path.exists(stats_file):
         try:
-            last_update = time.ctime(os.path.getmtime(stats_file))
+            last_update = datetime.fromtimestamp(os.path.getmtime(stats_file)).strftime('%Y-%m-%d %H:%M')
         except Exception as e:
             last_update = f"Error: {e}"
     
@@ -165,13 +168,13 @@ def run_check_odds_alerts():
 
 def main_menu():
     while True:
-        print("\n" + "="*50)
+        print("\n" + "=" * 50)
         print("1. Run full weekly update")
         print("2. Run site health check")
         print("3. Show current status")
         print("4. Run check_odds_alerts.py")
         print("5. Exit")
-        print("="*50)
+        print("=" * 50)
         
         choice = input(f"{YELLOW}Select an option (1-5): {RESET}")
         
