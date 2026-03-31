@@ -91,6 +91,30 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
     ];
   };
 
+  // Estimate win probability from betting odds (moneyline)
+  // Returns probability that fighter is favorite (i.e., negative odds)
+  const estimateWinProbability = (fighter, bettingOdds = {}) => {
+    const { moneyline } = bettingOdds;
+    if (!moneyline) return 0.5;
+    const [mlF1, mlF2] = moneyline.split(" ");
+    const odds = fighter.name.includes(mlF1) ? parseFloat(mlF1) : parseFloat(mlF2);
+    if (isNaN(odds)) return 0.5;
+    // Convert American odds to probability
+    return odds < 0 ? Math.abs(odds) / (Math.abs(odds) + 100) : 100 / (odds + 100);
+  };
+
+  // Compute fight quality score (0–1) based on favorite win probability
+  const computeFightQuality = (fighters, bettingOdds) => {
+    if (!fighters || fighters.length < 2) return 0.5;
+    const f1Prob = estimateWinProbability(fighters[0], bettingOdds);
+    const f2Prob = estimateWinProbability(fighters[1], bettingOdds);
+    const favoriteProb = Math.max(f1Prob, f2Prob);
+    // High-quality fight: favorite win prob between 60% and 85%
+    if (favoriteProb < 0.6) return 0.3;
+    if (favoriteProb > 0.85) return 0.5;
+    return 0.8;
+  };
+
   // Build every valid salary-cap lineup sorted by projected points descending.
   // Returns an array of { team, totalSalary, totalPoints } objects.
   const buildAllValidLineups = (allPicks, lockedSet, excludedSet) => {
@@ -384,6 +408,10 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
           );
           const reasoning = buildReasoning(f, projMid, ownerNum);
 
+          // Compute win probability and points-per-thousand
+          const winProb = estimateWinProbability(f, f._bettingOdds);
+          const pointsPerThousand = f.salary > 0 ? (projMid / f.salary) * 1000 : 0;
+
           return {
             fighter: f.name,
             salary: f.salary,
@@ -400,6 +428,8 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
             roundsSource,
             source,
             fightAnchor: `fight-${f._fightId}`,
+            winProb,
+            pointsPerThousand,
           };
         });
 
