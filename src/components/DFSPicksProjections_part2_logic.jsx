@@ -485,4 +485,323 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
     [picks],
   );
 
-  if (loading)
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-stone-950 text-yellow-500">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto mb-4"></div>
+          <p className="text-lg">Loading UFC stats...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-stone-950 text-red-500">
+        <div className="text-center">
+          <p className="text-xl font-bold mb-2">Error</p>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-stone-950 text-stone-200 font-sans">
+      <header className="bg-stone-900 border-b border-stone-800 py-4 px-6 sticky top-0 z-20">
+        <h1 className="text-2xl font-bold text-yellow-600">
+          {eventName} — DFS Picks & Projections
+        </h1>
+        <p className="text-sm text-stone-400 mt-1">
+          Event: {eventTitle || "Latest UFC Event"} • Avg Proj: {avgProjMid.toFixed(1)} pts
+        </p>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        {/* Optimizer Section */}
+        <section id="optimizer" className="mb-10">
+          <div
+            className="flex items-center justify-between mb-4 cursor-pointer"
+            onClick={() => toggleSection("optimizer")}
+          >
+            <h2 className="text-xl font-semibold text-yellow-500">
+              Lineup Optimizer
+            </h2>
+            <span className="text-stone-500">
+              {openSections.optimizer ? "−" : "+"}
+            </span>
+          </div>
+          {openSections.optimizer && (
+            <div className="bg-stone-900 rounded-lg p-4 border border-stone-800">
+              <div className="flex flex-wrap gap-4 items-center mb-4">
+                <label className="flex items-center gap-2">
+                  <span className="text-sm">Lineups:</span>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    defaultValue="1"
+                    className="w-20 bg-stone-800 border border-stone-700 rounded px-2 py-1 text-white"
+                    id="lineupCount"
+                  />
+                </label>
+                <label className="flex items-center gap-2">
+                  <span className="text-sm">Exposure %:</span>
+                  <input
+                    type="number"
+                    min="10"
+                    max="100"
+                    value={exposureLimit}
+                    onChange={(e) => setExposureLimit(Number(e.target.value))}
+                    className="w-20 bg-stone-800 border border-stone-700 rounded px-2 py-1 text-white"
+                  />
+                </label>
+                <button
+                  onClick={() => {
+                    const countInput = document.getElementById("lineupCount");
+                    const count = countInput ? Number(countInput.value) : 1;
+                    runOptimizer(count);
+                  }}
+                  className="bg-yellow-600 hover:bg-yellow-500 text-white px-4 py-2 rounded font-semibold transition"
+                >
+                  Generate Lineups
+                </button>
+                <button
+                  onClick={downloadOptimalCSV}
+                  disabled={optimalLineups.length === 0}
+                  className="bg-stone-700 hover:bg-stone-600 disabled:opacity-50 text-white px-4 py-2 rounded font-semibold transition"
+                >
+                  Download CSV
+                </button>
+              </div>
+              {optimizerError && (
+                <p className="text-red-400 mb-2">{optimizerError}</p>
+              )}
+              {optimalLineups.length > 0 && (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-left text-sm">
+                    <thead>
+                      <tr className="bg-stone-800">
+                        <th className="p-2">Lineup</th>
+                        <th className="p-2">Fighters</th>
+                        <th className="p-2">Salary</th>
+                        <th className="p-2">Proj Pts</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {optimalLineups.map((lineup, idx) => (
+                        <tr key={idx} className="border-b border-stone-800">
+                          <td className="p-2 font-bold text-yellow-500">
+                            #{idx + 1}
+                          </td>
+                          <td className="p-2">
+                            {lineup.team.map((f, i) => (
+                              <span key={i} className="mr-2">
+                                {f.fighter}
+                              </span>
+                            ))}
+                          </td>
+                          <td className="p-2">${lineup.totalSalary.toLocaleString()}</td>
+                          <td className="p-2 font-bold">{lineup.totalPoints}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
+        {/* Table Section */}
+        <section id="table" className="mb-10">
+          <div
+            className="flex items-center justify-between mb-4 cursor-pointer"
+            onClick={() => toggleSection("table")}
+          >
+            <h2 className="text-xl font-semibold text-yellow-500">
+              Fighter Projections
+            </h2>
+            <span className="text-stone-500">
+              {openSections.table ? "−" : "+"}
+            </span>
+          </div>
+          {openSections.table && (
+            <div className="overflow-x-auto bg-stone-900 rounded-lg border border-stone-800">
+              <table className="min-w-full text-left text-sm">
+                <thead>
+                  <tr className="bg-stone-800">
+                    <SortTh col="fighter" label="Fighter" />
+                    <SortTh col="salary" label="Salary" />
+                    <SortTh col="projMid" label="Proj Pts" />
+                    <SortTh col="projection" label="Projection" />
+                    <SortTh col="ownership" label="Ownership" />
+                    <SortTh col="winProb" label="Win % Est" />
+                    <SortTh col="pointsPerThousand" label="Value ($/k)" />
+                    <th className="p-2">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sorted.map((p) => (
+                    <tr
+                      key={p.fighter}
+                      className={`border-b border-stone-800 hover:bg-stone-800/60 ${
+                        locked.has(p.fighter) ? "bg-yellow-900/20" : ""
+                      }`}
+                    >
+                      <td className="p-2">
+                        <a
+                          href={`#${p.fightAnchor}`}
+                          onClick={(e) => openMatchupIntelFight(p.fightAnchor, e)}
+                          className="text-yellow-500 hover:underline"
+                        >
+                          {p.fighter}
+                        </a>
+                      </td>
+                      <td className="p-2">${p.salary.toLocaleString()}</td>
+                      <td className="p-2 font-bold">{p.projMid}</td>
+                      <td className="p-2">{p.projection}</td>
+                      <td className="p-2">{p.ownership}</td>
+                      <td className="p-2">{(p.winProb * 100).toFixed(1)}%</td>
+                      <td className="p-2">${p.pointsPerThousand.toFixed(2)}</td>
+                      <td className="p-2">
+                        <button
+                          onClick={() => toggleLock(p.fighter)}
+                          className={`px-2 py-1 rounded text-xs font-semibold mr-2 ${
+                            locked.has(p.fighter)
+                              ? "bg-green-700 text-white"
+                              : "bg-stone-700 text-stone-300"
+                          }`}
+                        >
+                          {locked.has(p.fighter) ? "Locked" : "Lock"}
+                        </button>
+                        <button
+                          onClick={() => toggleExclude(p.fighter)}
+                          className={`px-2 py-1 rounded text-xs font-semibold ${
+                            excluded.has(p.fighter)
+                              ? "bg-red-700 text-white"
+                              : "bg-stone-700 text-stone-300"
+                          }`}
+                        >
+                          {excluded.has(p.fighter) ? "Excluded" : "Exclude"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        {/* Chart Section */}
+        <section id="chart" className="mb-10">
+          <div
+            className="flex items-center justify-between mb-4 cursor-pointer"
+            onClick={() => toggleSection("chart")}
+          >
+            <h2 className="text-xl font-semibold text-yellow-500">
+              Top 10 Projections
+            </h2>
+            <span className="text-stone-500">
+              {openSections.chart ? "−" : "+"}
+            </span>
+          </div>
+          {openSections.chart && (
+            <div className="bg-stone-900 rounded-lg p-4 border border-stone-800">
+              <div className="h-64 flex items-end justify-between gap-2">
+                {top10Chart.map((p, i) => (
+                  <div key={i} className="flex flex-col items-center w-full">
+                    <div
+                      className="w-full bg-yellow-600 hover:bg-yellow-500 transition rounded-t"
+                      style={{ height: `${Math.min((p.projMid / 60) * 100, 100)}%` }}
+                      title={`${p.fighter}: ${p.projMid} pts`}
+                    ></div>
+                    <span className="text-xs mt-2 truncate w-full text-center">
+                      {p.fighter}
+                    </span>
+                    <span className="text-xs text-stone-400">
+                      ${p.salary.toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Matchup Intel Section */}
+        <section id="matchupIntel" className="mb-10">
+          <div
+            className="flex items-center justify-between mb-4 cursor-pointer"
+            onClick={() => toggleSection("matchupIntel")}
+          >
+            <h2 className="text-xl font-semibold text-yellow-500">
+              Matchup Intel
+            </h2>
+            <span className="text-stone-500">
+              {openSections.matchupIntel ? "−" : "+"}
+            </span>
+          </div>
+          {openSections.matchupIntel && (
+            <div className="bg-stone-900 rounded-lg p-4 border border-stone-800">
+              {focusedFightId ? (
+                (() => {
+                  const fight = fights.find(
+                    (f) => String(f.fight_id) === focusedFightId
+                  );
+                  if (!fight) return <p className="text-red-400">Fight not found.</p>;
+                  const [f1, f2] = fight.fighters || [];
+                  const quality = computeFightQuality(
+                    [f1, f2],
+                    fight.betting_odds || {}
+                  );
+                  return (
+                    <div>
+                      <h3 className="text-lg font-bold text-yellow-500 mb-2">
+                        {f1?.name} vs {f2?.name}
+                      </h3>
+                      <p className="mb-2">
+                        Fight Quality Score:{" "}
+                        <span className="font-bold">
+                          {(quality * 100).toFixed(0)}%
+                        </span>
+                      </p>
+                      <p className="text-sm text-stone-400">
+                        Based on win probability estimates from betting odds.
+                      </p>
+                    </div>
+                  );
+                })()
+              ) : (
+                <p className="text-stone-400">
+                  Click on a fighter’s name in the table to view matchup intel.
+                </p>
+              )}
+            </div>
+          )}
+        </section>
+      </main>
+
+      <footer className="bg-stone-900 text-stone-400 text-center py-6 border-t border-stone-800">
+        <p className="text-sm px-4">
+          21+. Gambling problem? Call 1-800-GAMBLER. Not affiliated with UFC or any
+          sportsbook.
+        </p>
+        <p className="text-sm mt-2 px-4">
+          Ready to bet on UFC? Sign up at{" "}
+          <a
+            href="PASTE_YOUR_DRAFTKINGS_AFFILIATE_LINK_HERE"
+            className="text-yellow-500 hover:underline"
+          >
+            DraftKings
+          </a>
+          .
+        </p>
+      </footer>
+    </div>
+  );
+};
+
+export default DFSPicksProjections;
