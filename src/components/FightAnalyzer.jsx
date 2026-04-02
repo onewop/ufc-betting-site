@@ -149,6 +149,11 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
   const [cachedOdds, setCachedOdds] = useState([]);
   const [expandedStats, setExpandedStats] = useState(false);
   const [activeTab, setActiveTab] = useState("basics");
+  const [fightResults, setFightResults] = useState([]);
+  const [resultsSort, setResultsSort] = useState({
+    key: "EVENT",
+    order: "desc",
+  });
 
   useEffect(() => {
     console.log("🔍 Starting fetch for /this_weeks_stats.json");
@@ -281,6 +286,42 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
         console.error("   Full error object:", err);
         setError("Failed to load fighters: " + err.message);
         setLoading(false);
+      });
+
+    // Load fight results from ufcstats_raw
+    fetch("/ufcstats_raw/ufc_fight_results.csv")
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.text();
+      })
+      .then((csvText) => {
+        const lines = csvText.split("\n").filter((line) => line.trim());
+        if (lines.length < 2) return; // No data
+
+        const headers = lines[0].split(",");
+        const allData = lines.slice(1).map((line) => {
+          const values = line.split(",");
+          const obj = {};
+          headers.forEach((h, i) => {
+            obj[h.trim()] = values[i]?.trim() || "";
+          });
+          return obj;
+        });
+
+        // Filter to only show fights from the most recent event
+        if (allData.length > 0) {
+          const mostRecentEvent = allData[0].EVENT; // First event in CSV is most recent
+          const filteredData = allData.filter(
+            (result) => result.EVENT === mostRecentEvent,
+          );
+          setFightResults(filteredData);
+        } else {
+          setFightResults([]);
+        }
+      })
+      .catch((err) => {
+        console.log("Fight results fetch failed:", err.message);
+        // Don't set error - this is optional
       });
 
     // Load live odds from localStorage cache (populated by LatestOdds page)
@@ -2375,6 +2416,176 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
               </div>
             );
           })()}
+
+        {/* Last Event Results Section */}
+        {fightResults.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-px flex-1 bg-yellow-700/30" />
+              <h2 className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600">
+                ◈ LAST EVENT RESULTS
+              </h2>
+              <div className="h-px flex-1 bg-yellow-700/30" />
+            </div>
+
+            <details
+              open={false}
+              className="border border-yellow-700/50 rounded-lg bg-stone-900"
+            >
+              <summary
+                className="w-full bg-stone-900 hover:bg-stone-800 text-yellow-500 font-bold py-3 px-4 flex justify-between items-center transition cursor-pointer"
+                aria-label="Toggle last event results"
+              >
+                <span className="text-base sm:text-xl">
+                  📊 View Last Event Results{" "}
+                  {fightResults.length > 0 ? `(${fightResults[0]?.EVENT})` : ""}
+                </span>
+                <span className="text-lg">▶</span>
+              </summary>
+
+              <div className="border-t border-yellow-700/30 p-4 sm:p-6">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs sm:text-sm font-mono">
+                    <thead>
+                      <tr className="border-b border-stone-700">
+                        <th className="text-left py-2 px-2 text-yellow-500 font-bold">
+                          Bout
+                        </th>
+                        <th className="text-left py-2 px-2 text-yellow-500 font-bold">
+                          Outcome
+                        </th>
+                        <th className="text-left py-2 px-2 text-yellow-500 font-bold">
+                          Method
+                        </th>
+                        <th
+                          className="text-left py-2 px-2 text-yellow-500 font-bold cursor-pointer hover:text-yellow-400"
+                          onClick={() =>
+                            setResultsSort({
+                              key: "ROUND",
+                              order:
+                                resultsSort.key === "ROUND" &&
+                                resultsSort.order === "asc"
+                                  ? "desc"
+                                  : "asc",
+                            })
+                          }
+                        >
+                          Round{" "}
+                          {resultsSort.key === "ROUND" &&
+                            (resultsSort.order === "asc" ? "↑" : "↓")}
+                        </th>
+                        <th
+                          className="text-left py-2 px-2 text-yellow-500 font-bold cursor-pointer hover:text-yellow-400"
+                          onClick={() =>
+                            setResultsSort({
+                              key: "TIME",
+                              order:
+                                resultsSort.key === "TIME" &&
+                                resultsSort.order === "asc"
+                                  ? "desc"
+                                  : "asc",
+                            })
+                          }
+                        >
+                          Time{" "}
+                          {resultsSort.key === "TIME" &&
+                            (resultsSort.order === "asc" ? "↑" : "↓")}
+                        </th>
+                        <th className="text-left py-2 px-2 text-yellow-500 font-bold">
+                          Details
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fightResults
+                        .sort((a, b) => {
+                          const aVal = a[resultsSort.key] || "";
+                          const bVal = b[resultsSort.key] || "";
+                          const order = resultsSort.order === "asc" ? 1 : -1;
+                          if (resultsSort.key === "ROUND") {
+                            return (parseInt(aVal) || 0) > (parseInt(bVal) || 0)
+                              ? order
+                              : -order;
+                          }
+                          return aVal.localeCompare(bVal) * order;
+                        })
+                        .map((result, index) => {
+                          const boutParts = result.BOUT?.split(" vs. ") || [
+                            "",
+                            "",
+                          ];
+                          const outcome = result.OUTCOME || "";
+                          const eventShort =
+                            result.EVENT?.replace(
+                              "UFC Fight Night: ",
+                              "",
+                            ).replace("UFC ", "") || "N/A";
+
+                          // Determine winner/loser colors based on OUTCOME
+                          let fighter1Color = "text-stone-100";
+                          let fighter2Color = "text-stone-100";
+                          let outcomeText = "";
+
+                          if (outcome === "W/L") {
+                            fighter1Color = "text-green-400 font-semibold";
+                            fighter2Color = "text-red-400";
+                            outcomeText = `${boutParts[0]} def. ${boutParts[1]}`;
+                          } else if (outcome === "L/W") {
+                            fighter1Color = "text-red-400";
+                            fighter2Color = "text-green-400 font-semibold";
+                            outcomeText = `${boutParts[1]} def. ${boutParts[0]}`;
+                          } else if (outcome === "D/D") {
+                            fighter1Color = "text-stone-400";
+                            fighter2Color = "text-stone-400";
+                            outcomeText = "Draw";
+                          }
+
+                          return (
+                            <tr
+                              key={index}
+                              className="border-b border-stone-800 hover:bg-stone-800/30"
+                            >
+                              <td className="py-2 px-2 text-stone-200">
+                                <span className={fighter1Color}>
+                                  {boutParts[0]}
+                                </span>
+                                <span className="text-stone-500 mx-1">vs</span>
+                                <span className={fighter2Color}>
+                                  {boutParts[1]}
+                                </span>
+                              </td>
+                              <td className="py-2 px-2 text-stone-300 text-sm">
+                                {outcomeText}
+                              </td>
+                              <td className="py-2 px-2 text-stone-300">
+                                {result.METHOD || "N/A"}
+                              </td>
+                              <td className="py-2 px-2 text-stone-300">
+                                {result.ROUND || "N/A"}
+                              </td>
+                              <td className="py-2 px-2 text-stone-300">
+                                {result.TIME || "N/A"}
+                              </td>
+                              <td
+                                className="py-2 px-2 text-stone-300 text-sm max-w-[200px] truncate"
+                                title={result.DETAILS}
+                              >
+                                {result.DETAILS || "N/A"}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-stone-500 text-xs mt-4 text-center">
+                  Data sourced from UFCStats.com — showing fights from the most
+                  recent UFC event only
+                </p>
+              </div>
+            </details>
+          </div>
+        )}
 
         <div className="flex items-center gap-3 mb-4">
           <div className="h-px flex-1 bg-yellow-700/30" />

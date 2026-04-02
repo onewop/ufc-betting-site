@@ -2306,5 +2306,77 @@ def csv_to_json(
         import traceback
         traceback.print_exc()
 
+def download_ufcstats_csvs():
+    """Download latest UFC stats CSVs from Greco1899/scrape_ufc_stats repo"""
+    import requests
+    import os
+    
+    # Create directory if it doesn't exist
+    os.makedirs("public/ufcstats_raw", exist_ok=True)
+    
+    csv_files = [
+        "ufc_fight_results.csv",
+        "ufc_fight_stats.csv", 
+        "ufc_fighter_details.csv",
+        "ufc_event_details.csv",
+        "ufc_fight_details.csv",
+        "ufc_fighter_tott.csv"
+    ]
+    
+    base_url = "https://raw.githubusercontent.com/Greco1899/scrape_ufc_stats/main/"
+    
+    for csv_file in csv_files:
+        url = base_url + csv_file
+        local_path = f"public/ufcstats_raw/{csv_file}"
+        
+        print(f"Downloading {csv_file}...")
+        try:
+            response = requests.get(url, timeout=30)
+            response.raise_for_status()
+            
+            with open(local_path, 'w', encoding='utf-8') as f:
+                f.write(response.text)
+            
+            print(f"✓ Saved {csv_file} to {local_path}")
+            
+        except Exception as e:
+            print(f"✗ Failed to download {csv_file}: {e}")
+
+def merge_ufcstats_results():
+    """Optionally merge recent fight results into this_weeks_stats.json for context"""
+    import json
+    
+    results_path = "public/ufcstats_raw/ufc_fight_results.csv"
+    stats_path = "public/ufcstats_raw/ufc_fight_stats.csv"
+    json_path = "public/this_weeks_stats.json"
+    
+    if not os.path.exists(results_path) or not os.path.exists(json_path):
+        print("Skipping merge: required files not found")
+        return
+    
+    try:
+        # Load existing JSON
+        with open(json_path, 'r') as f:
+            data = json.load(f)
+        
+        # Load fight results
+        results_df = pd.read_csv(results_path)
+        
+        # For each fighter, add recent fight context if available
+        # This is optional enhancement - keep it minimal
+        print("✓ UFC stats merge completed (placeholder - no actual merge implemented yet)")
+        
+    except Exception as e:
+        print(f"Error during merge: {e}")
+
 if __name__ == "__main__":
+    # Run main aggregation
     csv_to_json()
+    
+    # Optional: Download UFC stats CSVs if env var is set
+    if os.environ.get('SCRAPE_UFCSTATS_RESULTS', '0') == '1':
+        print("\n" + "="*60)
+        print("📊 DOWNLOADING UFC STATS CSVs...")
+        print("="*60)
+        download_ufcstats_csvs()
+        merge_ufcstats_results()

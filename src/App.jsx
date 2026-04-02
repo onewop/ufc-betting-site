@@ -16,6 +16,11 @@ import VideosV2 from "./components/VideosV2";
 import LatestOdds from "./components/LatestOdds";
 import VideoStudio from "./components/VideoStudio";
 import Footer from "./components/Footer";
+import AuthModal from "./components/AuthModal";
+
+// Auth keys for localStorage
+const AUTH_TOKEN_KEY = "authToken";
+const AUTH_USER_KEY = "currentUser";
 
 // Updated navLinks with event context for current card
 const navLinks = [
@@ -47,6 +52,20 @@ const AppShell = () => {
   const [eventTitle, setEventTitle] = useState("Latest UFC Event");
   const [theme, setTheme] = useState("dark");
   const [compactBottomNav, setCompactBottomNav] = useState(false);
+  const [authToken, setAuthToken] = useState(
+    localStorage.getItem(AUTH_TOKEN_KEY) || "",
+  );
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem(AUTH_USER_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalTab, setAuthModalTab] = useState("login");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
     fetch("/current_event.json")
@@ -77,6 +96,54 @@ const AppShell = () => {
     mediaQuery.addEventListener("change", applyCompact);
     return () => mediaQuery.removeEventListener("change", applyCompact);
   }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    const userStr = localStorage.getItem("currentUser");
+    if (token) setAuthToken(token);
+    if (userStr) {
+      try {
+        setCurrentUser(JSON.parse(userStr));
+      } catch {
+        setCurrentUser(null);
+      }
+    }
+  }, []);
+
+  const handleLoginSuccess = async (token) => {
+    try {
+      const response = await fetch("http://localhost:8000/auth/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const user = await response.json();
+        localStorage.setItem(AUTH_TOKEN_KEY, token);
+        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+        setAuthToken(token);
+        setCurrentUser(user);
+        console.log("✅ Full user loaded from /auth/me:", user);
+      } else {
+        console.error("Failed to fetch /auth/me:", response.status);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  const handleLogout = () => {
+    setAuthToken("");
+    setCurrentUser(null);
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_USER_KEY);
+  };
+
+  const openAuth = (tab) => {
+    setAuthModalTab(tab);
+    setAuthModalOpen(true);
+  };
 
   return (
     <div
@@ -111,6 +178,45 @@ const AppShell = () => {
                 {theme === "dark" ? "Light" : "Dark"}
               </button>
             </li>
+            {currentUser ? (
+              <li className="relative">
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="text-sm hover:underline whitespace-nowrap flex items-center gap-1"
+                >
+                  {currentUser.username || currentUser.email} ▼
+                </button>
+                {dropdownOpen && (
+                  <div className="absolute top-full right-0 mt-1 bg-stone-800 border border-stone-600 rounded p-2 z-50">
+                    <button
+                      onClick={handleLogout}
+                      className="text-xs text-stone-300 hover:text-white"
+                    >
+                      Log Out
+                    </button>
+                  </div>
+                )}
+              </li>
+            ) : (
+              <>
+                <li>
+                  <button
+                    onClick={() => openAuth("login")}
+                    className="text-sm hover:underline whitespace-nowrap"
+                  >
+                    Log In
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => openAuth("register")}
+                    className="text-sm hover:underline whitespace-nowrap"
+                  >
+                    Register
+                  </button>
+                </li>
+              </>
+            )}
           </ul>
 
           {/* Hamburger row — visible below xl (< 1280px) */}
@@ -232,6 +338,13 @@ const AppShell = () => {
           })}
         </ul>
       </nav>
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        defaultTab={authModalTab}
+        onLoginSuccess={handleLoginSuccess}
+        onRegisterSuccess={handleLoginSuccess}
+      />
     </div>
   );
 };

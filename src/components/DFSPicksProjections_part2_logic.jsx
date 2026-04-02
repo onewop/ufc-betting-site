@@ -23,6 +23,8 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
     matchupIntel: false, // collapsed by default — open via nav or header click
     optimizer: true,
   });
+  const [requestedCount, setRequestedCount] = useState(1);
+  const [showStats, setShowStats] = useState(false);
   const toggleSection = (key) =>
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
   const openAndScroll = (id, key) => {
@@ -185,6 +187,7 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
   const runOptimizer = (count = 1) => {
     setOptimizerError(null);
     setOptimalLineups([]);
+    setRequestedCount(count);
 
     // For multi-lineup builds apply seeded ±5% noise so different users
     // (or repeated clicks) get varied lineup orderings while still being
@@ -579,6 +582,20 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
                 <p className="text-red-400 mb-2">{optimizerError}</p>
               )}
               {optimalLineups.length > 0 && (
+                <div className="mb-4">
+                  <button
+                    onClick={() => setShowStats(!showStats)}
+                    className="bg-stone-700 hover:bg-stone-600 text-white px-4 py-2 rounded font-semibold transition"
+                  >
+                    {showStats ? "Hide Stats" : "Show Stats"}
+                  </button>
+                  {showStats && (
+                    <div className="bg-stone-800 rounded p-4 mt-2">
+                      <p>Generated {optimalLineups.length} of {requestedCount} teams</p>
+                      <p>Average Salary: ${Math.round(optimalLineups.reduce((s, l) => s + l.totalSalary, 0) / optimalLineups.length).toLocaleString()}</p>
+                    </div>
+                  )}
+                </div>
                 <div className="overflow-x-auto">
                   <table className="min-w-full text-left text-sm">
                     <thead>

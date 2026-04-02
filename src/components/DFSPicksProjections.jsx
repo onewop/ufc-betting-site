@@ -150,6 +150,21 @@ const computeProjection = (fighter, roundsEst, roundsSource) => {
   };
 };
 
+// Estimate win probability from betting odds (moneyline)
+const estimateWinProbability = (fighter, bettingOdds = {}) => {
+  const { moneyline } = bettingOdds;
+  if (!moneyline) return 0.5;
+  const [mlF1, mlF2] = moneyline.split(" ");
+  const odds = fighter.name.includes(mlF1)
+    ? parseFloat(mlF1)
+    : parseFloat(mlF2);
+  if (isNaN(odds)) return 0.5;
+  // Convert American odds to probability
+  return odds < 0
+    ? Math.abs(odds) / (Math.abs(odds) + 100)
+    : 100 / (odds + 100);
+};
+
 // ─── Ownership ─────────────────────────────────────────────────────────────
 const estimateOwnership = (salary, avgPPG, medianSalary, medianPPG) => {
   const salaryPct = salary / (medianSalary || salary);
@@ -993,6 +1008,11 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
             medianPPG,
           );
           const reasoning = buildReasoning(f, projMid, ownerNum);
+          const winProb = estimateWinProbability(f, f._bettingOdds);
+          const pointsPerThousand =
+            f.salary > 0
+              ? parseFloat(((f.projMid / f.salary) * 1000).toFixed(2))
+              : 0;
 
           return {
             fighter: f.name,
@@ -1010,6 +1030,8 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
             roundsSource,
             source,
             fightAnchor: `fight-${f._fightId}`,
+            winProb,
+            pointsPerThousand,
           };
         });
 
@@ -1367,7 +1389,9 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
                       <SortTh col="salary" label="DK Salary" />
                       <SortTh col="type" label="Type" />
                       <SortTh col="projMid" label="Projection" />
+                      <SortTh col="pointsPerThousand" label="Value ($/k)" />
                       <SortTh col="ownerNum" label="Own. Est." />
+                      <SortTh col="winProb" label="Win % Est." />
                       <th className="p-2 border border-stone-700">
                         Rounds Est.
                       </th>
@@ -1417,6 +1441,9 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
                         <td className="p-2 border border-stone-700 font-mono font-bold text-yellow-400">
                           {pick.projection}
                         </td>
+                        <td className="p-2 border border-stone-700 font-mono text-green-400">
+                          {pick.pointsPerThousand.toFixed(2)}
+                        </td>
                         <td className="p-2 border border-stone-700 whitespace-nowrap w-[108px] min-w-[108px]">
                           <span
                             className={`px-2 py-0.5 rounded text-xs font-semibold ${
@@ -1429,6 +1456,9 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
                           >
                             {pick.ownership}
                           </span>
+                        </td>
+                        <td className="p-2 border border-stone-700 text-center">
+                          {(pick.winProb * 100).toFixed(0)}%
                         </td>
                         <td
                           className="p-2 border border-stone-700 text-center text-xs"
