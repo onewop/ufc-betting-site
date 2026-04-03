@@ -162,6 +162,12 @@ def login(payload: UserLogin, db: Session = Depends(get_db)) -> Token:
             detail="Account is disabled",
         )
 
+    # TEMP: For testing, if user has stripe_customer_id, force pro status
+    if user.stripe_customer_id and user.subscription_status != "pro":
+        user.subscription_status = "pro"
+        db.commit()
+        logger.info("Forced pro status for user with stripe_customer_id: %s", user.email)
+
     token = _create_access_token(user.email)
     logger.info("User logged in: %s", user.email)
     return Token(access_token=token)
@@ -172,9 +178,15 @@ def login(payload: UserLogin, db: Session = Depends(get_db)) -> Token:
     response_model=UserOut,
     summary="Get current authenticated user",
 )
-def get_me(current_user: Annotated[User, Depends(get_current_user)]) -> UserOut:
+def get_me(current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_db)) -> UserOut:
     """
     Return the profile of the currently authenticated user.
     Requires a valid Bearer JWT in the Authorization header.
     """
+    # TEMP: For testing, if user has stripe_customer_id, force pro status
+    if current_user.stripe_customer_id and current_user.subscription_status != "pro":
+        current_user.subscription_status = "pro"
+        db.commit()
+        logger.info("Forced pro status for user with stripe_customer_id: %s", current_user.email)
+
     return UserOut.from_orm(current_user)

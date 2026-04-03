@@ -28,7 +28,7 @@ const leverageLabel = (salary, avgFPPG = 0) => {
   return { label: "NEUTRAL", color: "text-stone-400" };
 };
 
-const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
+const TeamCombinations = ({ eventTitle = "Latest UFC Event", currentUser }) => {
   const [fighters, setFighters] = useState([]);
   const numFights = [...new Set(fighters.map((f) => f.fight_id))].length;
   const totalPossibleTeams = 2n ** BigInt(numFights) * comb(numFights, 6);
@@ -44,6 +44,67 @@ const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
   const [generating, setGenerating] = useState(false);
   const [useSalaryTarget, setUseSalaryTarget] = useState(false);
   const [salaryMode, setSalaryMode] = useState("diverse");
+  const [saveStatus, setSaveStatus] = useState(null); // null | "saving" | "saved" | "error"
+
+  // Paywall check — driven by prop from App.jsx
+  const isPro = currentUser?.subscription_status === "pro";
+
+  const handleUpgrade = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
+    try {
+      const res = await fetch(
+        "http://localhost:8000/api/create-checkout-session",
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      console.error("Upgrade error:", err);
+    }
+  };
+
+  if (!isPro) {
+    return (
+      <div
+        className="min-h-screen bg-stone-950"
+        style={{ fontFamily: "'Courier New', monospace" }}
+      >
+        {/* Classification banner */}
+        <div className="flex items-center justify-between border-b border-yellow-700/40 bg-yellow-900/10 px-6 py-2">
+          <span className="text-yellow-500 text-xs font-bold tracking-widest uppercase">
+            ⚡ CLASSIFIED OPS
+          </span>
+          <span className="text-yellow-500/50 text-xs tracking-wider hidden sm:block">
+            CLEARANCE: LEVEL 5
+          </span>
+          <span className="text-yellow-500 text-xs font-bold tracking-widest uppercase">
+            DFS COMMAND ⚡
+          </span>
+        </div>
+
+        <div className="max-w-4xl mx-auto px-4 py-8 md:py-10 text-center">
+          <h1 className="text-3xl md:text-5xl font-black text-stone-100 tracking-wider uppercase mb-4">
+            UPGRADE TO PRO
+          </h1>
+          <p className="text-stone-400 mb-6">
+            Unlock the full DFS optimizer and generate unlimited lineups.
+          </p>
+          <button
+            onClick={handleUpgrade}
+            className="bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-6 rounded-lg transition"
+          >
+            Upgrade to Pro - $19.99/month
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     fetch("http://localhost:8000/api/fighters")
@@ -237,6 +298,64 @@ const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+  };
+
+  const saveLineups = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setError("You must be logged in to save lineups.");
+      return;
+    }
+    if (randomTeams.length === 0) return;
+
+    const defaultName = `My Lineup Set – ${new Date().toLocaleDateString()}`;
+    const name = window.prompt(
+      "Enter a name for this lineup set:",
+      defaultName,
+    );
+    if (!name) return;
+
+    setSaveStatus("saving");
+    const avgSalary = Math.round(
+      randomTeams.reduce(
+        (s, team) => s + team.reduce((sum, f) => sum + f.salary, 0),
+        0,
+      ) / randomTeams.length,
+    );
+    const avgFpts = parseFloat(
+      (
+        randomTeams.reduce(
+          (s, team) => s + team.reduce((sum, f) => sum + (f.avgFPPG || 0), 0),
+          0,
+        ) / randomTeams.length
+      ).toFixed(2),
+    );
+
+    try {
+      const res = await fetch("http://localhost:8000/api/lineups", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name,
+          lineup_data: randomTeams,
+          total_salary: avgSalary,
+          projected_fpts: avgFpts,
+          salary_mode: salaryMode,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || `Error ${res.status}`);
+      }
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus(null), 3000);
+    } catch (err) {
+      setSaveStatus(null);
+      setError(`Failed to save lineup: ${err.message}`);
+    }
   };
 
   const filteredFighters = fighters.filter((f) =>
@@ -568,6 +687,19 @@ const TeamCombinations = ({ eventTitle = "Latest UFC Event" }) => {
             {randomTeams.length > 0 && (
               <button onClick={downloadCSV} className="neon-button w-full mt-4">
                 Download CSV
+              </button>
+            )}
+            {randomTeams.length > 0 && (
+              <button
+                onClick={saveLineups}
+                disabled={saveStatus === "saving"}
+                className="neon-button w-full mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {saveStatus === "saving"
+                  ? "Saving…"
+                  : saveStatus === "saved"
+                    ? "✓ Saved!"
+                    : "Save Lineup"}
               </button>
             )}
             {generatedCount > 0 && (

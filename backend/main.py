@@ -8,13 +8,26 @@ Run with:
 from __future__ import annotations
 
 import logging
+import os
+
+from dotenv import load_dotenv
+
+# Load environment variables from .env file as early as possible
+load_dotenv()
+
+# Debug prints to confirm keys are loaded
+print("DEBUG: STRIPE_SECRET_KEY loaded:", bool(os.getenv("STRIPE_SECRET_KEY")))
+print("DEBUG: STRIPE_PRICE_ID loaded:", bool(os.getenv("STRIPE_PRICE_ID")))
+print("DEBUG: STRIPE_WEBHOOK_SECRET loaded:", bool(os.getenv("STRIPE_WEBHOOK_SECRET")))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.database import Base, engine
 from backend.routers.auth import router as auth_router
+from backend.routers.lineups import router as lineups_router
 from backend.routers.optimize import router as optimize_router
+from backend.routers.payments import router as payments_router
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -52,7 +65,9 @@ def create_app() -> FastAPI:
 
     # ── Routers ──────────────────────────────────────────────────────────────
     app.include_router(auth_router)
+    app.include_router(lineups_router)
     app.include_router(optimize_router)
+    app.include_router(payments_router)
 
     # ── Health check ─────────────────────────────────────────────────────────
     @app.get("/health", tags=["meta"])

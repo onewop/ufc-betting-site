@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -17,6 +17,8 @@ import LatestOdds from "./components/LatestOdds";
 import VideoStudio from "./components/VideoStudio";
 import Footer from "./components/Footer";
 import AuthModal from "./components/AuthModal";
+import MySavedLineups from "./components/MySavedLineups";
+import UserDashboard from "./components/UserDashboard";
 
 // Auth keys for localStorage
 const AUTH_TOKEN_KEY = "authToken";
@@ -66,6 +68,8 @@ const AppShell = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState("login");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showUpgradeSuccess, setShowUpgradeSuccess] = useState(false);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     fetch("/current_event.json")
@@ -97,25 +101,87 @@ const AppShell = () => {
     return () => mediaQuery.removeEventListener("change", applyCompact);
   }, []);
 
+  // Close dropdown when clicking outside
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    const userStr = localStorage.getItem("currentUser");
-    if (token) setAuthToken(token);
-    if (userStr) {
-      try {
-        setCurrentUser(JSON.parse(userStr));
-      } catch {
-        setCurrentUser(null);
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
       }
+    };
+
+    if (dropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
     }
-  }, []);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownOpen]);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get("session_id");
+
+    if (sessionId && authToken) {
+      console.log(
+        "🔄 Detected return from Stripe checkout. Re-fetching user status...",
+      );
+
+      // Show success banner immediately (assuming successful payment)
+      setShowUpgradeSuccess(true);
+      setTimeout(() => setShowUpgradeSuccess(false), 6000);
+
+      // Clean URL immediately
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+      // Retry fetching /auth/me up to 3 times with 1.5s delay
+      let attempts = 0;
+      const maxAttempts = 3;
+      const retryDelay = 1500; // ms
+
+      const fetchUntilPro = async () => {
+        attempts++;
+        console.log(`🔄 Fetch attempt ${attempts}/${maxAttempts}`);
+        try {
+          const response = await fetch("http://localhost:8000/auth/me", {
+            headers: { Authorization: `Bearer ${authToken}` },
+          });
+          if (response.ok) {
+            const user = await response.json();
+            console.log(
+              `📋 /auth/me returned subscription_status: ${user.subscription_status}`,
+            );
+
+            localStorage.setItem(AUTH_TOKEN_KEY, authToken);
+            localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+            setCurrentUser(user);
+
+            return; // Success, stop retries
+          }
+        } catch (err) {
+          console.error("Error fetching /auth/me:", err);
+        }
+
+        if (attempts < maxAttempts) {
+          console.log(
+            `⏳ Status still not pro, retrying in ${retryDelay}ms...`,
+          );
+          setTimeout(fetchUntilPro, retryDelay);
+        } else {
+          console.warn(
+            "⚠️ Max retries reached. Status may update on next login.",
+          );
+        }
+      };
+
+      fetchUntilPro();
+    }
+  }, [authToken]);
 
   const handleLoginSuccess = async (token) => {
     try {
       const response = await fetch("http://localhost:8000/auth/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
@@ -125,6 +191,12 @@ const AppShell = () => {
         setAuthToken(token);
         setCurrentUser(user);
         console.log("✅ Full user loaded from /auth/me:", user);
+
+        if (user.subscription_status === "pro") {
+          setShowUpgradeSuccess(true);
+          setTimeout(() => setShowUpgradeSuccess(false), 6000);
+          console.log("🎉 User is now Pro!");
+        }
       } else {
         console.error("Failed to fetch /auth/me:", response.status);
       }
@@ -143,6 +215,25 @@ const AppShell = () => {
   const openAuth = (tab) => {
     setAuthModalTab(tab);
     setAuthModalOpen(true);
+  };
+
+  const handleUpgrade = async () => {
+    if (!authToken) return;
+    try {
+      const res = await fetch(
+        "http://localhost:8000/api/create-checkout-session",
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${authToken}` },
+        },
+      );
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      console.error("Upgrade error:", err);
+    }
   };
 
   return (
@@ -178,25 +269,48 @@ const AppShell = () => {
                 {theme === "dark" ? "Light" : "Dark"}
               </button>
             </li>
-            {currentUser ? (
-              <li className="relative">
+            {currentUser && currentUser.subscription_status !== "pro" && (
+              <li>
                 <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="text-sm hover:underline whitespace-nowrap flex items-center gap-1"
+                  onClick={handleUpgrade}
+                  className="border border-green-500/40 rounded px-2 py-1 text-xs uppercase tracking-wider hover:bg-green-900/30 transition text-green-400"
                 >
-                  {currentUser.username || currentUser.email} ▼
+                  Upgrade Pro
                 </button>
-                {dropdownOpen && (
-                  <div className="absolute top-full right-0 mt-1 bg-stone-800 border border-stone-600 rounded p-2 z-50">
-                    <button
-                      onClick={handleLogout}
-                      className="text-xs text-stone-300 hover:text-white"
-                    >
-                      Log Out
-                    </button>
-                  </div>
-                )}
               </li>
+            )}
+            {currentUser ? (
+              <>
+                <li>
+                  <Link
+                    to="/dashboard"
+                    className="text-sm hover:underline whitespace-nowrap"
+                  >
+                    Dashboard
+                  </Link>
+                </li>
+                <li className="relative">
+                  <button
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="text-sm hover:underline whitespace-nowrap flex items-center gap-1"
+                  >
+                    {currentUser.username || currentUser.email} ▼
+                  </button>
+                  {dropdownOpen && (
+                    <div
+                      ref={dropdownRef}
+                      className="absolute top-full right-0 mt-1 bg-stone-800 border border-stone-600 rounded p-2 z-50"
+                    >
+                      <button
+                        onClick={handleLogout}
+                        className="text-xs text-stone-300 hover:text-white"
+                      >
+                        Log Out
+                      </button>
+                    </div>
+                  )}
+                </li>
+              </>
             ) : (
               <>
                 <li>
@@ -267,6 +381,30 @@ const AppShell = () => {
                   </Link>
                 </li>
               ))}
+              {currentUser && (
+                <li>
+                  <Link
+                    to="/dashboard"
+                    className="block px-6 py-3 hover:bg-yellow-900/40 transition text-yellow-400"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                </li>
+              )}
+              {currentUser && currentUser.subscription_status !== "pro" && (
+                <li>
+                  <button
+                    onClick={() => {
+                      handleUpgrade();
+                      setMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-6 py-3 hover:bg-green-900/40 transition text-green-400"
+                  >
+                    Upgrade to Pro
+                  </button>
+                </li>
+              )}
             </ul>
           )}
         </div>
@@ -275,11 +413,22 @@ const AppShell = () => {
         {eventTitle}
       </div>
 
+      {showUpgradeSuccess && (
+        <div className="bg-green-600 text-white text-center py-3 px-4 border-b border-green-700">
+          ✅ Welcome to Combat Vault Pro! You now have full access.
+        </div>
+      )}
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route
           path="/team-combinations"
-          element={<TeamCombinations eventTitle={eventTitle} />}
+          element={
+            <TeamCombinations
+              eventTitle={eventTitle}
+              currentUser={currentUser}
+            />
+          }
         />
         <Route path="/manual-teams" element={<ManualTeams />} />
         <Route
@@ -294,6 +443,11 @@ const AppShell = () => {
           element={<DFSPicksProjections eventTitle={eventTitle} />}
         />
         <Route path="/video-studio" element={<VideoStudio />} />
+        <Route path="/my-lineups" element={<MySavedLineups />} />
+        <Route
+          path="/dashboard"
+          element={<UserDashboard currentUser={currentUser} />}
+        />
       </Routes>
       <Footer />
 

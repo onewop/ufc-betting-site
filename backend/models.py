@@ -9,7 +9,7 @@ import datetime
 from typing import Any
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, JSON, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.database import Base
@@ -31,6 +31,8 @@ class User(Base):
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+    stripe_customer_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    subscription_status: Mapped[str] = mapped_column(String(20), default="free", nullable=False)
 
     def __repr__(self) -> str:
         return f"<User id={self.id} username={self.username!r}>"
@@ -68,6 +70,27 @@ class CachedLineup(Base):
 
     def __repr__(self) -> str:
         return f"<CachedLineup id={self.id} event_id={self.event_id}>"
+
+
+class SavedLineup(Base):
+    """Lineup set saved by a logged-in user."""
+    __tablename__ = "saved_lineups"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id"), nullable=False, index=True
+    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    lineup_data: Mapped[Any] = mapped_column(JSON, nullable=False)
+    total_salary: Mapped[int] = mapped_column(Integer, nullable=False)
+    projected_fpts: Mapped[float] = mapped_column(Float, nullable=False)
+    salary_mode: Mapped[str] = mapped_column(String(20), nullable=False, default="diverse")
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    def __repr__(self) -> str:
+        return f"<SavedLineup id={self.id} user_id={self.user_id} name={self.name!r}>"
 
 
 class HistoricalResult(Base):
@@ -198,6 +221,30 @@ class UserOut(BaseModel):
     email: str
     username: str
     is_active: bool
+    created_at: datetime.datetime
+    subscription_status: str
+
+    model_config = {"from_attributes": True}
+
+
+# ── SavedLineup schemas ───────────────────────────────────────────────────────
+
+class SavedLineupCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=255)
+    lineup_data: list[Any]
+    total_salary: int
+    projected_fpts: float
+    salary_mode: str = "diverse"
+
+
+class SavedLineupOut(BaseModel):
+    id: int
+    user_id: int
+    name: str
+    lineup_data: list[Any]
+    total_salary: int
+    projected_fpts: float
+    salary_mode: str
     created_at: datetime.datetime
 
     model_config = {"from_attributes": True}
