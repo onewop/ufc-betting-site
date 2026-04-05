@@ -1,57 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const cards = [
-  {
-    to: "/fight-analyzer",
-    title: "Fight Analyzer",
-    desc: "Analyze strike stats, grappling data, and fight history. Predict outcomes with military precision.",
-    cta: "Engage",
-    icon: "⊕",
-    tag: "INTEL",
-  },
-  {
-    to: "/team-combinations",
-    title: "DFS Team Builder",
-    desc: "Deploy optimal DraftKings squads with custom fighter limits. Dominate the field with calculated force.",
-    cta: "Deploy",
-    icon: "◈",
-    tag: "OPS",
-  },
-  {
-    to: "/video-vault",
-    title: "Video Vault",
-    desc: "Access classified fight footage. Study enemy movements. Relive critical moments in the octagon.",
-    cta: "Access",
-    icon: "▣",
-    tag: "ARCHIVE",
-  },
-  {
-    to: "/predictions",
-    title: "Make Prediction",
-    desc: "Submit your prediction report. Tactical analysis of fight matchups with expert intelligence.",
-    cta: "Submit Report",
-    icon: "◉",
-    tag: "REPORT",
-  },
-  {
-    to: "/manual-teams",
-    title: "Manual Teams",
-    desc: "Direct control over every fighter selection. Full command authority. No automated deployment.",
-    cta: "Take Command",
-    icon: "⊗",
-    tag: "COMMAND",
-  },
-  {
-    to: "/video-studio",
-    title: "Creator Studio",
-    desc: "Live on-screen fight breakdowns for YouTube and streaming. VS stats, OBS browser-source ready, facecam PiP zone.",
-    cta: "Go Live",
-    icon: "◉",
-    tag: "BROADCAST",
-  },
-];
-
 export default function Home() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-stone-950">
@@ -109,537 +58,129 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Header */}
-        <div className="text-center mb-5 max-w-3xl">
+        {/* Header / Hero */}
+        <div className="text-center mb-8 max-w-4xl">
           <div className="text-xs text-stone-400 tracking-[0.5em] uppercase mb-3">
-            ◆ OPERATION COMBAT VAULT ◆
+            ◆ UFC FIGHT NIGHT ◆
           </div>
           <h1
-            className="text-3xl sm:text-4xl md:text-6xl font-black text-stone-100 tracking-wider uppercase leading-tight mb-4"
+            className="text-2xl sm:text-3xl md:text-5xl font-black text-stone-100 tracking-wider uppercase leading-tight mb-4"
             style={{
               fontFamily: "'Impact', sans-serif",
               textShadow:
                 "2px 2px 0 #4a5240, 4px 4px 0 #2d3020, 0 0 40px rgba(100,120,80,0.3)",
             }}
           >
-            THE <span className="text-yellow-600">COMBAT</span> VAULT
+            UFC Fight Night: <span className="text-yellow-600">Moicano vs. Duncan</span>
           </h1>
           <div className="w-32 h-1 bg-gradient-to-r from-transparent via-yellow-700 to-transparent mx-auto mb-4"></div>
-          <p className="text-stone-400 text-sm leading-relaxed tracking-wide">
-            Step into the octagon with cutting-edge MMA betting tools—analyze
-            fights, build DFS teams, and dominate the cage!
+          <p className="text-stone-400 text-sm leading-relaxed tracking-wide mb-4">
+            Live Odds & Analysis – Prelims start at 4 PM CT
           </p>
-          <p className="text-stone-600 text-xs mt-3 tracking-widest uppercase">
-            ⚠ For Entertainment Only · 21+ · 1-800-GAMBLER
-          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <Link
+              to="/fight-analyzer"
+              className="bg-yellow-700 hover:bg-yellow-600 text-stone-950 font-bold px-6 py-3 rounded-lg uppercase tracking-wide transition-colors duration-200"
+            >
+              ▶ Start with Fight Analyzer
+            </Link>
+            <Link
+              to="/parlay-builder"
+              className="bg-stone-800 hover:bg-stone-700 text-stone-200 font-bold px-6 py-3 rounded-lg uppercase tracking-wide transition-colors duration-200 border border-stone-600"
+            >
+              Build Your Parlay
+            </Link>
+            <Link
+              to="/odds"
+              className="bg-stone-800 hover:bg-stone-700 text-stone-200 font-bold px-6 py-3 rounded-lg uppercase tracking-wide transition-colors duration-200 border border-stone-600"
+            >
+              View Latest Odds
+            </Link>
+          </div>
         </div>
 
-        {/* Shields */}
-        <div className="flex flex-wrap justify-center items-end gap-4 sm:gap-6 w-full max-w-7xl">
-          {cards.map(({ to, title, desc, cta, icon, tag }, i) => {
-            const palette = [
-              {
-                fill: "#3b1f06",
-                dark: "#200e02",
-                rim: "#92400e",
-                accent: "#fbbf24",
-                stripe: "#78350f",
-                glow: "rgba(251,191,36,0.4)",
-                label: "I",
-              },
-              {
-                fill: "#1a1a10",
-                dark: "#0d0d08",
-                rim: "#71635a",
-                accent: "#d6c68a",
-                stripe: "#44403c",
-                glow: "rgba(214,198,138,0.35)",
-                label: "II",
-              },
-              {
-                fill: "#2c1810",
-                dark: "#180c06",
-                rim: "#b45309",
-                accent: "#f59e0b",
-                stripe: "#92400e",
-                glow: "rgba(245,158,11,0.4)",
-                label: "III",
-              },
-              {
-                fill: "#1c1f10",
-                dark: "#0f1108",
-                rim: "#4a5240",
-                accent: "#a3a830",
-                stripe: "#3a4230",
-                glow: "rgba(163,168,48,0.35)",
-                label: "IV",
-              },
-              {
-                fill: "#2a1208",
-                dark: "#160904",
-                rim: "#7c3010",
-                accent: "#ea8c34",
-                stripe: "#7c2d12",
-                glow: "rgba(234,140,52,0.4)",
-                label: "V",
-              },
-              {
-                fill: "#0d1a2a",
-                dark: "#060e18",
-                rim: "#1d4ed8",
-                accent: "#60a5fa",
-                stripe: "#1e3a5f",
-                glow: "rgba(96,165,250,0.4)",
-                label: "VI",
-              },
-            ];
-            const p = palette[i];
+        {/* Latest News Section */}
+        <div className="w-full max-w-5xl mb-8">
+          <div className="border border-yellow-700/50 rounded-lg bg-stone-900 p-6">
+            <h2 className="text-xl font-bold text-yellow-500 mb-4 uppercase tracking-wide">
+              Latest News – Fight Week Updates
+            </h2>
 
-            // Shield outer path — classic heater shape, viewBox 0 0 200 265
-            const S =
-              "M 22,0 L 178,0 Q 200,0 200,22 L 200,158 Q 200,192 100,265 Q 0,192 0,158 L 0,22 Q 0,0 22,0 Z";
-            // Rim inset 1 (thick metallic border)
-            const R1 =
-              "M 26,5 L 174,5 Q 194,5 194,26 L 194,157 Q 194,188 100,257 Q 6,188 6,157 L 6,26 Q 6,5 26,5 Z";
-            // Rim inset 2 (thin decorative line)
-            const R2 =
-              "M 30,10 L 170,10 Q 188,10 188,30 L 188,155 Q 188,184 100,249 Q 12,184 12,155 L 12,30 Q 12,10 30,10 Z";
-            // Lance notch (top-right cut used in jousting shields)
-            const NOTCH =
-              "M 148,0 L 178,0 Q 200,0 200,22 L 200,48 L 172,48 L 172,22 Q 172,16 162,16 L 148,16 Z";
-
-            return (
-              <Link
-                key={to}
-                to={to}
-                className="group hover:scale-105 transition-all duration-500 flex flex-col items-center"
-                style={{
-                  width: "clamp(140px, 40vw, 220px)",
-                  filter: `drop-shadow(0 8px 28px ${p.glow}) drop-shadow(0 2px 4px rgba(0,0,0,0.8))`,
-                  fontFamily:
-                    "'Roboto Mono', 'IBM Plex Mono', 'Courier New', monospace",
-                }}
-              >
-                {/* Shield wrapper — SVG + overlay together */}
-                <div style={{ position: "relative", width: "100%" }}>
-                  {/* SVG Shield — decorative layer, sits behind content */}
-                  <svg
-                    viewBox="0 0 200 265"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-full block"
-                    style={{ display: "block" }}
-                  >
-                    <defs>
-                      <linearGradient
-                        id={`grad-${i}`}
-                        x1="0%"
-                        y1="0%"
-                        x2="60%"
-                        y2="100%"
-                      >
-                        <stop offset="0%" stopColor={p.rim} stopOpacity="0.9" />
-                        <stop offset="50%" stopColor={p.fill} stopOpacity="1" />
-                        <stop
-                          offset="100%"
-                          stopColor={p.dark}
-                          stopOpacity="1"
-                        />
-                      </linearGradient>
-                      <linearGradient
-                        id={`rimgrad-${i}`}
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="100%"
-                      >
-                        <stop
-                          offset="0%"
-                          stopColor={p.accent}
-                          stopOpacity="0.9"
-                        />
-                        <stop offset="40%" stopColor={p.rim} stopOpacity="1" />
-                        <stop
-                          offset="100%"
-                          stopColor={p.dark}
-                          stopOpacity="1"
-                        />
-                      </linearGradient>
-                      <clipPath id={`clip-${i}`}>
-                        <path d={S} />
-                      </clipPath>
-                    </defs>
-
-                    {/* Main shield body */}
-                    <path d={S} fill={`url(#rimgrad-${i})`} />
-                    {/* Fill body (slightly inset to show rim) */}
-                    <path d={R1} fill={`url(#grad-${i})`} />
-
-                    {/* Lance notch — punched out of top-right (fill with dark) */}
-                    <path d={NOTCH} fill="#0a0a08" />
-                    {/* Notch inner edge lines */}
-                    <polyline
-                      points="148,16 172,16 172,48"
-                      fill="none"
-                      stroke={p.rim}
-                      strokeWidth="1"
-                      opacity="0.8"
-                    />
-
-                    {/* Inner decorative rim line */}
-                    <path
-                      d={R2}
-                      fill="none"
-                      stroke={p.accent}
-                      strokeWidth="0.7"
-                      opacity="0.35"
-                    />
-
-                    {/* Quartered cross — faint etching behind content */}
-                    <line
-                      x1="100"
-                      y1="12"
-                      x2="100"
-                      y2="138"
-                      stroke={p.accent}
-                      strokeWidth="0.5"
-                      opacity="0.12"
-                    />
-                    <line
-                      x1="14"
-                      y1="80"
-                      x2="186"
-                      y2="80"
-                      stroke={p.accent}
-                      strokeWidth="0.5"
-                      opacity="0.12"
-                    />
-
-                    {/* === EDGE DETAILS (rim area — no words here) === */}
-
-                    {/* Left edge rivet row */}
-                    <circle
-                      cx="10"
-                      cy="50"
-                      r="2.2"
-                      fill={p.rim}
-                      stroke={p.accent}
-                      strokeWidth="0.6"
-                      opacity="0.7"
-                    />
-                    <circle
-                      cx="9"
-                      cy="75"
-                      r="2.2"
-                      fill={p.rim}
-                      stroke={p.accent}
-                      strokeWidth="0.6"
-                      opacity="0.7"
-                    />
-                    <circle
-                      cx="9"
-                      cy="100"
-                      r="2.2"
-                      fill={p.rim}
-                      stroke={p.accent}
-                      strokeWidth="0.6"
-                      opacity="0.7"
-                    />
-                    <circle
-                      cx="10"
-                      cy="125"
-                      r="2.2"
-                      fill={p.rim}
-                      stroke={p.accent}
-                      strokeWidth="0.6"
-                      opacity="0.7"
-                    />
-                    {/* Right edge rivet row */}
-                    <circle
-                      cx="190"
-                      cy="50"
-                      r="2.2"
-                      fill={p.rim}
-                      stroke={p.accent}
-                      strokeWidth="0.6"
-                      opacity="0.7"
-                    />
-                    <circle
-                      cx="191"
-                      cy="75"
-                      r="2.2"
-                      fill={p.rim}
-                      stroke={p.accent}
-                      strokeWidth="0.6"
-                      opacity="0.7"
-                    />
-                    <circle
-                      cx="191"
-                      cy="100"
-                      r="2.2"
-                      fill={p.rim}
-                      stroke={p.accent}
-                      strokeWidth="0.6"
-                      opacity="0.7"
-                    />
-                    <circle
-                      cx="190"
-                      cy="125"
-                      r="2.2"
-                      fill={p.rim}
-                      stroke={p.accent}
-                      strokeWidth="0.6"
-                      opacity="0.7"
-                    />
-
-                    {/* Top corner rivets */}
-                    <circle
-                      cx="32"
-                      cy="20"
-                      r="3.5"
-                      fill={p.rim}
-                      stroke={p.accent}
-                      strokeWidth="0.8"
-                      opacity="0.85"
-                    />
-                    <circle
-                      cx="168"
-                      cy="20"
-                      r="3.5"
-                      fill={p.rim}
-                      stroke={p.accent}
-                      strokeWidth="0.8"
-                      opacity="0.85"
-                    />
-                    {/* Rivet shine dot */}
-                    <circle
-                      cx="31"
-                      cy="19"
-                      r="1"
-                      fill={p.accent}
-                      opacity="0.5"
-                    />
-                    <circle
-                      cx="167"
-                      cy="19"
-                      r="1"
-                      fill={p.accent}
-                      opacity="0.5"
-                    />
-
-                    {/* === LOWER POINT AREA decorations (below content) === */}
-                    {/* Chevron / V-stripe pointing down toward tip */}
-                    <polyline
-                      points="30,172 100,218 170,172"
-                      fill="none"
-                      stroke={p.accent}
-                      strokeWidth="1"
-                      opacity="0.3"
-                      clipPath={`url(#clip-${i})`}
-                    />
-                    <polyline
-                      points="44,172 100,208 156,172"
-                      fill="none"
-                      stroke={p.accent}
-                      strokeWidth="0.6"
-                      opacity="0.2"
-                      clipPath={`url(#clip-${i})`}
-                    />
-
-                    {/* Small boss in the lower point — safe below all words */}
-                    <circle
-                      cx="100"
-                      cy="220"
-                      r="10"
-                      fill={p.dark}
-                      stroke={p.accent}
-                      strokeWidth="1.2"
-                      opacity="0.85"
-                    />
-                    <circle
-                      cx="100"
-                      cy="220"
-                      r="6.5"
-                      fill={p.rim}
-                      stroke={p.accent}
-                      strokeWidth="0.8"
-                      opacity="0.75"
-                    />
-                    <circle
-                      cx="100"
-                      cy="220"
-                      r="3"
-                      fill={p.accent}
-                      opacity="0.9"
-                    />
-                    {/* Boss shine */}
-                    <circle
-                      cx="98"
-                      cy="218"
-                      r="1"
-                      fill="white"
-                      opacity="0.25"
-                    />
-
-                    {/* Tip rivet */}
-                    <circle
-                      cx="100"
-                      cy="246"
-                      r="2.5"
-                      fill={p.rim}
-                      stroke={p.accent}
-                      strokeWidth="0.8"
-                      opacity="0.6"
-                    />
-
-                    {/* Top hanging loop */}
-                    <rect
-                      x="90"
-                      y="0"
-                      width="20"
-                      height="5"
-                      rx="2"
-                      fill={p.accent}
-                      opacity="0.6"
-                    />
-                    <ellipse
-                      cx="100"
-                      cy="3"
-                      rx="6"
-                      ry="4"
-                      fill="none"
-                      stroke={p.accent}
-                      strokeWidth="1"
-                      opacity="0.5"
-                    />
-
-                    {/* TAG banner */}
-                    <rect
-                      x="52"
-                      y="18"
-                      width="96"
-                      height="14"
-                      rx="1"
-                      fill={p.dark}
-                      stroke={p.accent}
-                      strokeWidth="0.8"
-                      opacity="0.95"
-                    />
-                    <text
-                      x="100"
-                      y="28"
-                      textAnchor="middle"
-                      fontSize="6.5"
-                      fontFamily="'Courier New',monospace"
-                      fontWeight="bold"
-                      fill={p.accent}
-                      letterSpacing="2"
-                      opacity="0.95"
-                    >
-                      {tag}
-                    </text>
-
-                    {/* Roman numeral at tip */}
-                    <text
-                      x="100"
-                      y="256"
-                      textAnchor="middle"
-                      fontSize="7"
-                      fontFamily="'Courier New',monospace"
-                      fill={p.accent}
-                      opacity="0.4"
-                      letterSpacing="2"
-                    >
-                      {p.label}
-                    </text>
-                  </svg>
-
-                  {/* HTML content — absolutely positioned inside shield */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "13%",
-                      left: "10%",
-                      right: "10%",
-                      bottom: "28%",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "flex-start",
-                      gap: "10px",
-                      paddingTop: "18px",
-                      textAlign: "center",
-                      pointerEvents: "none",
-                      fontFamily:
-                        "'Roboto Mono', 'IBM Plex Mono', 'Courier New', monospace",
-                    }}
-                  >
-                    {/* Icon */}
-                    <div
-                      style={{
-                        fontSize: "2.2rem",
-                        color: p.accent,
-                        lineHeight: 1,
-                        textShadow: `0 0 18px ${p.glow}, 0 0 6px rgba(255,255,255,0.15)`,
-                      }}
-                    >
-                      {icon}
-                    </div>
-
-                    {/* Title */}
-                    <h2
-                      style={{
-                        color: p.accent,
-                        fontSize: "0.95rem",
-                        fontWeight: "900",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.08em",
-                        textShadow: `0 0 10px ${p.glow}, 0 0 4px currentColor, 0 1px 3px rgba(0,0,0,0.8)`,
-                        lineHeight: 1.25,
-                        margin: 0,
-                      }}
-                    >
-                      {title}
-                    </h2>
-
-                    {/* Thin rule */}
-                    <div
-                      style={{
-                        width: "65%",
-                        height: "1px",
-                        background: p.accent,
-                        opacity: 0.4,
-                      }}
-                    ></div>
-
-                    {/* White description text intentionally removed for cleaner shields */}
-                  </div>
+            {/* Weigh-In Videos */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-stone-200 mb-3">
+                This Week's Weigh-In Videos
+              </h3>
+              <p className="text-stone-400 text-sm leading-relaxed mb-4">
+                Weigh-In Videos will be available Friday morning after the official weigh-ins.
+                <br />
+                <span className="text-stone-500">Full Weigh-In Video (~2 hours) • Official Highlights (~5–6 minutes) • Individual 5–10 second fighter clips</span>
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="border border-stone-700 rounded-lg p-4 bg-stone-950 text-center">
+                  <div className="text-yellow-500 text-2xl mb-2">🎥</div>
+                  <h4 className="text-stone-200 font-semibold mb-1">Full Weigh-In Video</h4>
+                  <p className="text-stone-500 text-xs">Coming Friday morning</p>
                 </div>
-                {/* end shield wrapper */}
-
-                {/* CTA button — below shield in normal flow */}
-                <div
-                  style={{
-                    width: "100%",
-                    background: p.accent,
-                    border: `1px solid ${p.accent}`,
-                    color: "#0c0a00",
-                    fontSize: "0.8rem",
-                    fontWeight: "900",
-                    padding: "7px 13px",
-                    letterSpacing: "0.12em",
-                    textTransform: "uppercase",
-                    textAlign: "center",
-                    boxShadow: `0 4px 16px ${p.glow}, 0 1px 0 rgba(255,255,255,0.15) inset`,
-                    fontFamily:
-                      "'Roboto Mono', 'IBM Plex Mono', 'Courier New', monospace",
-                    marginTop: "6px",
-                  }}
-                >
-                  ▶ {cta}
+                <div className="border border-stone-700 rounded-lg p-4 bg-stone-950 text-center">
+                  <div className="text-yellow-500 text-2xl mb-2">✂️</div>
+                  <h4 className="text-stone-200 font-semibold mb-1">Official Highlights</h4>
+                  <p className="text-stone-500 text-xs">Coming Friday morning</p>
                 </div>
-              </Link>
-            );
-          })}
+                <div className="border border-stone-700 rounded-lg p-4 bg-stone-950 text-center">
+                  <div className="text-yellow-500 text-2xl mb-2">👤</div>
+                  <h4 className="text-stone-200 font-semibold mb-1">Fighter Clips</h4>
+                  <p className="text-stone-500 text-xs">Coming Friday morning</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Last-Minute Changes */}
+            <div>
+              <h3 className="text-lg font-semibold text-stone-200 mb-3">
+                Last-Minute Fight Changes & News
+              </h3>
+              <p className="text-stone-400 text-sm leading-relaxed">
+                No last-minute changes reported yet.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Tools Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-5xl">
+          <Link
+            to="/fight-analyzer"
+            className="border border-yellow-700/50 rounded-lg bg-stone-900 hover:bg-stone-800 p-4 transition-colors duration-200 group"
+          >
+            <div className="text-yellow-500 text-2xl mb-2">⊕</div>
+            <h3 className="text-stone-200 font-bold mb-1 uppercase tracking-wide">Fight Analyzer</h3>
+            <p className="text-stone-400 text-sm">Deep stats & analysis</p>
+          </Link>
+          <Link
+            to="/parlay-builder"
+            className="border border-stone-700 rounded-lg bg-stone-900 hover:bg-stone-800 p-4 transition-colors duration-200 group"
+          >
+            <div className="text-stone-400 text-2xl mb-2">🎯</div>
+            <h3 className="text-stone-200 font-bold mb-1 uppercase tracking-wide">Parlay Builder</h3>
+            <p className="text-stone-400 text-sm">Build winning parlays</p>
+          </Link>
+          <Link
+            to="/odds"
+            className="border border-stone-700 rounded-lg bg-stone-900 hover:bg-stone-800 p-4 transition-colors duration-200 group"
+          >
+            <div className="text-stone-400 text-2xl mb-2">$</div>
+            <h3 className="text-stone-200 font-bold mb-1 uppercase tracking-wide">Live Odds</h3>
+            <p className="text-stone-400 text-sm">Real-time betting lines</p>
+          </Link>
+          <Link
+            to="/team-combinations"
+            className="border border-stone-700 rounded-lg bg-stone-900 hover:bg-stone-800 p-4 transition-colors duration-200 group"
+          >
+            <div className="text-stone-400 text-2xl mb-2">◈</div>
+            <h3 className="text-stone-200 font-bold mb-1 uppercase tracking-wide">DFS Teams</h3>
+            <p className="text-stone-400 text-sm">Optimize fantasy squads</p>
+          </Link>
         </div>
 
         {/* Footer */}

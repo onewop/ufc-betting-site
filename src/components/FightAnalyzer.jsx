@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
 import "tailwindcss/tailwind.css"; // or your correct Tailwind import path
+import WeighInClips from "./WeighInClips";
+import KeyNotes from "./KeyNotes";
+import FullFightRecord from "./FullFightRecord";
+import { motion, AnimatePresence } from "framer-motion";
 
 const generalQuestions = [
   "Who has the striking advantage?",
@@ -154,6 +158,9 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
     key: "EVENT",
     order: "desc",
   });
+  const [showRecordModal, setShowRecordModal] = useState(false);
+  const [selectedFighterForRecord, setSelectedFighterForRecord] =
+    useState(null);
 
   useEffect(() => {
     console.log("🔍 Starting fetch for /this_weeks_stats.json");
@@ -2132,6 +2139,9 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                     </div>
                   )}
 
+                  {/* Weigh-In Clips */}
+                  <WeighInClips fighters={[fighter]} />
+
                   {tabKey === "recordAwards" &&
                     fighter.fight_history?.length > 0 && (
                       <div className="mt-4 pt-3 border-t border-stone-700">
@@ -2279,6 +2289,36 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                           {fight.fighters[1].name}
                         </h4>
                         {renderStats(fight.fighters[1])}
+                      </div>
+                    </div>
+
+                    {/* Fight Context */}
+                    <KeyNotes />
+
+                    {/* Full Fight Record Buttons */}
+                    <div className="mt-8 mb-6">
+                      <h3 className="text-stone-300 text-lg font-bold mb-4 text-center uppercase tracking-wide">
+                        📊 Professional Fight Records
+                      </h3>
+                      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button
+                          onClick={() => {
+                            setSelectedFighterForRecord(fight.fighters[0]);
+                            setShowRecordModal(true);
+                          }}
+                          className="bg-yellow-600 hover:bg-yellow-500 text-stone-900 px-6 py-3 rounded-lg border-2 border-yellow-500 hover:border-yellow-400 transition-all font-bold text-sm uppercase tracking-wide shadow-lg hover:shadow-xl"
+                        >
+                          📈 View {fight.fighters[0].name} Complete Record
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedFighterForRecord(fight.fighters[1]);
+                            setShowRecordModal(true);
+                          }}
+                          className="bg-yellow-600 hover:bg-yellow-500 text-stone-900 px-6 py-3 rounded-lg border-2 border-yellow-500 hover:border-yellow-400 transition-all font-bold text-sm uppercase tracking-wide shadow-lg hover:shadow-xl"
+                        >
+                          📈 View {fight.fighters[1].name} Complete Record
+                        </button>
                       </div>
                     </div>
 
@@ -2626,6 +2666,44 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
           ))}
         </div>
       </div>
+
+      {/* Full Fight Record Modal */}
+      <AnimatePresence>
+        {showRecordModal && selectedFighterForRecord && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+              onClick={() => setShowRecordModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-stone-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex justify-between items-center p-4 border-b border-stone-700">
+                  <h2 className="text-xl font-bold text-stone-100">
+                    Full Fight Record
+                  </h2>
+                  <button
+                    onClick={() => setShowRecordModal(false)}
+                    className="text-stone-400 hover:text-stone-200 text-2xl"
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="p-4">
+                  <FullFightRecord fighter={selectedFighterForRecord} />
+                </div>
+              </motion.div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

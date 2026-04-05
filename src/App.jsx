@@ -19,6 +19,10 @@ import Footer from "./components/Footer";
 import AuthModal from "./components/AuthModal";
 import MySavedLineups from "./components/MySavedLineups";
 import UserDashboard from "./components/UserDashboard";
+import PostFightAnalysis from "./components/PostFightAnalysis";
+import ParlayBuilder from "./components/ParlayBuilder";
+// PRIVATE OWNER TOOL — not linked in any public navigation
+import DebugStatsPage from "./pages/DebugStatsPage";
 
 // Auth keys for localStorage
 const AUTH_TOKEN_KEY = "authToken";
@@ -35,6 +39,8 @@ const navLinks = [
   { to: "/fight-analyzer", label: "Fight Analyzer - Latest Card" },
   { to: "/odds", label: "Live Odds" },
   { to: "/predictions", label: "Predictions & Projections" },
+  { to: "/post-fight-analysis", label: "Post-Fight Analysis" },
+  { to: "/parlay-builder", label: "Parlay Builder" },
   { to: "/video-studio", label: "Creator Studio" },
 ];
 
@@ -45,7 +51,8 @@ const mobileNavLinks = [
   { to: "/fight-analyzer", label: "Analyze", icon: "◈" },
   { to: "/odds", label: "Odds", icon: "$" },
   { to: "/predictions", label: "DFS", icon: "▦" },
-  { to: "/team-combinations", label: "Teams", icon: "☰" },
+  { to: "/post-fight-analysis", label: "Analysis", icon: "📊" },
+  { to: "/parlay-builder", label: "Parlay", icon: "🎯" },
 ];
 
 const AppShell = () => {
@@ -448,6 +455,29 @@ const AppShell = () => {
           path="/dashboard"
           element={<UserDashboard currentUser={currentUser} />}
         />
+        <Route
+          path="/post-fight-analysis"
+          element={<PostFightAnalysis currentUser={currentUser} />}
+        />
+        <Route
+          path="/parlay-builder"
+          element={<ParlayBuilder currentUser={currentUser} />}
+        />
+        {/* PRIVATE OWNER TOOL — /debug-stats — not in nav, not linked publicly */}
+        <Route
+          path="/debug-stats"
+          element={
+            currentUser ? (
+              <DebugStatsPage currentUser={currentUser} />
+            ) : (
+              <div className="min-h-screen bg-stone-950 flex items-center justify-center">
+                <p className="text-stone-400 text-sm">
+                  🔒 Debug tools require login.
+                </p>
+              </div>
+            )
+          }
+        />
       </Routes>
       <Footer />
 
@@ -455,7 +485,7 @@ const AppShell = () => {
         className={`xl:hidden fixed bottom-0 left-0 right-0 z-[60] border-t border-yellow-900/60 backdrop-blur ${theme === "light" ? "bg-amber-100/95" : "bg-stone-950/95"}`}
         aria-label="Mobile quick navigation"
       >
-        <ul className="grid grid-cols-5">
+        <ul className="grid grid-cols-6">
           {mobileNavLinks.map(({ to, label, icon }) => {
             const active =
               to === "/"
