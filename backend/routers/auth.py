@@ -25,9 +25,15 @@ from backend.models import Token, TokenData, User, UserCreate, UserLogin, UserOu
 logger = logging.getLogger(__name__)
 
 # ── JWT configuration ─────────────────────────────────────────────────────────
-# In production, load SECRET_KEY from an environment variable:
-#   export AUTH_SECRET_KEY="$(openssl rand -hex 32)"
-SECRET_KEY: str = os.getenv("AUTH_SECRET_KEY", "super-secret-key-change-in-production")
+# AUTH_SECRET_KEY must be set in .env — the server will refuse to start without it.
+#   Generate one with: python -c "import secrets; print(secrets.token_hex(32))"
+SECRET_KEY: str = os.getenv("AUTH_SECRET_KEY", "")
+if not SECRET_KEY:
+    raise RuntimeError(
+        "AUTH_SECRET_KEY environment variable is not set. "
+        "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\" "
+        "and add it to your .env file."
+    )
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 7
 

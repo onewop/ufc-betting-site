@@ -21,10 +21,16 @@ from backend.routers.auth import get_current_user
 
 logger = logging.getLogger(__name__)
 
-# Stripe configuration
-STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "sk_test_...")
-STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "whsec_...")
-STRIPE_PRICE_ID = os.getenv("STRIPE_PRICE_ID", "price_...")  # Pro subscription price ID
+# Stripe configuration — all values required from .env
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+STRIPE_PRICE_ID = os.getenv("STRIPE_PRICE_ID", "")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+
+if not STRIPE_SECRET_KEY:
+    logger.warning("STRIPE_SECRET_KEY not set — payment endpoints will fail.")
+if not STRIPE_PRICE_ID:
+    logger.warning("STRIPE_PRICE_ID not set — checkout creation will fail.")
 
 stripe.api_key = STRIPE_SECRET_KEY
 
@@ -58,14 +64,14 @@ def create_checkout_session(
                 }
             ],
             mode="subscription",
-            success_url="http://localhost:3000/dashboard?session_id={CHECKOUT_SESSION_ID}",
-            cancel_url="http://localhost:3000/dashboard?canceled=true",
+            success_url=f"{FRONTEND_URL}/dashboard?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{FRONTEND_URL}/dashboard?canceled=true",
         )
 
         return {"url": session.url}
 
     except Exception as e:
-        logger.error(f"Stripe checkout error: {e}")
+        logger.error("Stripe checkout error: %s", e)
         raise HTTPException(status_code=400, detail="Failed to create checkout session")
 
 

@@ -15,11 +15,6 @@ from dotenv import load_dotenv
 # Load environment variables from .env file as early as possible
 load_dotenv()
 
-# Debug prints to confirm keys are loaded
-print("DEBUG: STRIPE_SECRET_KEY loaded:", bool(os.getenv("STRIPE_SECRET_KEY")))
-print("DEBUG: STRIPE_PRICE_ID loaded:", bool(os.getenv("STRIPE_PRICE_ID")))
-print("DEBUG: STRIPE_WEBHOOK_SECRET loaded:", bool(os.getenv("STRIPE_WEBHOOK_SECRET")))
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -48,9 +43,14 @@ def create_app() -> FastAPI:
     )
 
     # ── CORS ─────────────────────────────────────────────────────────────────
+    cors_origins = [
+        origin.strip()
+        for origin in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+        if origin.strip()
+    ]
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:3000"],
+        allow_origins=cors_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
