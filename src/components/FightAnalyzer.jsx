@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import "tailwindcss/tailwind.css"; // or your correct Tailwind import path
 import WeighInClips from "./WeighInClips";
 import KeyNotes from "./KeyNotes";
@@ -141,6 +141,476 @@ const _LEVEL = {
   },
 };
 
+/* ── Extracted memoized component for fighter stats section ──
+   Prevents re-renders from unrelated state changes (modal, question/answer, etc.)
+   Only re-renders when fight data, active tab, or setActiveTab change. */
+const FightStatsSection = memo(
+  ({ fight, activeTab, setActiveTab, openRecordModal }) => {
+    if (!fight || fight.fighters.length < 2) return null;
+
+    const renderStats = (fighter, tabKey = activeTab) => {
+      const statsList = {
+        basics: [
+          { label: "Nickname", key: "nickname" },
+          { label: "Age", key: "age" },
+          { label: "Height", key: "height" },
+          { label: "Reach", key: "reach" },
+          { label: "Stance", key: "stance" },
+          { label: "Weight Class", key: "weight_class" },
+          {
+            label:
+              "Record (Full MMA career when Sherdog data available, otherwise UFC only)",
+            key: "record",
+          },
+          {
+            label: "DK (DraftKings) Salary",
+            key: "salary",
+            isMoney: true,
+          },
+          {
+            label: "Avg Points (DFS — Daily Fantasy Sports)",
+            key: "avgPointsPerGame",
+            isHighlight: true,
+          },
+        ],
+        striking: [
+          {
+            label: "SLpM (Sig. Strikes Landed per Min)",
+            key: "stats.slpm",
+          },
+          {
+            label: "SApM (Sig. Strikes Absorbed per Min)",
+            key: "stats.sapm",
+          },
+          {
+            label: "Striking Accuracy %",
+            key: "striking_accuracy",
+            isPct: true,
+          },
+          {
+            label: "Striking Defense %",
+            key: "stats.striking_defense",
+            isPct: true,
+          },
+        ],
+        strikeDistribution: [
+          {
+            label: "Head % (of landed sig strikes)",
+            key: "stats.head_str_pct",
+            isPct: true,
+          },
+          {
+            label: "Body % (of landed sig strikes)",
+            key: "stats.body_str_pct",
+            isPct: true,
+          },
+          {
+            label: "Leg % (of landed sig strikes)",
+            key: "stats.leg_str_pct",
+            isPct: true,
+          },
+          {
+            label: "Distance % (of strikes by position)",
+            key: "stats.distance_str_pct",
+            isPct: true,
+          },
+          {
+            label: "Clinch % (of strikes by position)",
+            key: "stats.clinch_str_pct",
+            isPct: true,
+          },
+          {
+            label: "Ground % (of strikes by position)",
+            key: "stats.ground_str_pct",
+            isPct: true,
+          },
+        ],
+        grappling: [
+          {
+            label: "TD Avg (Takedowns per 15 min)",
+            key: "stats.td_avg",
+          },
+          {
+            label: "TD Accuracy % (Takedown Accuracy)",
+            key: "stats.td_accuracy",
+            isPct: true,
+          },
+          {
+            label: "TD Defense % (Takedown Defense)",
+            key: "stats.td_defense",
+            isPct: true,
+          },
+          {
+            label: "Sub Win % (Submission Win %)",
+            key: "submission_wins_pct",
+            isPct: true,
+          },
+          { label: "Avg Sub Attempts", key: "avg_sub_attempts" },
+          {
+            label: "Avg KD (Knockdowns) / Fight",
+            key: "stats.avg_kd_per_fight",
+          },
+          {
+            label: "Avg CTRL (Control) Time (secs)",
+            key: "stats.avg_ctrl_secs",
+          },
+          {
+            label: "CTRL (Control) Time %",
+            key: "stats.grappling_control_pct",
+            isPct: true,
+          },
+        ],
+        defGrappling: [
+          {
+            label: "TD Defense % (Takedown Defense)",
+            key: "stats.td_defense",
+            isPct: true,
+          },
+          {
+            label: "Implied Sub Defense % (est.)",
+            key: "stats.implied_sub_def_pct",
+            isPct: true,
+          },
+          {
+            label: "Avg Opp Control Time (secs / fight)",
+            key: "stats.avg_opp_ctrl_secs",
+          },
+          {
+            label: "Reversals / Fight (bottom→top escapes)",
+            key: "stats.avg_reversals_per_fight",
+          },
+          {
+            label: "Subs Conceded (recent fights analyzed)",
+            key: "stats.subs_conceded",
+          },
+          {
+            label: "Opp Sub Attempts vs Fighter",
+            key: "stats.opp_sub_attempts_vs",
+          },
+        ],
+        recordAwards: [
+          {
+            label: "UFC Win Streak (UFCStats)",
+            key: "current_win_streak",
+          },
+          {
+            label: "Longest UFC Win Streak (UFCStats)",
+            key: "longest_win_streak",
+          },
+          {
+            label: "UFC Loss Streak (UFCStats)",
+            key: "current_loss_streak",
+          },
+          { label: "Last Fight Result", key: "last_fight_result" },
+          { label: "UFC Record (Last 5 fights)", key: "record_last_5" },
+          {
+            label: "UFC Record (Last 10 fights)",
+            key: "record_last_10",
+          },
+          {
+            label: "Wins by KO/TKO — pro career total",
+            key: "wins_ko_tko",
+          },
+          {
+            label: "Wins by Submission — pro career total",
+            key: "wins_submission",
+          },
+          {
+            label: "Wins by Decision — pro career total",
+            key: "wins_decision",
+          },
+          {
+            label: "Finish Rate %",
+            key: "finish_rate_pct",
+            isPct: true,
+          },
+          {
+            label: "Decision Rate %",
+            key: "decision_rate_pct",
+            isPct: true,
+          },
+          { label: "Total Title Bouts", key: "total_title_bouts" },
+        ],
+        advanced: [
+          { label: "UFC Ranking", key: "ufc_ranking" },
+          {
+            label: "Career Longevity (Years)",
+            key: "career_longevity_years",
+          },
+          {
+            label: "Avg Fight Duration (mins)",
+            key: "avg_fight_duration",
+          },
+          { label: "First-Round Wins", key: "first_round_wins" },
+        ],
+      };
+
+      const getValue = (fighter, keyPath) => {
+        const keys = keyPath.split(".");
+        let value = fighter;
+        for (const key of keys) {
+          value = value?.[key];
+        }
+        return value;
+      };
+
+      const formatPct = (raw) => {
+        if (raw === null || raw === undefined) return "N/A";
+        const stripped = String(raw).replace(/%$/, "").trim();
+        if (stripped === "" || stripped === "N/A") return "N/A";
+        return `${stripped}%`;
+      };
+
+      const stats = statsList[tabKey] || statsList.basics;
+
+      const getDisplayVal = (stat) => {
+        const rawVal = getValue(fighter, stat.key);
+        if (stat.isMoney) return rawVal != null ? `$${rawVal}` : null;
+        if (stat.isPct) {
+          const f = formatPct(rawVal);
+          return f === "N/A" ? null : f;
+        }
+        return rawVal != null ? rawVal : null;
+      };
+
+      const allNull = stats.every((stat) => getDisplayVal(stat) === null);
+      if (allNull && tabKey !== "basics") {
+        return (
+          <div className="text-stone-500 text-sm italic py-4 text-center">
+            No career data available for {fighter.name} in this dataset.
+            <br />
+            <span className="text-xs">
+              (Fighter not found in ufc-master.csv enrichment source)
+            </span>
+          </div>
+        );
+      }
+
+      return (
+        <div className="space-y-2">
+          {stats.map((stat, i) => {
+            const displayVal = getDisplayVal(stat);
+
+            if (tabKey === "defGrappling" && displayVal === null) {
+              return null;
+            }
+            if (tabKey === "strikeDistribution" && displayVal === null) {
+              return null;
+            }
+
+            return (
+              <div
+                key={`${tabKey}-${i}`}
+                className="flex items-baseline justify-between gap-2 py-1 border-b border-stone-700/50"
+              >
+                <span className="text-stone-500 text-sm flex-1 min-w-0">
+                  {stat.label}:
+                </span>
+                {displayVal !== null ? (
+                  <span
+                    className={`font-semibold shrink-0 text-right ${
+                      stat.isMoney || stat.isHighlight
+                        ? "text-yellow-400"
+                        : "text-stone-200"
+                    }`}
+                  >
+                    {displayVal}
+                  </span>
+                ) : (
+                  <span className="text-stone-600 text-sm italic shrink-0">
+                    No data
+                  </span>
+                )}
+              </div>
+            );
+          })}
+          {tabKey === "recordAwards" && fighter.fight_history?.length > 0 && (
+            <div className="mt-4 pt-3 border-t border-stone-700">
+              <p className="text-stone-500 text-xs font-bold mb-2 uppercase tracking-wider">
+                Recent Fights (Sherdog)
+              </p>
+              {fighter.fight_history.map((fh, hi) => (
+                <div
+                  key={hi}
+                  className="flex items-center gap-1.5 py-1.5 border-b border-stone-800 text-xs"
+                >
+                  <span
+                    className={`w-6 shrink-0 font-bold uppercase ${
+                      fh.result === "win"
+                        ? "text-green-400"
+                        : fh.result === "loss"
+                          ? "text-red-400"
+                          : "text-stone-500"
+                    }`}
+                  >
+                    {fh.result?.charAt(0)?.toUpperCase() || "?"}
+                  </span>
+                  <span className="text-stone-300 flex-1 min-w-0 truncate">
+                    {fh.opponent}
+                  </span>
+                  <span className="text-stone-500 shrink-0">
+                    {fh.method}
+                    {fh.method_detail ? ` (${fh.method_detail})` : ""}
+                  </span>
+                  <span className="text-stone-600 shrink-0">
+                    {fh.round ? `R${fh.round}` : ""}
+                  </span>
+                  <span className="text-stone-600 shrink-0 hidden sm:block">
+                    {fh.date}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    const tabList = [
+      { id: "basics", label: "Basics" },
+      { id: "striking", label: "Striking" },
+      { id: "strikeDistribution", label: "Strike Dist." },
+      { id: "grappling", label: "Grappling" },
+      { id: "defGrappling", label: "Def. Grappling" },
+      { id: "recordAwards", label: "Record & Awards" },
+      { id: "advanced", label: "Advanced / DFS" },
+    ];
+
+    const mobileTabList = [
+      { id: "basics", label: "Basics" },
+      { id: "striking", label: "Striking" },
+      { id: "strikeDistribution", label: "Strike Distribution" },
+      { id: "grappling", label: "Grappling" },
+      { id: "defGrappling", label: "Defensive Grappling" },
+      { id: "recordAwards", label: "Record & Awards" },
+      { id: "advanced", label: "Advanced / DFS" },
+    ];
+
+    return (
+      <div className="mb-8">
+        <p className="text-center text-stone-400 text-sm mb-3 italic tracking-wide">
+          📊 Research every stat side-by-side — make your own decisions
+        </p>
+
+        <details className="group border border-yellow-700/50 rounded-lg bg-stone-900">
+          <summary
+            className="w-full bg-stone-900 hover:bg-stone-800 text-yellow-500 font-bold py-3 px-4 flex justify-between items-center transition"
+            aria-label="Toggle full fighter stats and comparisons"
+          >
+            <span className="text-base sm:text-xl">
+              📋 View Full Fighter Stats & Comparisons
+            </span>
+            <span className="text-lg group-open:hidden">▶</span>
+            <span className="text-lg hidden group-open:inline">▼</span>
+          </summary>
+
+          <div className="border-t border-yellow-700/30 p-4 sm:p-6">
+            {/* Desktop tabs */}
+            <div className="hidden md:flex flex-wrap gap-2 mb-6 border-b border-gray-600 pb-4">
+              {tabList.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`min-h-[42px] px-4 py-2 rounded-lg font-bold tracking-wide uppercase text-xs transition ${
+                    activeTab === tab.id
+                      ? "bg-yellow-700 text-stone-950"
+                      : "bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-stone-200"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Mobile: category accordions */}
+            <div className="md:hidden space-y-3 mb-6">
+              {mobileTabList.map((tab) => (
+                <details
+                  key={`mobile-tab-${tab.id}`}
+                  className="rounded-lg border border-stone-700 bg-stone-950/70"
+                >
+                  <summary
+                    className="px-3 py-2.5 text-xs font-bold uppercase tracking-wider text-yellow-500"
+                    aria-label={`Toggle ${tab.label} stats`}
+                  >
+                    {tab.label}
+                  </summary>
+                  <div className="grid grid-cols-1 gap-3 p-3 border-t border-stone-700">
+                    <div className="rounded border border-yellow-700/40 p-3 bg-stone-950">
+                      <h4 className="text-sm font-bold text-yellow-500 mb-2 tracking-wide uppercase">
+                        {fight.fighters[0].name}
+                      </h4>
+                      {renderStats(fight.fighters[0], tab.id)}
+                    </div>
+                    <div className="rounded border border-yellow-700/20 p-3 bg-stone-950">
+                      <h4 className="text-sm font-bold text-yellow-400/80 mb-2 tracking-wide uppercase">
+                        {fight.fighters[1].name}
+                      </h4>
+                      {renderStats(fight.fighters[1], tab.id)}
+                    </div>
+                  </div>
+                </details>
+              ))}
+            </div>
+
+            {/* Desktop side-by-side stats */}
+            <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="border border-yellow-700/50 rounded-lg p-4 bg-stone-950">
+                <h4 className="text-lg font-bold text-yellow-500 mb-4 text-center border-b border-yellow-700/40 pb-2 tracking-wide uppercase">
+                  {fight.fighters[0].name}
+                </h4>
+                {renderStats(fight.fighters[0])}
+              </div>
+
+              <div className="border border-yellow-700/30 rounded-lg p-4 bg-stone-950">
+                <h4 className="text-lg font-bold text-yellow-400/80 mb-4 text-center border-b border-yellow-700/30 pb-2 tracking-wide uppercase">
+                  {fight.fighters[1].name}
+                </h4>
+                {renderStats(fight.fighters[1])}
+              </div>
+            </div>
+
+            {/* Weigh-In Clips */}
+            <WeighInClips fighters={fight.fighters} />
+
+            {/* Fight Context */}
+            <KeyNotes />
+
+            {/* Full Fight Record Buttons */}
+            <div className="mt-8 mb-6">
+              <h3 className="text-stone-300 text-lg font-bold mb-4 text-center uppercase tracking-wide">
+                📊 Professional Fight Records
+              </h3>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={() => openRecordModal(fight.fighters[0])}
+                  className="bg-yellow-600 hover:bg-yellow-500 text-stone-900 px-6 py-3 rounded-lg border-2 border-yellow-500 hover:border-yellow-400 font-bold text-sm uppercase tracking-wide shadow-lg hover:shadow-xl"
+                >
+                  📈 View {fight.fighters[0].name} Complete Record
+                </button>
+                <button
+                  onClick={() => openRecordModal(fight.fighters[1])}
+                  className="bg-yellow-600 hover:bg-yellow-500 text-stone-900 px-6 py-3 rounded-lg border-2 border-yellow-500 hover:border-yellow-400 font-bold text-sm uppercase tracking-wide shadow-lg hover:shadow-xl"
+                >
+                  📈 View {fight.fighters[1].name} Complete Record
+                </button>
+              </div>
+            </div>
+
+            <p className="text-xs text-stone-600 mt-4 italic text-center tracking-wide leading-relaxed">
+              ✓ Stats from DraftKings, UFCStats, Sherdog. Per-fight rates (SLpM,
+              SApM, TDs) = UFC bouts only. Record &amp; finish counts = full pro
+              career. Public sources only. Not betting advice.
+            </p>
+          </div>
+        </details>
+      </div>
+    );
+  },
+);
+
+FightStatsSection.displayName = "FightStatsSection";
+
 const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
   const [fighters, setFighters] = useState([]);
   const [fights, setFights] = useState([]);
@@ -151,7 +621,6 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
   const [error, setError] = useState(null);
   const [liveData, setLiveData] = useState(null);
   const [cachedOdds, setCachedOdds] = useState([]);
-  const [expandedStats, setExpandedStats] = useState(false);
   const [activeTab, setActiveTab] = useState("basics");
   const [fightResults, setFightResults] = useState([]);
   const [resultsSort, setResultsSort] = useState({
@@ -161,6 +630,21 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
   const [showRecordModal, setShowRecordModal] = useState(false);
   const [selectedFighterForRecord, setSelectedFighterForRecord] =
     useState(null);
+
+  const openRecordModal = useCallback((fighter) => {
+    setSelectedFighterForRecord(fighter);
+    setShowRecordModal(true);
+  }, []);
+
+  const closeRecordModal = useCallback(() => {
+    setShowRecordModal(false);
+  }, []);
+
+  // Single shared fight lookup — stable reference, prevents redundant .find() in each render block
+  const selectedFightData = useMemo(() => {
+    if (!selectedFight) return null;
+    return fights.find((f) => f.fight_id === parseInt(selectedFight)) || null;
+  }, [selectedFight, fights]);
 
   useEffect(() => {
     console.log("🔍 Starting fetch for /this_weeks_stats.json");
@@ -1647,12 +2131,10 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
         <div className="text-stone-300 mb-6">{answer}</div>
 
         {/* Live odds from cached API data */}
-        {selectedFight &&
+        {selectedFightData &&
           (() => {
-            const fight = fights.find(
-              (f) => f.fight_id === parseInt(selectedFight),
-            );
-            if (!fight || fight.fighters.length < 2) return null;
+            const fight = selectedFightData;
+            if (fight.fighters.length < 2) return null;
             const [f1, f2] = fight.fighters;
 
             const lastName = (name) =>
@@ -1799,556 +2281,24 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
             );
           })()}
 
-        {selectedFight &&
-          (() => {
-            const fight = fights.find(
-              (f) => f.fight_id === parseInt(selectedFight),
-            );
-
-            const renderStats = (fighter, tabKey = activeTab) => {
-              const statsList = {
-                basics: [
-                  { label: "Nickname", key: "nickname" },
-                  { label: "Age", key: "age" },
-                  { label: "Height", key: "height" },
-                  { label: "Reach", key: "reach" },
-                  { label: "Stance", key: "stance" },
-                  { label: "Weight Class", key: "weight_class" },
-                  {
-                    label:
-                      "Record (Full MMA career when Sherdog data available, otherwise UFC only)",
-                    key: "record",
-                  },
-                  {
-                    label: "DK (DraftKings) Salary",
-                    key: "salary",
-                    isMoney: true,
-                  },
-                  {
-                    label: "Avg Points (DFS — Daily Fantasy Sports)",
-                    key: "avgPointsPerGame",
-                    isHighlight: true,
-                  },
-                ],
-                striking: [
-                  {
-                    label: "SLpM (Sig. Strikes Landed per Min)",
-                    key: "stats.slpm",
-                  },
-                  {
-                    label: "SApM (Sig. Strikes Absorbed per Min)",
-                    key: "stats.sapm",
-                  },
-                  {
-                    label: "Striking Accuracy %",
-                    key: "striking_accuracy",
-                    isPct: true,
-                  },
-                  {
-                    label: "Striking Defense %",
-                    key: "stats.striking_defense",
-                    isPct: true,
-                  },
-                ],
-                strikeDistribution: [
-                  {
-                    label: "Head % (of landed sig strikes)",
-                    key: "stats.head_str_pct",
-                    isPct: true,
-                  },
-                  {
-                    label: "Body % (of landed sig strikes)",
-                    key: "stats.body_str_pct",
-                    isPct: true,
-                  },
-                  {
-                    label: "Leg % (of landed sig strikes)",
-                    key: "stats.leg_str_pct",
-                    isPct: true,
-                  },
-                  {
-                    label: "Distance % (of strikes by position)",
-                    key: "stats.distance_str_pct",
-                    isPct: true,
-                  },
-                  {
-                    label: "Clinch % (of strikes by position)",
-                    key: "stats.clinch_str_pct",
-                    isPct: true,
-                  },
-                  {
-                    label: "Ground % (of strikes by position)",
-                    key: "stats.ground_str_pct",
-                    isPct: true,
-                  },
-                ],
-                grappling: [
-                  {
-                    label: "TD Avg (Takedowns per 15 min)",
-                    key: "stats.td_avg",
-                  },
-                  {
-                    label: "TD Accuracy % (Takedown Accuracy)",
-                    key: "stats.td_accuracy",
-                    isPct: true,
-                  },
-                  {
-                    label: "TD Defense % (Takedown Defense)",
-                    key: "stats.td_defense",
-                    isPct: true,
-                  },
-                  {
-                    label: "Sub Win % (Submission Win %)",
-                    key: "submission_wins_pct",
-                    isPct: true,
-                  },
-                  { label: "Avg Sub Attempts", key: "avg_sub_attempts" },
-                  {
-                    label: "Avg KD (Knockdowns) / Fight",
-                    key: "stats.avg_kd_per_fight",
-                  },
-                  {
-                    label: "Avg CTRL (Control) Time (secs)",
-                    key: "stats.avg_ctrl_secs",
-                  },
-                  {
-                    label: "CTRL (Control) Time %",
-                    key: "stats.grappling_control_pct",
-                    isPct: true,
-                  },
-                ],
-                // Added Defensive Grappling Breakdown using new stats from aggregate_stats.py
-                defGrappling: [
-                  {
-                    label: "TD Defense % (Takedown Defense)",
-                    key: "stats.td_defense",
-                    isPct: true,
-                  },
-                  {
-                    label: "Implied Sub Defense % (est.)",
-                    key: "stats.implied_sub_def_pct",
-                    isPct: true,
-                  },
-                  {
-                    label: "Avg Opp Control Time (secs / fight)",
-                    key: "stats.avg_opp_ctrl_secs",
-                  },
-                  {
-                    label: "Reversals / Fight (bottom→top escapes)",
-                    key: "stats.avg_reversals_per_fight",
-                  },
-                  {
-                    label: "Subs Conceded (recent fights analyzed)",
-                    key: "stats.subs_conceded",
-                  },
-                  {
-                    label: "Opp Sub Attempts vs Fighter",
-                    key: "stats.opp_sub_attempts_vs",
-                  },
-                ],
-                recordAwards: [
-                  {
-                    label: "UFC Win Streak (UFCStats)",
-                    key: "current_win_streak",
-                  },
-                  {
-                    label: "Longest UFC Win Streak (UFCStats)",
-                    key: "longest_win_streak",
-                  },
-                  {
-                    label: "UFC Loss Streak (UFCStats)",
-                    key: "current_loss_streak",
-                  },
-                  { label: "Last Fight Result", key: "last_fight_result" },
-                  { label: "UFC Record (Last 5 fights)", key: "record_last_5" },
-                  {
-                    label: "UFC Record (Last 10 fights)",
-                    key: "record_last_10",
-                  },
-                  {
-                    label: "Wins by KO/TKO — pro career total",
-                    key: "wins_ko_tko",
-                  },
-                  {
-                    label: "Wins by Submission — pro career total",
-                    key: "wins_submission",
-                  },
-                  {
-                    label: "Wins by Decision — pro career total",
-                    key: "wins_decision",
-                  },
-                  {
-                    label: "Finish Rate %",
-                    key: "finish_rate_pct",
-                    isPct: true,
-                  },
-                  {
-                    label: "Decision Rate %",
-                    key: "decision_rate_pct",
-                    isPct: true,
-                  },
-                  { label: "Total Title Bouts", key: "total_title_bouts" },
-                ],
-                advanced: [
-                  { label: "UFC Ranking", key: "ufc_ranking" },
-                  {
-                    label: "Career Longevity (Years)",
-                    key: "career_longevity_years",
-                  },
-                  {
-                    label: "Avg Fight Duration (mins)",
-                    key: "avg_fight_duration",
-                  },
-                  { label: "First-Round Wins", key: "first_round_wins" },
-                ],
-              };
-
-              const getValue = (fighter, keyPath) => {
-                const keys = keyPath.split(".");
-                let value = fighter;
-                for (const key of keys) {
-                  value = value?.[key];
-                }
-                return value;
-              };
-
-              // Normalize a value that should be shown as a percentage.
-              // Strips any trailing "%" already in the data, then re-adds it once.
-              const formatPct = (raw) => {
-                if (raw === null || raw === undefined) return "N/A";
-                const stripped = String(raw).replace(/%$/, "").trim();
-                if (stripped === "" || stripped === "N/A") return "N/A";
-                return `${stripped}%`;
-              };
-
-              const stats = statsList[tabKey] || statsList.basics;
-
-              // Fixed N/A spam: compute display-value for each stat so that
-              // string "N/A" values coming from the data (e.g. debut fighters)
-              // are treated as missing — not as real values — for the allNull check.
-              const getDisplayVal = (stat) => {
-                const rawVal = getValue(fighter, stat.key);
-                if (stat.isMoney) return rawVal != null ? `$${rawVal}` : null;
-                if (stat.isPct) {
-                  const f = formatPct(rawVal);
-                  return f === "N/A" ? null : f;
-                }
-                return rawVal != null ? rawVal : null;
-              };
-
-              // For record/award tabs, check if all values are null — show a
-              // helpful message instead of a column of N/As for unmatched fighters
-              const allNull = stats.every(
-                (stat) => getDisplayVal(stat) === null,
-              );
-              if (allNull && tabKey !== "basics") {
-                return (
-                  <div className="text-stone-500 text-sm italic py-4 text-center">
-                    No career data available for {fighter.name} in this dataset.
-                    <br />
-                    <span className="text-xs">
-                      (Fighter not found in ufc-master.csv enrichment source)
-                    </span>
-                  </div>
-                );
-              }
-
-              return (
-                <div key={tabKey} className="space-y-2">
-                  {stats.map((stat, i) => {
-                    // Compute display string (reuses getDisplayVal helper above)
-                    const displayVal = getDisplayVal(stat);
-
-                    // For the Defensive Grappling tab: skip rows with no data
-                    // entirely so users don't see a column of N/As for
-                    // fighters whose advanced stats haven't been scraped yet.
-                    if (tabKey === "defGrappling" && displayVal === null) {
-                      return null;
-                    }
-                    // Same for strikeDistribution — only show when data exists
-                    if (
-                      tabKey === "strikeDistribution" &&
-                      displayVal === null
-                    ) {
-                      return null;
-                    }
-
-                    return (
-                      <div
-                        key={`${tabKey}-${i}`}
-                        className="flex items-baseline justify-between gap-2 py-1 border-b border-stone-700/50"
-                      >
-                        <span className="text-stone-500 text-sm flex-1 min-w-0">
-                          {stat.label}:
-                        </span>
-                        {displayVal !== null ? (
-                          <span
-                            className={`font-semibold shrink-0 text-right ${
-                              stat.isMoney || stat.isHighlight
-                                ? "text-yellow-400"
-                                : "text-stone-200"
-                            }`}
-                          >
-                            {displayVal}
-                          </span>
-                        ) : (
-                          // For non-defGrappling tabs: show muted "No data"
-                          // instead of "N/A" so it's clear data is absent,
-                          // not a real zero.
-                          <span className="text-stone-600 text-sm italic shrink-0">
-                            No data
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                  {tabKey === "basics" && (
-                    <div className="mt-5 pt-4 border-t border-stone-700">
-                      <p className="text-stone-500 text-xs font-bold mb-3 uppercase tracking-wider">
-                        ◈ Highlight Reel
-                      </p>
-                      <p className="text-stone-500 text-xs mb-3 italic">
-                        Watch key moments from this fighter's recent bouts
-                      </p>
-                      <div className="flex flex-col gap-4">
-                        <div
-                          className="relative w-full"
-                          style={{ paddingBottom: "56.25%" }}
-                        >
-                          <iframe
-                            className="absolute inset-0 w-full h-full rounded"
-                            src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                            title={`${fighter.name} — Highlight Reel 1`}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                          />
-                        </div>
-                        <div
-                          className="relative w-full"
-                          style={{ paddingBottom: "56.25%" }}
-                        >
-                          <iframe
-                            className="absolute inset-0 w-full h-full rounded"
-                            src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                            title={`${fighter.name} — Highlight Reel 2`}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Weigh-In Clips */}
-                  <WeighInClips fighters={[fighter]} />
-
-                  {tabKey === "recordAwards" &&
-                    fighter.fight_history?.length > 0 && (
-                      <div className="mt-4 pt-3 border-t border-stone-700">
-                        <p className="text-stone-500 text-xs font-bold mb-2 uppercase tracking-wider">
-                          Recent Fights (Sherdog)
-                        </p>
-                        {fighter.fight_history.map((fh, hi) => (
-                          <div
-                            key={hi}
-                            className="flex items-center gap-1.5 py-1.5 border-b border-stone-800 text-xs"
-                          >
-                            <span
-                              className={`w-6 shrink-0 font-bold uppercase ${
-                                fh.result === "win"
-                                  ? "text-green-400"
-                                  : fh.result === "loss"
-                                    ? "text-red-400"
-                                    : "text-stone-500"
-                              }`}
-                            >
-                              {fh.result?.charAt(0)?.toUpperCase() || "?"}
-                            </span>
-                            <span className="text-stone-300 flex-1 min-w-0 truncate">
-                              {fh.opponent}
-                            </span>
-                            <span className="text-stone-500 shrink-0">
-                              {fh.method}
-                              {fh.method_detail ? ` (${fh.method_detail})` : ""}
-                            </span>
-                            <span className="text-stone-600 shrink-0">
-                              {fh.round ? `R${fh.round}` : ""}
-                            </span>
-                            <span className="text-stone-600 shrink-0 hidden sm:block">
-                              {fh.date}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                </div>
-              );
-            };
-
-            return fight && fight.fighters.length >= 2 ? (
-              <div className="mb-8">
-                {/* Research-First Tagline */}
-                <p className="text-center text-stone-400 text-sm mb-3 italic tracking-wide">
-                  📊 Research every stat side-by-side — make your own decisions
-                </p>
-
-                <details
-                  open={expandedStats}
-                  onToggle={(e) => setExpandedStats(e.currentTarget.open)}
-                  className="border border-yellow-700/50 rounded-lg bg-stone-900"
-                >
-                  <summary
-                    className="w-full bg-stone-900 hover:bg-stone-800 text-yellow-500 font-bold py-3 px-4 flex justify-between items-center transition"
-                    aria-label="Toggle full fighter stats and comparisons"
-                  >
-                    <span className="text-base sm:text-xl">
-                      📋 View Full Fighter Stats & Comparisons
-                    </span>
-                    <span className="text-lg">{expandedStats ? "▼" : "▶"}</span>
-                  </summary>
-
-                  <div className="border-t border-yellow-700/30 p-4 sm:p-6">
-                    {/* Desktop tabs */}
-                    <div className="hidden md:flex flex-wrap gap-2 mb-6 border-b border-gray-600 pb-4">
-                      {[
-                        { id: "basics", label: "Basics" },
-                        { id: "striking", label: "Striking" },
-                        { id: "strikeDistribution", label: "Strike Dist." },
-                        { id: "grappling", label: "Grappling" },
-                        { id: "defGrappling", label: "Def. Grappling" },
-                        { id: "recordAwards", label: "Record & Awards" },
-                        { id: "advanced", label: "Advanced / DFS" },
-                      ].map((tab) => (
-                        <button
-                          key={tab.id}
-                          onClick={() => setActiveTab(tab.id)}
-                          className={`min-h-[42px] px-4 py-2 rounded-lg font-bold tracking-wide uppercase text-xs transition ${
-                            activeTab === tab.id
-                              ? "bg-yellow-700 text-stone-950"
-                              : "bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-stone-200"
-                          }`}
-                        >
-                          {tab.label}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Mobile: category accordions for quick scanning */}
-                    <div className="md:hidden space-y-3 mb-6">
-                      {[
-                        { id: "basics", label: "Basics" },
-                        { id: "striking", label: "Striking" },
-                        {
-                          id: "strikeDistribution",
-                          label: "Strike Distribution",
-                        },
-                        { id: "grappling", label: "Grappling" },
-                        { id: "defGrappling", label: "Defensive Grappling" },
-                        { id: "recordAwards", label: "Record & Awards" },
-                        { id: "advanced", label: "Advanced / DFS" },
-                      ].map((tab) => (
-                        <details
-                          key={`mobile-tab-${tab.id}`}
-                          className="rounded-lg border border-stone-700 bg-stone-950/70"
-                        >
-                          <summary
-                            className="px-3 py-2.5 text-xs font-bold uppercase tracking-wider text-yellow-500"
-                            aria-label={`Toggle ${tab.label} stats`}
-                          >
-                            {tab.label}
-                          </summary>
-                          <div className="grid grid-cols-1 gap-3 p-3 border-t border-stone-700">
-                            <div className="rounded border border-yellow-700/40 p-3 bg-stone-950">
-                              <h4 className="text-sm font-bold text-yellow-500 mb-2 tracking-wide uppercase">
-                                {fight.fighters[0].name}
-                              </h4>
-                              {renderStats(fight.fighters[0], tab.id)}
-                            </div>
-                            <div className="rounded border border-yellow-700/20 p-3 bg-stone-950">
-                              <h4 className="text-sm font-bold text-yellow-400/80 mb-2 tracking-wide uppercase">
-                                {fight.fighters[1].name}
-                              </h4>
-                              {renderStats(fight.fighters[1], tab.id)}
-                            </div>
-                          </div>
-                        </details>
-                      ))}
-                    </div>
-
-                    {/* Desktop side-by-side stats */}
-                    <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="border border-yellow-700/50 rounded-lg p-4 bg-stone-950">
-                        <h4 className="text-lg font-bold text-yellow-500 mb-4 text-center border-b border-yellow-700/40 pb-2 tracking-wide uppercase">
-                          {fight.fighters[0].name}
-                        </h4>
-                        {renderStats(fight.fighters[0])}
-                      </div>
-
-                      <div className="border border-yellow-700/30 rounded-lg p-4 bg-stone-950">
-                        <h4 className="text-lg font-bold text-yellow-400/80 mb-4 text-center border-b border-yellow-700/30 pb-2 tracking-wide uppercase">
-                          {fight.fighters[1].name}
-                        </h4>
-                        {renderStats(fight.fighters[1])}
-                      </div>
-                    </div>
-
-                    {/* Fight Context */}
-                    <KeyNotes />
-
-                    {/* Full Fight Record Buttons */}
-                    <div className="mt-8 mb-6">
-                      <h3 className="text-stone-300 text-lg font-bold mb-4 text-center uppercase tracking-wide">
-                        📊 Professional Fight Records
-                      </h3>
-                      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button
-                          onClick={() => {
-                            setSelectedFighterForRecord(fight.fighters[0]);
-                            setShowRecordModal(true);
-                          }}
-                          className="bg-yellow-600 hover:bg-yellow-500 text-stone-900 px-6 py-3 rounded-lg border-2 border-yellow-500 hover:border-yellow-400 transition-all font-bold text-sm uppercase tracking-wide shadow-lg hover:shadow-xl"
-                        >
-                          📈 View {fight.fighters[0].name} Complete Record
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedFighterForRecord(fight.fighters[1]);
-                            setShowRecordModal(true);
-                          }}
-                          className="bg-yellow-600 hover:bg-yellow-500 text-stone-900 px-6 py-3 rounded-lg border-2 border-yellow-500 hover:border-yellow-400 transition-all font-bold text-sm uppercase tracking-wide shadow-lg hover:shadow-xl"
-                        >
-                          📈 View {fight.fighters[1].name} Complete Record
-                        </button>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-stone-600 mt-4 italic text-center tracking-wide leading-relaxed">
-                      ✓ Stats from DraftKings, UFCStats, Sherdog. Per-fight
-                      rates (SLpM, SApM, TDs) = UFC bouts only. Record &amp;
-                      finish counts = full pro career. Public sources only. Not
-                      betting advice.
-                    </p>
-                  </div>
-                </details>
-              </div>
-            ) : selectedFight ? (
-              <div className="text-center text-stone-500 mb-8 tracking-wide">
-                ⚠️ Select a valid fight to view comprehensive stats
-              </div>
-            ) : (
-              <div className="text-center text-stone-500 mb-8 py-4 tracking-wide">
-                👉 Select a fight above to compare fighter stats side-by-side
-              </div>
-            );
-          })()}
+        {selectedFightData ? (
+          <FightStatsSection
+            fight={selectedFightData}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            openRecordModal={openRecordModal}
+          />
+        ) : selectedFight ? (
+          <div className="text-center text-stone-500 mb-8 tracking-wide">
+            ⚠️ Select a valid fight to view comprehensive stats
+          </div>
+        ) : null}
 
         {/* ── Per-fight Matchup Intel ── */}
-        {selectedFight &&
+        {selectedFightData &&
           (() => {
-            const fight = fights.find(
-              (f) => f.fight_id === parseInt(selectedFight),
-            );
-            if (!fight || fight.fighters.length < 2) return null;
+            const fight = selectedFightData;
+            if (fight.fighters.length < 2) return null;
             const [f1, f2] = fight.fighters;
             const directions = _computeAngles(f1, f2);
             const hasStrong = directions.some((d) =>
@@ -2468,10 +2418,7 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
               <div className="h-px flex-1 bg-yellow-700/30" />
             </div>
 
-            <details
-              open={false}
-              className="border border-yellow-700/50 rounded-lg bg-stone-900"
-            >
+            <details className="group/events border border-yellow-700/50 rounded-lg bg-stone-900">
               <summary
                 className="w-full bg-stone-900 hover:bg-stone-800 text-yellow-500 font-bold py-3 px-4 flex justify-between items-center transition cursor-pointer"
                 aria-label="Toggle last event results"
@@ -2480,7 +2427,10 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
                   📊 View Last Event Results{" "}
                   {fightResults.length > 0 ? `(${fightResults[0]?.EVENT})` : ""}
                 </span>
-                <span className="text-lg">▶</span>
+                <span className="text-lg group-open/events:hidden">▶</span>
+                <span className="text-lg hidden group-open/events:inline">
+                  ▼
+                </span>
               </summary>
 
               <div className="border-t border-yellow-700/30 p-4 sm:p-6">
@@ -2667,43 +2617,34 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
         </div>
       </div>
 
+
       {/* Full Fight Record Modal */}
-      <AnimatePresence>
-        {showRecordModal && selectedFighterForRecord && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-              onClick={() => setShowRecordModal(false)}
-            >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-stone-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
+      {showRecordModal && selectedFighterForRecord && (
+        <div
+          className="fixed inset-0 bg-black/80 z-[9999] flex items-center justify-center p-4"
+          onClick={closeRecordModal}
+        >
+          <div
+            className="bg-stone-900 rounded-xl w-full max-w-4xl max-h-[92vh] overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center p-5 border-b border-stone-700 bg-stone-950">
+              <h2 className="text-2xl font-bold text-stone-100">
+                Full Fight Record — {selectedFighterForRecord.name}
+              </h2>
+              <button
+                onClick={closeRecordModal}
+                className="text-stone-400 hover:text-white text-4xl leading-none hover:scale-110 transition"
               >
-                <div className="flex justify-between items-center p-4 border-b border-stone-700">
-                  <h2 className="text-xl font-bold text-stone-100">
-                    Full Fight Record
-                  </h2>
-                  <button
-                    onClick={() => setShowRecordModal(false)}
-                    className="text-stone-400 hover:text-stone-200 text-2xl"
-                  >
-                    ×
-                  </button>
-                </div>
-                <div className="p-4">
-                  <FullFightRecord fighter={selectedFighterForRecord} />
-                </div>
-              </motion.div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+                ×
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-5">
+              <FullFightRecord fighter={selectedFighterForRecord} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
