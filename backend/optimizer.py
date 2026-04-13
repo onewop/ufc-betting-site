@@ -96,6 +96,7 @@ Uses pydfs-lineup-optimizer with DraftKings MMA settings:
 from __future__ import annotations
 import json
 import logging
+import random
 from pathlib import Path
 from typing import Any
 
@@ -109,6 +110,7 @@ from pydfs_lineup_optimizer import (
 from pydfs_lineup_optimizer.rules import MaxFromOneTeamRule
 
 from backend.models import LineupOut, OptimizeRequest
+from backend.projections import project_full_card
 
 logger = logging.getLogger(__name__)
 
@@ -229,6 +231,14 @@ def run_optimizer(request: OptimizeRequest) -> list[LineupOut]:
     stats = load_this_weeks_stats()
     flat = _build_flat_fighters(stats)
 
+    # ── Load matchup-aware projections ───────────────────────────────────
+    try:
+        proj_list = project_full_card(stats)
+        proj_by_id = {p["id"]: p for p in proj_list}
+    except Exception as exc:
+        logger.warning("Projection engine failed, falling back to DK avgs: %s", exc)
+        proj_by_id = {}
+
     excluded_set = set(request.excluded_fighters)
     locked_set = set(request.locked_fighters)
 
@@ -242,15 +252,25 @@ def run_optimizer(request: OptimizeRequest) -> list[LineupOut]:
     mode = request.salary_mode
     weight = _MODE_SALARY_WEIGHT[mode]
 
-    # Adjusted fppg with salary bias + tier bonus + debut default + min-usage floor
+    # Adjusted fppg with matchup-aware projection + salary bias + tier bonus
     def _adjusted(f: dict) -> float:
-        base = f["avgFPPG"]
-        # Debut / 0-FPPG fighters get a salary-scaled default projection
+        # Use matchup-aware projection if available, else fall back to DK avg
+        proj = proj_by_id.get(f["id"])
+        if proj:
+            base = proj["proj_fppg"]
+        else:
+            base = f["avgFPPG"]
+            # Debut / 0-FPPG fighters get a salary-scaled default projection
+            if base <= 0:
+                base = _debut_default_fppg(f["salary"])
+
+        # Debut fighters from projection engine may still need floor
         if base <= 0:
             base = _debut_default_fppg(f["salary"])
+
         adj = base + f["salary"] * weight + _tier_bonus(mode, f["salary"])
         # Mild boost for low-projected but viable fighters (applied in all modes)
-        if 0 < f["avgFPPG"] < _MIN_USAGE_FLOOR_FPPG:
+        if 0 < base < _MIN_USAGE_FLOOR_FPPG:
             adj += _MIN_USAGE_BONUS
         return max(adj, 0.01)
 
@@ -304,6 +324,39 @@ def run_optimizer(request: OptimizeRequest) -> list[LineupOut]:
             target = a if cap_a >= cap_b else b
         exposure_caps[target] = min(exposure_caps[target] + shortfall, 1.0)
 
+    # ── Apply per-fighter exposure overrides (user-specified min/max) ────────
+    # These are applied AFTER rank-based caps and fight-capacity safety so the
+    # user's intent wins. Locked/excluded fighters skip this block.
+    min_exposure_caps: dict[str, float | None] = {f["id"]: None for f in eligible}
+    for fid, overrides in request.fighter_overrides.items():
+        if fid not in exposure_caps:
+            continue
+        user_max = overrides.get("max_exposure")
+        user_min = overrides.get("min_exposure")
+        if user_max is not None and user_min is not None and float(user_min) < float(user_max):
+            # True range — sample a random target within [user_min, user_max] and
+            # set BOTH min and max close to that target.  This is the key fix for
+            # low-projected fighters: previously only the ceiling was randomised, so
+            # fighters the solver "doesn't want" still hugged their original floor.
+            # By raising the floor to the sampled target the solver is forced to land
+            # near target regardless of whether the fighter is high- or low-projected.
+            # Each regeneration samples a different target → natural count variation.
+            user_min_f = float(user_min)
+            user_max_f = float(user_max)
+            target = random.triangular(user_min_f, user_max_f)
+            # Small headroom above target gives the solver a 2-lineup breathing window
+            # (0.04 × 50 = 2) while keeping the count close to target.
+            headroom = 0.04
+            effective_min = target
+            effective_max = min(user_max_f, target + headroom)
+            min_exposure_caps[fid] = effective_min
+            exposure_caps[fid] = effective_max
+        elif user_max is not None:
+            # Full lock (min == max) or max-only cap — use exact values.
+            exposure_caps[fid] = min(float(user_max), 1.0)
+            if user_min is not None:
+                min_exposure_caps[fid] = min(float(user_min), exposure_caps[fid])
+
     # Build pydfs Players
     pydfs_players = [
         Player(
@@ -315,7 +368,7 @@ def run_optimizer(request: OptimizeRequest) -> list[LineupOut]:
             salary=fighter["salary"],
             fppg=adj_fppg,
             max_exposure=exposure_caps[fighter["id"]],
-            min_exposure=None,
+            min_exposure=min_exposure_caps.get(fighter["id"]),
         )
         for fighter, adj_fppg in fighter_adj
     ]

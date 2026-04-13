@@ -1,3 +1,22 @@
+/**
+ * DFSPicksProjections.jsx — Main DFS projections table + bar chart component.
+ *
+ * This file contains only:
+ *   rowClass(pick, avgProjMid, avgSalary)   — row highlight CSS
+ *   sortPicks(arr, key, order)              — sort helper
+ *   CustomTooltip                           — recharts tooltip
+ *   DFSPicksProjections                    — main exported component
+ *
+ * Heavy computation and sub-components are in separate files:
+ *   projectionMath.js    — round estimation, computeProjection, win probability
+ *   projectionHelpers.js — ownership tiers, narrative reasoning text
+ *   MatchupIntel.jsx     — directional exploit analysis grid
+ *
+ * Rollback: cp _archive/src_components/DFSPicksProjections_ORIGINAL_PRESPLIT.jsx \
+ *              src/components/DFSPicksProjections.jsx
+ *           (then delete projectionMath.js, projectionHelpers.js, MatchupIntel.jsx)
+ */
+
 import React, { useState, useEffect, useMemo } from "react";
 import {
   BarChart,
@@ -10,589 +29,15 @@ import {
   Cell,
 } from "recharts";
 
-// ─── Projection ────────────────────────────────────────────────────────────
-// Parse over/under rounds line from a betting_odds object.
-// Handles strings like "O2.5", "2.5", or numeric values.
-const parseRoundsLine = (bo) => {
-  if (!bo) return null;
-  const raw = bo.over_under_rounds;
-  if (!raw || raw === "N/A") return null;
-  const m = String(raw).match(/(\d+(\.\d+)?)/);
-  return m ? parseFloat(m[1]) : null;
-};
+import {
+  parseRoundsLine,
+  estimateFightRounds,
+  computeProjection,
+  estimateWinProbability,
+} from "./projectionMath";
+import { estimateOwnership, buildReasoning } from "./projectionHelpers";
+import MatchupIntel from "./MatchupIntel";
 
-// Convert a fighter's avg_fight_duration (minutes) to rounds.
-// 1 UFC round = 5 minutes. Returns null when data is unavailable.
-const avgRoundsFromDuration = (fighter) => {
-  const dur = fighter.avg_fight_duration;
-  if (dur && typeof dur === "number" && dur > 0) {
-    return Math.min(Math.max(dur / 5, 1.0), 3.0);
-  }
-  return null;
-};
-
-// Estimate expected rounds from a fighter's finish rate and win breakdown.
-// High finishers end fights earlier; decision fighters go the distance.
-const avgRoundsFromStyle = (fighter) => {
-  const finRate = parseFloat(fighter.finish_rate_pct);
-  if (!isNaN(finRate)) {
-    if (finRate >= 70) return 1.5;
-    if (finRate >= 50) return 2.0;
-    if (finRate >= 25) return 2.5;
-    return 3.0;
-  }
-  // Fall back to computing finish rate from wins breakdown
-  const koW = fighter.wins_ko_tko || 0;
-  const subW = fighter.wins_submission || 0;
-  const decW = fighter.wins_decision || 0;
-  const totalW = koW + subW + decW;
-  if (totalW > 0) {
-    const calcFR = ((koW + subW) / totalW) * 100;
-    if (calcFR >= 70) return 1.5;
-    if (calcFR >= 50) return 2.0;
-    if (calcFR >= 25) return 2.5;
-    return 3.0;
-  }
-  return null;
-};
-
-// Estimate expected rounds for a fight using both fighters' data.
-// Priority order (highest → lowest):
-//   1. betting_odds.over_under_rounds — set by scraper when live O/U is available
-//   2. Average of both fighters' avg_fight_duration ÷ 5 min/round (historical)
-//   3. Finish-rate / win-style estimate averaged across both fighters
-//   4. Ultimate fallback: 2.5 rounds (UFC main-card standard)
-const estimateFightRounds = (fighter1, fighter2, bettingOdds) => {
-  // 1. Live odds over/under (populated once scraper enriches betting_odds)
-  const oddsLine = parseRoundsLine(bettingOdds);
-  if (oddsLine !== null) {
-    console.log(
-      `[Rounds] ${fighter1?.name}/${fighter2?.name} — odds O/U: ${oddsLine}`,
-    );
-    return { rounds: oddsLine, roundsSource: "odds O/U" };
-  }
-
-  // 2. Historical avg_fight_duration (minutes ÷ 5 = rounds)
-  const dur1 = avgRoundsFromDuration(fighter1 || {});
-  const dur2 = fighter2 ? avgRoundsFromDuration(fighter2) : null;
-  if (dur1 !== null || dur2 !== null) {
-    const vals = [dur1, dur2].filter((v) => v !== null);
-    const avg = vals.reduce((s, v) => s + v, 0) / vals.length;
-    const rounds = Math.round(avg * 10) / 10;
-    console.log(
-      `[Rounds] ${fighter1?.name}/${fighter2?.name} — duration-based: ${rounds}R` +
-        ` (f1: ${dur1?.toFixed(1) ?? "N/A"}, f2: ${dur2?.toFixed(1) ?? "N/A"})`,
-    );
-    return { rounds, roundsSource: "historical" };
-  }
-
-  // 3. Style / finish-rate based (covers fighters missing avg_fight_duration)
-  const style1 = avgRoundsFromStyle(fighter1 || {});
-  const style2 = fighter2 ? avgRoundsFromStyle(fighter2) : null;
-  if (style1 !== null || style2 !== null) {
-    const vals = [style1, style2].filter((v) => v !== null);
-    const avg = vals.reduce((s, v) => s + v, 0) / vals.length;
-    const rounds = Math.round(avg * 10) / 10;
-    console.log(
-      `[Rounds] ${fighter1?.name}/${fighter2?.name} — style-based: ${rounds}R`,
-    );
-    return { rounds, roundsSource: "style est." };
-  }
-
-  // 4. Fallback
-  console.log(
-    `[Rounds] ${fighter1?.name}/${fighter2?.name} — using default 2.5`,
-  );
-  return { rounds: 2.5, roundsSource: "default" };
-};
-
-// roundsEst: fight-level rounds estimate from estimateFightRounds()
-// roundsSource: string describing the origin of the estimate (for UI display)
-const computeProjection = (fighter, roundsEst, roundsSource) => {
-  const rounds = roundsEst;
-  const avg = fighter.avgPointsPerGame;
-
-  if (avg && avg > 0) {
-    // Scale historic DK avg by expected fight length (avg fight ~2.5 rounds)
-    const scale = rounds / 2.5;
-    const base = avg * scale;
-    return {
-      projLo: Math.round(base * 0.85),
-      projHi: Math.round(base * 1.15),
-      projMid: Math.round(base),
-      rounds,
-      roundsSource,
-      source: "DK avg",
-    };
-  }
-
-  // Stat-based fallback for fighters with no DK history. Some scraped profiles
-  // can have extreme single-fight outliers (e.g. TD avg > 20), so clamp to
-  // sane UFC ranges before projecting.
-  const rawSlpm = fighter.stats?.slpm || 0;
-  const rawTdAvg = fighter.stats?.td_avg || 0;
-  const slpm = Math.min(Math.max(rawSlpm, 0), 10);
-  const tdAvg = Math.min(Math.max(rawTdAvg, 0), 6);
-
-  const strikingPoints = slpm * 5 * rounds * 0.45;
-  const wrestlingPoints = tdAvg * rounds * 5;
-  const base = strikingPoints + wrestlingPoints + 20;
-  return {
-    projLo: Math.round(base * 0.85),
-    projHi: Math.round(base * 1.15),
-    projMid: Math.round(base),
-    rounds,
-    roundsSource,
-    source:
-      rawSlpm !== slpm || rawTdAvg !== tdAvg
-        ? "stat estimate (capped)"
-        : "stat estimate",
-  };
-};
-
-// Estimate win probability from betting odds (moneyline)
-const estimateWinProbability = (fighter, bettingOdds = {}) => {
-  const { moneyline } = bettingOdds;
-  if (!moneyline) return 0.5;
-  const [mlF1, mlF2] = moneyline.split(" ");
-  const odds = fighter.name.includes(mlF1)
-    ? parseFloat(mlF1)
-    : parseFloat(mlF2);
-  if (isNaN(odds)) return 0.5;
-  // Convert American odds to probability
-  return odds < 0
-    ? Math.abs(odds) / (Math.abs(odds) + 100)
-    : 100 / (odds + 100);
-};
-
-// ─── Ownership ─────────────────────────────────────────────────────────────
-const estimateOwnership = (salary, avgPPG, medianSalary, medianPPG) => {
-  const salaryPct = salary / (medianSalary || salary);
-  const ppgPct = (avgPPG || 0) / (medianPPG || 1);
-
-  if (salary >= 9000 && ppgPct >= 1.2) return { label: "30–40%", ownerNum: 35 };
-  if (salary >= 8500 && ppgPct >= 1.0) return { label: "20–30%", ownerNum: 25 };
-  if (salary >= 8000) return { label: "15–25%", ownerNum: 20 };
-  if (salary >= 7000 && ppgPct >= 1.1) return { label: "10–18%", ownerNum: 14 };
-  if (salary >= 7000) return { label: "8–15%", ownerNum: 11 };
-  if (salaryPct < 0.85) return { label: "5–10%", ownerNum: 7 };
-  return { label: "5–12%", ownerNum: 8 };
-};
-
-// ─── Narrative Reasoning ───────────────────────────────────────────────────
-// Added submission wins, KO/TKO, and decision breakdown to reasoning for
-// better DFS context. Finish types are now combined into one summary phrase
-// instead of showing only one category at a time.
-// Data priority: wins_ko_tko / wins_submission / wins_decision from the
-// fighter object (populated from this_weeks_stats.json enrichment), then
-// finish_rate_pct. Falls back to generic phrases when data is missing.
-const buildReasoning = (fighter, projMid, ownerNum) => {
-  const parts = [];
-  const avg = fighter.avgPointsPerGame;
-  const slpm = fighter.stats?.slpm;
-  const tdAvg = fighter.stats?.td_avg;
-  const koWins = fighter.wins_ko_tko || 0;
-  const subWins = fighter.wins_submission || 0;
-  const decWins = fighter.wins_decision || 0;
-  const finRate = fighter.finish_rate_pct;
-  const streak = fighter.current_win_streak;
-
-  if (avg && avg > 0) {
-    parts.push(`Averaging ${avg} DK pts/game historically`);
-  } else if (avg === 0) {
-    // avgPointsPerGame of exactly 0 means no DraftKings game history exists,
-    // not a real score of zero — fall through to stat-based description.
-    parts.push(
-      slpm
-        ? `No DK history — ${slpm} SLpM (stat-based estimate)`
-        : "No DK history",
-    );
-  } else if (slpm) {
-    parts.push(`${slpm} SLpM striking output`);
-  }
-
-  // Build a combined finish-type summary so KO and submission wins are both
-  // visible — both score high DFS points and users need to see both at once.
-  const hasFinishData = koWins > 0 || subWins > 0 || decWins > 0;
-  if (hasFinishData) {
-    const totalWins = koWins + subWins + decWins;
-    const finishParts = [];
-    if (koWins > 0) finishParts.push(`${koWins} KO/TKO`);
-    if (subWins > 0) finishParts.push(`${subWins} sub`);
-    if (decWins > 0) finishParts.push(`${decWins} dec`);
-
-    if (koWins === 0 && subWins === 0 && decWins > 0) {
-      // Pure decision fighter — flag it as that style
-      parts.push(`decision specialist (${decWins}/${totalWins} wins by dec)`);
-    } else if (koWins === 0 && subWins > 0) {
-      // Sub-only finisher with no KOs
-      parts.push(`submission finisher: ${finishParts.join(", ")} wins`);
-    } else {
-      // Mixed or KO-led — show all available breakdown
-      parts.push(`finishes: ${finishParts.join(", ")} wins`);
-    }
-  }
-
-  // Add finish rate context when not already implicit from the summary above.
-  // High finish rate signals ceiling upside; low rate flags a grinder.
-  if (finRate && finRate !== "N/A") {
-    const fr = parseFloat(finRate);
-    if (fr >= 60) parts.push(`${fr}% finish rate`);
-    else if (fr <= 30 && !hasFinishData)
-      parts.push(`tends toward decisions (${fr}% finish rate)`);
-  }
-
-  if (streak && streak > 1) parts.push(`on a ${streak}-fight win streak`);
-  if (tdAvg && tdAvg > 1.5) parts.push(`active wrestler (${tdAvg} TD/15min)`);
-
-  // ── Recent form / loss context ─────────────────────────────────────────
-  // Adds a second sentence with loss signals so users can see both ceiling
-  // (wins above) and floor/risk (recent form below) at a glance.
-  // Source: record_last_5, last_fight_result, current_loss_streak,
-  // and stats.subs_conceded from this_weeks_stats.json.
-  const formParts = [];
-
-  // Last-5 record (e.g. "3-2")
-  if (fighter.record_last_5) formParts.push(`Last 5: ${fighter.record_last_5}`);
-
-  // Most recent fight result — normalize separators ("L – Sub" → "L-Sub")
-  if (fighter.last_fight_result) {
-    const compact = fighter.last_fight_result.replace(/\s*[–—-]\s*/g, "-");
-    formParts.push(`last: ${compact}`);
-  }
-
-  // Submission vulnerability: subs_conceded comes from the stats aggregator
-  // and counts how many times this fighter was submitted in analyzed fights.
-  const subsConceded = fighter.stats?.subs_conceded;
-  if (subsConceded != null && subsConceded > 0) {
-    formParts.push(`submitted ${subsConceded}× in recent fights`);
-  }
-
-  const lossStreak = fighter.current_loss_streak || 0;
-  // Show all active loss streaks (>= 2) but only add the ⚠️ warning for
-  // serious streaks (> 2, i.e. 3+ consecutive losses).
-  if (lossStreak >= 2) {
-    const warning = lossStreak > 2 ? "⚠️ " : "";
-    formParts.push(`${warning}${lossStreak}-fight loss streak`);
-  }
-
-  const ownRisk =
-    ownerNum >= 28
-      ? "⚠️ Very high ownership — consider fading in large fields"
-      : ownerNum >= 18
-        ? "Moderate ownership risk"
-        : "Low ownership — GPP leverage play";
-
-  const offenseLine = parts.length
-    ? `${parts.join(", ")}.`
-    : `${fighter.record || "N/A"} record.`;
-  const formLine = formParts.length ? ` ${formParts.join(" · ")}.` : "";
-
-  return `${offenseLine}${formLine} ${ownRisk}.`;
-};
-
-// ─── Matchup Intel ────────────────────────────────────────────────────────
-// Parses a "54%" style string into a float (54), or returns null.
-const parsePct = (v) => {
-  if (v == null) return null;
-  const n = parseFloat(String(v).replace("%", ""));
-  return isNaN(n) ? null : n;
-};
-
-// Evaluate one directional exploit angle for fighter A attacking fighter B.
-// Returns { level: 'strong'|'moderate'|'neutral', label, tip }
-// Zero values are treated as no data: 0% defense is almost always a small
-// sample artifact (0-for-0 attempts) rather than a legitimate vulnerability,
-// and 0 attacker output means no attempts recorded, not a real zero.
-const evalAngle = (
-  label,
-  attackerVal,
-  defenderDefPct,
-  higherIsBetter = true,
-) => {
-  if (attackerVal == null || defenderDefPct == null)
-    return { level: "neutral", label, tip: "No data available" };
-  // 0% defense is a small-sample artifact (e.g. their few opponents never
-  // attempted takedowns), not a genuine vulnerability — note it but don't
-  // flag as an exploit.
-  if (defenderDefPct === 0)
-    return {
-      level: "neutral",
-      label,
-      tip: `${attackerVal > 0 ? attackerVal : "no data"} output vs 0% defense (small sample — insufficient data)`,
-    };
-  // 0 attacker output means no attempts on record, not a real zero.
-  if (attackerVal === 0)
-    return {
-      level: "neutral",
-      label,
-      tip: `No attempts on record vs ${defenderDefPct}% defense`,
-    };
-  // Vulnerability threshold: defender stops < 65% → weak, < 50% → very weak
-  const isWeakDef = defenderDefPct < 65;
-  const isVeryWeakDef = defenderDefPct < 50;
-  if (isVeryWeakDef) {
-    return {
-      level: "strong",
-      label,
-      tip: `${attackerVal} output vs ${defenderDefPct}% defense — clear exploit`,
-    };
-  }
-  if (isWeakDef) {
-    return {
-      level: "moderate",
-      label,
-      tip: `${attackerVal} output vs ${defenderDefPct}% defense — potential edge`,
-    };
-  }
-  return {
-    level: "neutral",
-    label,
-    tip: `${attackerVal} output vs ${defenderDefPct}% defense — no clear edge`,
-  };
-};
-
-// Evaluate submission threat using actual career submission wins as the primary
-// metric. avg_sub_attempts is shown as secondary context only.
-const evalSubAngle = (
-  attackerWins,
-  attackerAttempts,
-  defenderWins,
-  defenderAttempts,
-) => {
-  const label = "Submissions";
-  const wins = attackerWins ?? 0;
-  const atts = Number((attackerAttempts ?? 0).toFixed(1));
-  const oppWins = defenderWins ?? 0;
-  const tip = `${wins} sub win${wins !== 1 ? "s" : ""} (${atts} attempts/fight)`;
-  if (wins === 0)
-    return {
-      level: "neutral",
-      label,
-      tip: `0 sub wins (${atts} attempts/fight)`,
-    };
-  if (wins >= 3 && wins >= oppWins * 2) return { level: "strong", label, tip };
-  if (wins > oppWins) return { level: "moderate", label, tip };
-  return { level: "neutral", label, tip };
-};
-
-// Compute all matchup angles for a fight with two fighter objects.
-// Returns array of angle objects from each fighter's perspective.
-const computeMatchupAngles = (f1, f2) => {
-  const s1 = f1.stats || {};
-  const s2 = f2.stats || {};
-
-  const slpm1 = s1.slpm;
-  const slpm2 = s2.slpm;
-  const strDef1 = parsePct(s1.striking_defense);
-  const strDef2 = parsePct(s2.striking_defense);
-  const tdAvg1 = s1.td_avg;
-  const tdAvg2 = s2.td_avg;
-  const tdDef1 = parsePct(s1.td_defense);
-  const tdDef2 = parsePct(s2.td_defense);
-  const subWins1 = f1.wins_submission ?? 0;
-  const subWins2 = f2.wins_submission ?? 0;
-  const subAtt1 = f1.avg_sub_attempts ?? s1.avg_sub_attempts ?? 0;
-  const subAtt2 = f2.avg_sub_attempts ?? s2.avg_sub_attempts ?? 0;
-
-  return [
-    // ── F1 attacking F2 ──────────────────────────────────────────────────
-    {
-      attacker: f1.name,
-      defender: f2.name,
-      angles: [
-        evalAngle("Striking", slpm1, strDef2),
-        evalAngle("Wrestling", tdAvg1, tdDef2),
-        evalSubAngle(subWins1, subAtt1, subWins2, subAtt2),
-      ],
-    },
-    // ── F2 attacking F1 ──────────────────────────────────────────────────
-    {
-      attacker: f2.name,
-      defender: f1.name,
-      angles: [
-        evalAngle("Striking", slpm2, strDef1),
-        evalAngle("Wrestling", tdAvg2, tdDef1),
-        evalSubAngle(subWins2, subAtt2, subWins1, subAtt1),
-      ],
-    },
-  ];
-};
-
-// Visual config for each exploit level
-const LEVEL_STYLE = {
-  strong: {
-    dot: "bg-red-500",
-    border: "border-red-700/60",
-    bg: "bg-red-950/50",
-    badge: "bg-red-700 text-red-100",
-    icon: "🔴",
-    label: "Exploit",
-  },
-  moderate: {
-    dot: "bg-orange-400",
-    border: "border-orange-700/50",
-    bg: "bg-orange-950/30",
-    badge: "bg-orange-800 text-orange-100",
-    icon: "🟠",
-    label: "Edge",
-  },
-  neutral: {
-    dot: "bg-stone-600",
-    border: "border-stone-700",
-    bg: "bg-stone-900/40",
-    badge: "bg-stone-700 text-stone-300",
-    icon: "⚪",
-    label: "Even",
-  },
-};
-
-const MatchupIntel = ({ fights, focusFightId = null, onClearFocus }) => {
-  if (!fights || fights.length === 0) return null;
-
-  const visibleFights =
-    focusFightId == null
-      ? fights
-      : fights.filter(
-          (fight) => String(fight.fight_id) === String(focusFightId),
-        );
-
-  return (
-    <section id="matchup-intel" className="mb-12">
-      <div className="flex items-center gap-3 mb-2">
-        <div className="h-px flex-1 bg-yellow-700/30" />
-        <span className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600">
-          MATCHUP INTEL
-        </span>
-        <div className="h-px flex-1 bg-yellow-700/30" />
-      </div>
-      <p className="text-stone-400 text-center text-sm mb-6">
-        Directional exploit analysis per fight.{" "}
-        <span className="text-red-400">🔴 Exploit</span> = attacker has real
-        edge over defender's weakness.{" "}
-        <span className="text-orange-400">🟠 Edge</span> = some advantage.{" "}
-        <span className="text-stone-400">⚪ Even</span> = no clear edge.
-      </p>
-      {focusFightId != null && (
-        <div className="mb-4 text-center">
-          <span className="text-xs text-yellow-500 tracking-wide">
-            Showing matchup intel for this fight only.
-          </span>
-          {onClearFocus && (
-            <button
-              onClick={onClearFocus}
-              className="ml-3 px-2 py-0.5 rounded bg-stone-700 text-stone-200 text-xs hover:bg-stone-600"
-            >
-              Show all fights
-            </button>
-          )}
-        </div>
-      )}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {visibleFights.map((fight) => {
-          const [f1, f2] = fight.fighters || [];
-          if (!f1 || !f2) return null;
-          const directions = computeMatchupAngles(f1, f2);
-          // Determine overall fight-level danger color for the card border
-          const hasStrong = directions.some((d) =>
-            d.angles.some((a) => a.level === "strong"),
-          );
-          const hasModerate = directions.some((d) =>
-            d.angles.some((a) => a.level === "moderate"),
-          );
-          const cardBorder = hasStrong
-            ? "border-red-700/60"
-            : hasModerate
-              ? "border-orange-700/50"
-              : "border-stone-700/60";
-
-          return (
-            <div
-              key={fight.fight_id}
-              id={`fight-${fight.fight_id}`}
-              className={`bg-stone-900 rounded-lg border ${cardBorder} p-4`}
-            >
-              {/* Fight header */}
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-stone-100 font-bold text-sm">
-                  {f1.name}
-                  <span className="text-stone-500 mx-2">vs</span>
-                  {f2.name}
-                </span>
-                {hasStrong && (
-                  <span className="text-xs bg-red-800 text-red-100 px-2 py-0.5 rounded font-bold">
-                    ⚠ Exploit Found
-                  </span>
-                )}
-              </div>
-
-              {/* Directional angle rows */}
-              {directions.map((dir, di) => {
-                const topAngles = dir.angles.filter(
-                  (a) => a.level !== "neutral",
-                );
-                if (topAngles.length === 0) return null;
-                return (
-                  <div key={di} className="mb-3">
-                    <p className="text-xs text-stone-400 mb-1 font-semibold">
-                      {dir.attacker}{" "}
-                      <span className="text-stone-600">exploiting</span>{" "}
-                      {dir.defender}
-                    </p>
-                    <div className="flex flex-col gap-1">
-                      {dir.angles.map((angle, ai) => {
-                        const style = LEVEL_STYLE[angle.level];
-                        return (
-                          <div
-                            key={ai}
-                            className={`flex items-center gap-2 rounded px-2 py-1 ${style.bg} border ${style.border}`}
-                          >
-                            <span
-                              className={`w-2 h-2 rounded-full flex-shrink-0 ${style.dot}`}
-                            />
-                            <span className="text-xs text-stone-300 flex-1">
-                              <span className="font-semibold text-stone-100">
-                                {angle.label}
-                              </span>
-                              {" — "}
-                              {angle.tip}
-                            </span>
-                            <span
-                              className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${style.badge}`}
-                            >
-                              {style.label}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* DFS angle summary */}
-              {(() => {
-                const allStrong = directions.flatMap((d) =>
-                  d.angles
-                    .filter((a) => a.level === "strong")
-                    .map((a) => `${d.attacker}'s ${a.label.toLowerCase()}`),
-                );
-                if (allStrong.length === 0) return null;
-                return (
-                  <p className="text-xs text-yellow-400/80 mt-2 border-t border-stone-700 pt-2">
-                    💡 DFS angle: Target {allStrong.join(" and ")}.
-                  </p>
-                );
-              })()}
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-};
-
-// ─── Row colour ────────────────────────────────────────────────────────────
 const rowClass = (pick, avgProjMid, avgSalary) => {
   const valueScore = pick.projMid / (pick.salary / 1000);
   const avgValueScore = avgProjMid / (avgSalary / 1000);
@@ -642,6 +87,7 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
   const [optimizerError, setOptimizerError] = useState(null);
   const [exposureLimit, setExposureLimit] = useState(60); // max % a fighter can appear across lineups
   const [focusedFightId, setFocusedFightId] = useState(null);
+  const [backendProj, setBackendProj] = useState({}); // name → backend projection data
   const [openSections, setOpenSections] = useState({
     chart: true,
     table: true,
@@ -1037,6 +483,20 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
 
         setPicks(computed);
         setLoading(false);
+
+        // Fetch matchup-aware backend projections (non-blocking enhancement)
+        fetch("http://localhost:8000/api/projections")
+          .then((r) => (r.ok ? r.json() : null))
+          .then((data) => {
+            if (data?.projections) {
+              const byName = {};
+              data.projections.forEach((p) => {
+                byName[p.name] = p;
+              });
+              setBackendProj(byName);
+            }
+          })
+          .catch(() => {}); // silently fail — backend projections are optional
       })
       .catch((err) => {
         console.error("DFSPicksProjections fetch error:", err);
@@ -1337,6 +797,54 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
                       </summary>
                       <div className="px-3 pb-3 text-xs text-stone-300 leading-relaxed">
                         {pick.reasoning}
+                        {backendProj[pick.fighter] && (
+                          <div className="mt-2 pt-2 border-t border-stone-700/50">
+                            <span className="text-yellow-600 text-[10px] uppercase tracking-wider font-bold">
+                              Matchup Analysis:
+                            </span>
+                            <p className="text-stone-400 mt-1">
+                              {backendProj[pick.fighter].reasoning}
+                            </p>
+                            <div className="flex flex-wrap gap-2 mt-1 text-[10px] text-stone-500">
+                              <span>
+                                Striking:{" "}
+                                <span className="text-yellow-500">
+                                  {
+                                    backendProj[pick.fighter].proj_components
+                                      .striking
+                                  }
+                                </span>
+                              </span>
+                              <span>
+                                Grappling:{" "}
+                                <span className="text-yellow-500">
+                                  {
+                                    backendProj[pick.fighter].proj_components
+                                      .grappling
+                                  }
+                                </span>
+                              </span>
+                              <span>
+                                Win bonus:{" "}
+                                <span className="text-yellow-500">
+                                  {
+                                    backendProj[pick.fighter].proj_components
+                                      .win_bonus
+                                  }
+                                </span>
+                              </span>
+                              <span>
+                                Finish%:{" "}
+                                <span className="text-stone-300">
+                                  {(
+                                    backendProj[pick.fighter].finish_prob * 100
+                                  ).toFixed(0)}
+                                  %
+                                </span>
+                              </span>
+                            </div>
+                          </div>
+                        )}
                         <a
                           href={`#${pick.fightAnchor}`}
                           onClick={(e) =>
@@ -1474,6 +982,20 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
                         </td>
                         <td className="p-2 pr-32 border border-stone-700 text-xs text-stone-300 leading-relaxed min-w-[360px]">
                           {pick.reasoning}{" "}
+                          {backendProj[pick.fighter] && (
+                            <span
+                              className="text-yellow-600/70"
+                              title={backendProj[pick.fighter].reasoning}
+                            >
+                              | Matchup proj:{" "}
+                              {backendProj[pick.fighter].proj_fppg.toFixed(1)}{" "}
+                              pts (Fin{" "}
+                              {(
+                                backendProj[pick.fighter].finish_prob * 100
+                              ).toFixed(0)}
+                              %)
+                            </span>
+                          )}{" "}
                           <a
                             href={`#${pick.fightAnchor}`}
                             onClick={(e) =>

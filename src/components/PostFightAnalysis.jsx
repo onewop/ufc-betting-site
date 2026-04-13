@@ -207,7 +207,7 @@ const PostFightAnalysis = ({ currentUser }) => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <h1 className="text-4xl font-black text-white mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-4xl font-black text-white mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             Post-Fight Analysis
           </h1>
           <p className="text-stone-400 text-lg">{analysis?.eventName}</p>
@@ -218,9 +218,9 @@ const PostFightAnalysis = ({ currentUser }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"
+          className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-8"
         >
-          <div className="bg-card/80 backdrop-blur-sm border border-stone-700/50 rounded-xl p-6 shadow-pearl">
+          <div className="bg-card/80 backdrop-blur-sm border border-stone-700/50 rounded-xl p-4 sm:p-6 shadow-pearl">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center">
                 🥊
@@ -229,12 +229,12 @@ const PostFightAnalysis = ({ currentUser }) => {
                 Total Fights
               </div>
             </div>
-            <div className="text-3xl font-bold text-white">
+            <div className="text-xl sm:text-3xl font-bold text-white">
               {analysis?.totalFights}
             </div>
           </div>
 
-          <div className="bg-card/80 backdrop-blur-sm border border-stone-700/50 rounded-xl p-6 shadow-pearl">
+          <div className="bg-card/80 backdrop-blur-sm border border-stone-700/50 rounded-xl p-4 sm:p-6 shadow-pearl">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 bg-secondary/20 rounded-lg flex items-center justify-center">
                 ⚡
@@ -243,12 +243,12 @@ const PostFightAnalysis = ({ currentUser }) => {
                 Finish Rate
               </div>
             </div>
-            <div className="text-3xl font-bold text-secondary">
+            <div className="text-xl sm:text-3xl font-bold text-secondary">
               {analysis?.cardAnalysis.finishRate}%
             </div>
           </div>
 
-          <div className="bg-card/80 backdrop-blur-sm border border-stone-700/50 rounded-xl p-6 shadow-pearl">
+          <div className="bg-card/80 backdrop-blur-sm border border-stone-700/50 rounded-xl p-4 sm:p-6 shadow-pearl">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
                 📊
@@ -257,12 +257,12 @@ const PostFightAnalysis = ({ currentUser }) => {
                 Avg Round
               </div>
             </div>
-            <div className="text-3xl font-bold text-white">
+            <div className="text-xl sm:text-3xl font-bold text-white">
               {analysis?.cardAnalysis.avgRound}
             </div>
           </div>
 
-          <div className="bg-card/80 backdrop-blur-sm border border-stone-700/50 rounded-xl p-6 shadow-pearl">
+          <div className="bg-card/80 backdrop-blur-sm border border-stone-700/50 rounded-xl p-4 sm:p-6 shadow-pearl">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
                 👤
@@ -271,7 +271,7 @@ const PostFightAnalysis = ({ currentUser }) => {
                 Your Lineups
               </div>
             </div>
-            <div className="text-3xl font-bold text-white">
+            <div className="text-xl sm:text-3xl font-bold text-white">
               {userLineups.length}
             </div>
           </div>

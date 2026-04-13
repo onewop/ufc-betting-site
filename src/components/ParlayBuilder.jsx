@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import WelcomeBonusSelector from "./WelcomeBonusSelector";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const ODDS_CACHE_KEY = "ufc_odds_cache_v3"; // same key as LatestOdds
@@ -62,96 +63,106 @@ const legsToCopyText = (legs, stake, payout) => {
 };
 
 // ─── Placeholder fight data ───────────────────────────────────────────────────
-// Shown when the odds API cache hasn't loaded or has expired.
-// Props are added manually — the API only returns h2h + totals.
+// Shown only when the odds API cache hasn't loaded yet. These are real lines
+// for the current card (UFC Fight Night — April 11–12, 2026) so the page
+// is immediately useful even before the API fetch completes.
+// Update this block each week if you want an accurate offline fallback.
 const PLACEHOLDER_FIGHTS = [
   {
     id: "f1",
     section: "Main Event",
-    home: { name: "Jon Jones", ml: -580 },
-    away: { name: "Stipe Miocic", ml: +420 },
-    total: { point: 1.5, overOdds: -130, underOdds: +105 },
-    props: [
-      { id: "p1a", label: "Jones by KO/TKO", odds: -105 },
-      { id: "p1b", label: "Jones by Decision", odds: +340 },
-      { id: "p1c", label: "Miocic by KO/TKO", odds: +700 },
-      { id: "p1d", label: "Goes to Decision", odds: -130 },
-    ],
+    home: { name: "Jiri Prochazka", ml: -108 },
+    away: { name: "Carlos Ulberg", ml: -112 },
+    total: { point: 2.5, overOdds: -115, underOdds: -115 },
+    props: [],
   },
   {
     id: "f2",
     section: "Co-Main Event",
-    home: { name: "Charles Oliveira", ml: -165 },
-    away: { name: "Michael Chandler", ml: +140 },
-    total: { point: 1.5, overOdds: -140, underOdds: +115 },
-    props: [
-      { id: "p2a", label: "Finish in Rd 1", odds: +220 },
-      { id: "p2b", label: "Finish in Rd 2", odds: +250 },
-      { id: "p2c", label: "Goes to Decision", odds: +160 },
-      { id: "p2d", label: "Oliveira by Sub", odds: +210 },
-    ],
+    home: { name: "Azamat Murzakanov", ml: -205 },
+    away: { name: "Paulo Costa", ml: +170 },
+    total: { point: 1.5, overOdds: -245, underOdds: +185 },
+    props: [],
   },
   {
     id: "f3",
     section: "Main Card",
-    home: { name: "Bo Nickal", ml: -500 },
-    away: { name: "Paul Craig", ml: +370 },
-    total: { point: 1.5, overOdds: -110, underOdds: -110 },
-    props: [
-      { id: "p3a", label: "Nickal by Sub", odds: +175 },
-      { id: "p3b", label: "Nickal by KO/TKO", odds: +320 },
-      { id: "p3c", label: "Craig by Sub", odds: +600 },
-      { id: "p3d", label: "Goes to Decision", odds: +260 },
-    ],
+    home: { name: "Curtis Blaydes", ml: -118 },
+    away: { name: "Josh Hokit", ml: -102 },
+    total: { point: 1.5, overOdds: -195, underOdds: +150 },
+    props: [],
   },
   {
     id: "f4",
     section: "Main Card",
-    home: { name: "Dustin Poirier", ml: +115 },
-    away: { name: "Benoit Saint Denis", ml: -135 },
-    total: { point: 1.5, overOdds: -120, underOdds: -100 },
-    props: [
-      { id: "p4a", label: "Finish inside distance", odds: -180 },
-      { id: "p4b", label: "Goes to Decision", odds: +155 },
-      { id: "p4c", label: "Poirier by KO/TKO", odds: +270 },
-      { id: "p4d", label: "BSD by Sub", odds: +550 },
-    ],
+    home: { name: "Patricio Freire", ml: -278 },
+    away: { name: "Aaron Pico", ml: +225 },
+    total: { point: 1.5, overOdds: -188, underOdds: +145 },
+    props: [],
   },
   {
     id: "f5",
-    section: "Prelims",
-    home: { name: "Matt Frevola", ml: +130 },
-    away: { name: "Ludovit Klein", ml: -155 },
-    total: { point: 1.5, overOdds: -110, underOdds: -110 },
-    props: [
-      { id: "p5a", label: "KO/TKO finish", odds: -140 },
-      { id: "p5b", label: "Submission finish", odds: +600 },
-      { id: "p5c", label: "Goes to Decision", odds: +190 },
-    ],
+    section: "Main Card",
+    home: { name: "Dominick Reyes", ml: -148 },
+    away: { name: "Johnny Walker", ml: +124 },
+    total: { point: 1.5, overOdds: +145, underOdds: -188 },
+    props: [],
   },
   {
     id: "f6",
-    section: "Prelims",
-    home: { name: "Chris Weidman", ml: +170 },
-    away: { name: "Eryk Anders", ml: -200 },
-    total: { point: 1.5, overOdds: -115, underOdds: -105 },
-    props: [
-      { id: "p6a", label: "KO/TKO finish", odds: -120 },
-      { id: "p6b", label: "Submission finish", odds: +450 },
-      { id: "p6c", label: "Goes to Decision", odds: +170 },
-    ],
+    section: "Main Card",
+    home: { name: "Kevin Holland", ml: -110 },
+    away: { name: "Randy Brown", ml: -110 },
+    total: { point: 2.5, overOdds: -145, underOdds: +114 },
+    props: [],
   },
   {
     id: "f7",
+    section: "Prelims",
+    home: { name: "Mateusz Gamrot", ml: +160 },
+    away: { name: "Esteban Ribovics", ml: -192 },
+    total: { point: 2.5, overOdds: -260, underOdds: +195 },
+    props: [],
+  },
+  {
+    id: "f8",
+    section: "Prelims",
+    home: { name: "Tatiana Suarez", ml: +124 },
+    away: { name: "Loopy Godinez", ml: -148 },
+    total: { point: 2.5, overOdds: -500, underOdds: +340 },
+    props: [],
+  },
+  {
+    id: "f9",
+    section: "Prelims",
+    home: { name: "Kelvin Gastelum", ml: -278 },
+    away: { name: "Vicente Luque", ml: +225 },
+    total: { point: 2.5, overOdds: -154, underOdds: +120 },
+    props: [],
+  },
+  {
+    id: "f10",
+    section: "Prelims",
+    home: { name: "Cub Swanson", ml: +100 },
+    away: { name: "Nate Landwehr", ml: -120 },
+    total: { point: 2.5, overOdds: -120, underOdds: -110 },
+    props: [],
+  },
+  {
+    id: "f11",
     section: "Early Prelims",
-    home: { name: "Yana Santos", ml: -145 },
-    away: { name: "Julija Stoliarenko", ml: +120 },
-    total: { point: 2.5, overOdds: -120, underOdds: -100 },
-    props: [
-      { id: "p7a", label: "Santos by KO/TKO", odds: +400 },
-      { id: "p7b", label: "Santos by Decision", odds: +130 },
-      { id: "p7c", label: "Submission finish", odds: +290 },
-    ],
+    home: { name: "Chris Padilla", ml: -170 },
+    away: { name: "MarQuel Mederos", ml: +142 },
+    total: { point: 2.5, overOdds: -280, underOdds: +210 },
+    props: [],
+  },
+  {
+    id: "f12",
+    section: "Early Prelims",
+    home: { name: "Francisco Prado", ml: -180 },
+    away: { name: "Charles Radtke", ml: +150 },
+    total: { point: 1.5, overOdds: -215, underOdds: +165 },
+    props: [],
   },
 ];
 
@@ -748,31 +759,120 @@ export default function ParlayBuilder({ currentUser }) {
   const [placingTarget, setPlacingTarget] = useState(null); // "dk" | "fd"
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [saveStatus, setSaveStatus] = useState("idle"); // idle | saving | saved | error
+  const [dkFighters, setDkFighters] = useState([]);
+  // dkLoaded gates the odds effect so we never filter before names are ready
+  const [dkLoaded, setDkLoaded] = useState(false);
 
-  // Try to load live odds from existing LatestOdds cache
+  // Load current-card fighter names from DKSalaries.csv for odds filtering.
+  // Always sets dkLoaded=true on completion so the odds effect knows to run.
   useEffect(() => {
+    fetch("/DKSalaries.csv")
+      .then((r) => r.text())
+      .then((text) => {
+        const rows = text.trim().split("\n").slice(1);
+        const names = rows
+          .map((row) => row.split(",")[2]?.trim())
+          .filter(Boolean);
+        setDkFighters(names);
+      })
+      .catch(() => {})
+      .finally(() => setDkLoaded(true)); // always gate-open, even on failure
+  }, []);
+
+  // Load and filter live odds. Only runs after DKSalaries.csv has settled so
+  // we always have fighter names available to filter the 80-event API response
+  // down to the current card. Falls back to a direct API fetch if no cache.
+  useEffect(() => {
+    if (!dkLoaded) return; // wait for CSV to settle
+
+    const ODDS_API_KEY = process.env.REACT_APP_ODDS_API_KEY;
+
+    const applyEvents = (rawEvents) => {
+      let events = rawEvents;
+
+      // Filter to current card via word-overlap on DK fighter names.
+      // Handles nickname variants: "Lupita Godinez" ↔ "Loopy Godinez", etc.
+      if (dkFighters.length > 0) {
+        const cardWordSet = new Set(
+          dkFighters
+            .flatMap((n) => n.toLowerCase().split(/\s+/))
+            .filter((w) => w.length >= 3),
+        );
+        const filtered = events.filter((event) =>
+          [event.home_team, event.away_team].filter(Boolean).some((name) =>
+            name
+              .toLowerCase()
+              .split(/\s+/)
+              .some((w) => w.length >= 3 && cardWordSet.has(w)),
+          ),
+        );
+        if (filtered.length > 0) events = filtered;
+      }
+
+      // Narrow to the next event only — exclude future-card false positives
+      // (e.g. Carlos Ulberg appearing again in a June event).
+      if (events.length > 0) {
+        const earliest = new Date(events[0].commence_time).getTime();
+        events = events.filter(
+          (e) =>
+            new Date(e.commence_time).getTime() - earliest <=
+            2 * 24 * 60 * 60 * 1000,
+        );
+      }
+
+      const transformed = events
+        .map(transformApiEvent)
+        .filter(Boolean)
+        .slice(0, 15);
+      if (transformed.length > 0) {
+        setFights(transformed);
+        setUsingLive(true);
+      }
+      setLoadingOdds(false);
+    };
+
+    // 1. Try the shared LatestOdds cache first (free, instant)
     try {
       const cached = JSON.parse(localStorage.getItem(ODDS_CACHE_KEY));
-      if (
-        cached?.data &&
-        Array.isArray(cached.data) &&
-        cached.data.length > 0
-      ) {
-        const transformed = cached.data
-          .map(transformApiEvent)
-          .filter(Boolean)
-          .slice(0, 10);
-        if (transformed.length > 0) {
-          setFights(transformed);
-          setUsingLive(true);
-        }
+      if (cached?.data?.length > 0) {
+        applyEvents(cached.data);
+        return;
       }
     } catch {
-      // Use placeholder
-    } finally {
-      setLoadingOdds(false);
+      // Cache corrupt — fall through to fetch
     }
-  }, []);
+
+    // 2. No usable cache — fetch directly and populate the shared cache
+    if (!ODDS_API_KEY) {
+      setLoadingOdds(false);
+      return;
+    }
+    fetch(
+      `https://api.the-odds-api.com/v4/sports/mma_mixed_martial_arts/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h&oddsFormat=american`,
+    )
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          const now = Date.now();
+          const sorted = [...data]
+            .filter(
+              (e) =>
+                new Date(e.commence_time).getTime() > now - 3 * 60 * 60 * 1000,
+            )
+            .sort(
+              (a, b) => new Date(a.commence_time) - new Date(b.commence_time),
+            );
+          localStorage.setItem(
+            ODDS_CACHE_KEY,
+            JSON.stringify({ data: sorted, timestamp: Date.now() }),
+          );
+          applyEvents(sorted);
+        } else {
+          setLoadingOdds(false);
+        }
+      })
+      .catch(() => setLoadingOdds(false));
+  }, [dkLoaded]); // runs exactly once: after CSV settles
 
   const addLeg = useCallback((leg) => {
     // Prevent conflicting same-fight moneyline (both fighters)
@@ -1001,6 +1101,9 @@ export default function ParlayBuilder({ currentUser }) {
               </div>
             </div>
           </div>
+
+          {/* Welcome bonus offers */}
+          <WelcomeBonusSelector />
 
           {/* Responsible gambling footer */}
           <div className="mt-8 py-4 border-t border-stone-800 text-center text-xs text-stone-600 leading-relaxed">

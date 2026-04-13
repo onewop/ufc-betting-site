@@ -1,1325 +1,68 @@
+"""
+aggregate_stats.py — Main data-pipeline entry point for the UFC DFS/betting site.
+
+HOW TO RUN
+----------
+From the project root directory (ufc-betting-site-main/):
+
+    python3 scripts/aggregate_stats.py                          # base run (ufc-master.csv only)
+
+    SCRAPE_UFCSTATS=1        python3 scripts/aggregate_stats.py # + td/str defense (~5-10 min)
+    SCRAPE_PERFIGHT=1        python3 scripts/aggregate_stats.py # + KD/CTRL time  (~15-30 min first run, instant after)
+    SCRAPE_DEF_GRAPPLING=1   python3 scripts/aggregate_stats.py # + sub defense   (instant if PERFIGHT cache exists)
+    SCRAPE_SHERDOG=1         python3 scripts/aggregate_stats.py # + nationality/team/record (~3-6 min)
+    SCRAPE_UFCSTATS_RESULTS=1 python3 scripts/aggregate_stats.py # downloads raw UFC CSVs
+
+    # Full run with all scrapers + Sherdog event page prefetch:
+    SCRAPE_UFCSTATS=1 SCRAPE_PERFIGHT=1 SCRAPE_DEF_GRAPPLING=1 \\
+    SCRAPE_SHERDOG=1 SHERDOG_EVENT_URL=https://www.sherdog.com/events/... \\
+    python3 scripts/aggregate_stats.py
+
+OUTPUT
+------
+  public/this_weeks_stats.json    — consumed by the React app
+  public/current_event.json       — event title banner
+  public/DKSalaries.csv           — synced from DKSalaries.csv
+  public/archive/                 — auto-timestamped backup of the previous JSON
+
+ROLLBACK (if something breaks)
+-------------------------------
+    cp _archive/scripts/aggregate_stats_ORIGINAL_PRESPLIT.py scripts/aggregate_stats.py
+
+FILE STRUCTURE (split from the original 2416-line monolith)
+-----------------------------------------------------------
+  ag_utils.py     — normalize_name, save_to_json, _parse_of and helpers
+  ag_sherdog.py   — all Sherdog.com scraping (event card + fighter profiles)
+  ag_ufcstats.py  — UFCStats.com fighter profile scraper
+  ag_perfight.py  — UFCStats per-fight + defensive grappling scrapers + HTTP cache
+  aggregate_stats.py (THIS FILE) — csv_to_json orchestration + __main__
+"""
+
 import pandas as pd
 import json
 import os
-import datetime
-import shutil
-import unicodedata
-from fuzzywuzzy import process, fuzz
-import requests
-from bs4 import BeautifulSoup
-import time
 import re
-from urllib.parse import quote_plus
+import time
 import random
-
-# ── DISASTER MODE ──────────────────────────────────────────────────────────────
-# When enabled, salaries are swapped per matchup so the expected low-scorer
-# becomes the most expensive pick. Safe and reversible — does NOT alter any
-# stats, projections, or core scoring logic.
-# Usage: DISASTER_MODE=1 python3 scripts/aggregate_stats.py
-DISASTER_MODE = os.environ.get('DISASTER_MODE', '0') == '1'
-
-def normalize_name(name):
-    """Aggressively normalize fighter name for matching"""
-    if pd.isna(name):
-        return ""
-    
-    # Convert to lowercase and strip
-    name = str(name).lower().strip()
-    
-    # Remove accents (é, á, ü, ö, etc.)
-    name = ''.join(
-        c for c in unicodedata.normalize('NFD', name)
-        if unicodedata.category(c) != 'Mn'
-    )
-    
-    # Remove common suffixes and prefixes
-    name = name.replace('jr.', '').replace('jr', '')
-    name = name.replace('sr.', '').replace('sr', '')
-    name = name.replace('iii', '').replace('ii', '').replace('iv', '')
-    name = name.replace('de ', '')  # Spanish/Portuguese particle
-    
-    # Remove punctuation
-    name = name.replace('.', '').replace('-', ' ').replace(',', '')
-    
-    # Remove extra whitespace
-    name = ' '.join(name.split())
-    
-    return name
-
-def extract_ufcstats_id(url):
-    """Extract UFCStats ID from URL like 'http://ufcstats.com/fighter-details/93fe7332d16c6ad9'"""
-    if pd.isna(url):
-        return None
-    try:
-        url_str = str(url).strip()
-        # ID is the last part after /fighter-details/
-        if '/fighter-details/' in url_str:
-            return url_str.split('/fighter-details/')[-1]
-    except:
-        pass
-    return None
-
-def save_to_json(data, output_path="public/this_weeks_stats.json"):
-    """Save data to JSON with timestamped backup"""
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    if os.path.exists(output_path):
-        archive_dir = "public/archive"
-        os.makedirs(archive_dir, exist_ok=True)
-        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        backup_path = f"{archive_dir}/this_weeks_stats-backup-{timestamp}.json"
-        shutil.copy(output_path, backup_path)
-        print(f"Backed up existing file to {backup_path}")
-    with open(output_path, "w") as f:
-        json.dump(data, f, indent=2)
-    print(f"Saved data to {output_path}")
-
-def scrape_sherdog_event_card(event_url):
-    """
-    Scrape the Sherdog event page for a UFC card and return a lookup dict.
-
-    Pass the event URL via env var:
-        SHERDOG_EVENT_URL=https://www.sherdog.com/events/UFC-Fight-Night-269-... \\
-        SCRAPE_SHERDOG=1 python3 scripts/aggregate_stats.py
-
-    Returns:
-        event_name (str)  — e.g. "UFC Fight Night 269 - Emmett vs. Vallejos"
-        card (dict)       — normalized_dk_name → {
-                                'sherdog_name': str,   # exact name as on Sherdog
-                                'profile_url':  str,   # direct /fighter/... link
-                                'record':       str,   # "19-6-0"
-                                'wins':         int,
-                                'losses':       int,
-                                'draws':        int,
-                            }
-    Fighters are matched to DK names with simple last-name + fuzzy fallback.
-    Returns ("", {}) on any failure.
-    """
-    headers = {
-        'User-Agent': (
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-            '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
-        ),
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Referer': 'https://www.sherdog.com/',
-    }
-    def _norm(name):
-        name = name.lower()
-        name = re.sub(r"\b(jr\.?|sr\.?|de|da|dos|das)\b", "", name)
-        name = re.sub(r"[^a-z0-9 ]", "", name)
-        return " ".join(name.split())
-
-    try:
-        print(f"\n🌐 Fetching Sherdog event page: {event_url}")
-        resp = requests.get(event_url, headers=headers, timeout=15)
-        resp.raise_for_status()
-        soup = BeautifulSoup(resp.content, "html.parser")
-
-        # Event name — <span itemprop="name"> inside .fight-card-header or <h1>
-        event_name = ""
-        for sel in ['[itemprop="name"]', 'h1.fight-card-header', 'h1']:
-            el = soup.select_one(sel)
-            if el:
-                event_name = el.get_text(strip=True)
-                if event_name:
-                    break
-
-        print(f"  📅 Event: {event_name or '(name not found)'}")
-
-        # Fighters are in <a href="/fighter/..."> links inside the fight card table.
-        # Each link wraps the fighter's name; the record "W-L-D" sits nearby.
-        card = {}  # normalized_name → fighter dict
-
-        # Strategy: find every fighter <a href="/fighter/..."> on the page,
-        # grab the name text and try to find the adjacent record "(W-L-D)" text.
-        for a in soup.select("a[href^='/fighter/']"):
-            sherdog_name = a.get_text(strip=True)
-            if not sherdog_name or len(sherdog_name) < 2:
-                continue
-            profile_url = "https://www.sherdog.com" + a["href"]
-
-            # Look for a record near this link — typically in a sibling/parent span
-            record_str = ""
-            wins = losses = draws = 0
-            # Walk up a few levels to find a record pattern like "19-6-0"
-            node = a
-            for _ in range(5):
-                text = node.get_text(" ", strip=True)
-                m = re.search(r"\b(\d+)-(\d+)-(\d+)\b", text)
-                if m:
-                    wins, losses, draws = int(m.group(1)), int(m.group(2)), int(m.group(3))
-                    record_str = f"{wins}-{losses}-{draws}"
-                    break
-                if node.parent:
-                    node = node.parent
-                else:
-                    break
-
-            norm = _norm(sherdog_name)
-            card[norm] = {
-                'sherdog_name': sherdog_name,
-                'profile_url':  profile_url,
-                'record':       record_str,
-                'wins':         wins,
-                'losses':       losses,
-                'draws':        draws,
-            }
-
-        print(f"  ✅ Found {len(card)} fighters on Sherdog event card")
-        for norm, d in sorted(card.items(), key=lambda x: x[1]['sherdog_name']):
-            print(f"     {d['sherdog_name']:30s}  {d['record']}")
-        return event_name, card
-
-    except Exception as e:
-        print(f"  ❌ Could not load Sherdog event page: {e}")
-        return "", {}
-
-
-def _match_sherdog_card(dk_name, card):
-    """
-    Look up a DK fighter name in the pre-loaded Sherdog event card dict.
-    Tries last-name exact match first, then full-name fuzzy.
-    Returns the card entry dict or None.
-    """
-    def _norm(name):
-        name = name.lower()
-        name = re.sub(r"\b(jr\.?|sr\.?|de|da|dos|das)\b", "", name)
-        name = re.sub(r"[^a-z0-9 ]", "", name)
-        return " ".join(name.split())
-
-    norm_q = _norm(dk_name)
-    # Direct hit
-    if norm_q in card:
-        return card[norm_q]
-    # Last-name match
-    last = norm_q.split()[-1] if norm_q else ""
-    last_hits = [v for k, v in card.items() if k.split()[-1] == last]
-    if len(last_hits) == 1:
-        return last_hits[0]
-    # Fuzzy fallback
-    best_score, best = 0, None
-    for norm_key, entry in card.items():
-        score = fuzz.token_sort_ratio(norm_q, norm_key)
-        if score > best_score:
-            best_score, best = score, entry
-    if best_score >= 72:
-        return best
-    return None
-
-
-def scrape_sherdog_fighter_data(fighter_name, profile_url=None):
-    """
-    Scrape Sherdog data for a fighter using their DK name.
-
-    Search URL: https://www.sherdog.com/stats/fightfinder?SearchTxt={query}&action=search
-    Results table has fighter links (a[href^='/fighter/']); fuzzy-match by name.
-    Profile fields extracted via itemprop attributes and regex on .fighter-info text.
-
-    If profile_url is supplied (e.g. from scrape_sherdog_event_card), the search
-    step is skipped and the profile page is fetched directly — saving ~1 request
-    and the associated sleep delay per fighter.
-
-    Returns a dict with keys from get_empty_sherdog_data() plus:
-      dob, height, weight, nationality, team (all strings).
-    Returns get_empty_sherdog_data() on failure.
-    """
-    headers = {
-        'User-Agent': (
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-            '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
-        ),
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Referer': 'https://www.sherdog.com/',
-    }
-
-    def _norm(name):
-        name = name.lower()
-        name = re.sub(r"\b(jr\.?|sr\.?|de|da|dos|das)\b", "", name)
-        name = re.sub(r"[^a-z0-9 ]", "", name)
-        return " ".join(name.split())
-
-    try:
-        if profile_url:
-            # Direct profile URL supplied — skip search entirely
-            print(f"  📄 Sherdog direct profile: {fighter_name} → {profile_url}")
-        else:
-            from urllib.parse import quote_plus
-            query = quote_plus(fighter_name)
-            search_url = (
-                f"https://www.sherdog.com/stats/fightfinder"
-                f"?SearchTxt={query}&Association=&Weight=&action=search"
-            )
-            print(f"  🔍 Sherdog search: {fighter_name}")
-            resp = requests.get(search_url, headers=headers, timeout=12)
-            resp.raise_for_status()
-            time.sleep(random.uniform(3, 6))
-
-            soup = BeautifulSoup(resp.content, "html.parser")
-
-            # Results are in a <table> with rows linking to /fighter/ pages.
-            # Collect all candidate (name, href) pairs and fuzzy-match to dk name.
-            best_score = 0
-            norm_q = _norm(fighter_name)
-
-            for a in soup.select("a[href^='/fighter/']"):
-                link_name = a.get_text(strip=True)
-                if not link_name:
-                    continue
-                score = fuzz.token_sort_ratio(norm_q, _norm(link_name))
-                if score > best_score:
-                    best_score = score
-                    profile_url = "https://www.sherdog.com" + a["href"]
-
-            if best_score < 72 or not profile_url:
-                # Retry without name suffixes (Jr., Sr., II, III) — Sherdog often
-                # omits these, e.g. "Michael Aswell Jr." → "Michael Aswell"
-                stripped_name = re.sub(
-                    r'\b(jr\.?|sr\.?|ii|iii|iv)\b', '', fighter_name, flags=re.IGNORECASE
-                ).strip()
-                if stripped_name != fighter_name:
-                    print(f"  🔄 Retrying Sherdog search without suffix: '{stripped_name}'")
-                    query2 = quote_plus(stripped_name)
-                    search_url2 = (
-                        f"https://www.sherdog.com/stats/fightfinder"
-                        f"?SearchTxt={query2}&Association=&Weight=&action=search"
-                    )
-                    resp_r = requests.get(search_url2, headers=headers, timeout=12)
-                    resp_r.raise_for_status()
-                    time.sleep(random.uniform(2, 4))
-                    soup_r = BeautifulSoup(resp_r.content, "html.parser")
-                    norm_stripped = _norm(stripped_name)
-                    for a in soup_r.select("a[href^='/fighter/']"):
-                        link_name = a.get_text(strip=True)
-                        if not link_name:
-                            continue
-                        score = fuzz.token_sort_ratio(norm_stripped, _norm(link_name))
-                        if score > best_score:
-                            best_score = score
-                            profile_url = "https://www.sherdog.com" + a["href"]
-
-            if best_score < 72 or not profile_url:
-                print(f"  ❌ Sherdog: no profile found for '{fighter_name}' (best score {best_score})")
-                return get_empty_sherdog_data()
-
-            print(f"  📄 Sherdog profile: {profile_url} (score {best_score})")
-
-        # ── Fetch profile page ────────────────────────────────────────────────
-        resp2 = requests.get(profile_url, headers=headers, timeout=12)
-        resp2.raise_for_status()
-        time.sleep(random.uniform(3, 6))
-        soup2 = BeautifulSoup(resp2.content, "html.parser")
-
-        data = get_empty_sherdog_data()
-
-        # Record: "21-11-0 (WIN-LOSS-DRAW)"
-        rec_el = soup2.select_one(".record")
-        if rec_el:
-            rec_text = rec_el.get_text(strip=True)
-            m = re.match(r"(\d+)-(\d+)-(\d+)", rec_text)
-            if m:
-                data["sherdog_record"] = f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
-            else:
-                data["sherdog_record"] = rec_text.split("(")[0].strip()
-
-        # Bio fields via itemprop
-        def _itemprop(prop):
-            el = soup2.select_one(f'[itemprop="{prop}"]')
-            return el.get_text(strip=True) if el else "N/A"
-
-        data["dob"]         = _itemprop("birthDate")
-        data["height"]      = _itemprop("height")
-        data["weight"]      = _itemprop("weight")
-        data["nationality"] = _itemprop("nationality")
-
-        # Nickname: <span class="nickname"><em>"The Eagle"</em></span>
-        nick_el = soup2.select_one(".nickname em") or soup2.select_one(".nickname")
-        if nick_el:
-            nick_text = nick_el.get_text(strip=True).strip('"\' ')
-            data["nickname"] = nick_text if nick_text else None
-        else:
-            data["nickname"] = None
-
-        # Team / gym: first memberOf name
-        member_names = [
-            el.get_text(strip=True)
-            for el in soup2.select('[itemprop="memberOf"] [itemprop="name"]')
-        ]
-        data["team"] = member_names[0] if member_names else "N/A"
-
-        # Wins / losses breakdown — parse from .fighter-info plain text
-        fi_text = soup2.select_one(".fighter-info")
-        fi_text = fi_text.get_text(" ", strip=True) if fi_text else ""
-
-        def _parse_breakdown_section(label):
-            """
-            Extracts KO/TKO, submission, decision counts from a section like:
-            "Wins 21 KO / TKO 5 24% SUBMISSIONS 2 10% DECISIONS 14 67%"
-            """
-            result = {"ko": 0, "sub": 0, "dec": 0}
-            pat = re.compile(
-                rf"{label}\s+\d+"
-                r".*?KO\s*/\s*TKO\s+(\d+)"
-                r".*?SUBMISSIONS?\s+(\d+)"
-                r".*?DECISIONS?\s+(\d+)",
-                re.IGNORECASE | re.DOTALL,
-            )
-            m = pat.search(fi_text)
-            if m:
-                result["ko"]  = int(m.group(1))
-                result["sub"] = int(m.group(2))
-                result["dec"] = int(m.group(3))
-            return result
-
-        wins_bd   = _parse_breakdown_section("Wins")
-        losses_bd = _parse_breakdown_section("Losses")
-        data.update({
-            "wins_by_ko":           wins_bd["ko"],
-            "wins_by_submission":   wins_bd["sub"],
-            "wins_by_decision":     wins_bd["dec"],
-            "losses_by_ko":         losses_bd["ko"],
-            "losses_by_submission": losses_bd["sub"],
-            "losses_by_decision":   losses_bd["dec"],
-        })
-
-        # ── Fight history (last 5 fights from Sherdog profile) ─────────────
-        fight_history = []
-        fight_rows = soup2.select('tr.win, tr.loss, tr.nc, tr.draw')
-        if not fight_rows:
-            fight_rows = [tr for tr in soup2.find_all('tr') if tr.select_one('.final_result')]
-        for frow in fight_rows[:5]:
-            fcols = frow.find_all('td')
-            if len(fcols) < 5:
-                continue
-            # Result
-            res_el = frow.select_one('.final_result')
-            fresult = res_el.get_text(strip=True).lower() if res_el else (frow.get('class') or [''])[0].lower()
-            # Opponent
-            opp_name = ''
-            for fc in fcols[1:3]:
-                fa = fc.find('a', href=lambda h: h and '/fighter/' in h)
-                if fa:
-                    opp_name = fa.get_text(strip=True)
-                    break
-            if not opp_name:
-                continue
-            # Method
-            method_col = (frow.select_one('td.col_sub') or
-                          next((c for c in fcols if c.select_one('.method')), None) or
-                          next((c for c in fcols if c.get('class') and any('winby' in cl for cl in c.get('class', []))), None))
-            if method_col:
-                m_el = method_col.select_one('.method')
-                raw_method = m_el.get_text(strip=True) if m_el else method_col.get_text(' ', strip=True).split('\n')[0].strip()
-                # Strip "VIEW PLAY-BY-PLAY" and anything after referee name pattern
-                raw_method = re.sub(r'\s*VIEW PLAY-BY-PLAY.*', '', raw_method, flags=re.IGNORECASE).strip()
-                # If it contains a parenthesized detail, split it out
-                m2 = re.match(r'^(.+?\))\s*(.*)', raw_method)
-                fmethod = m2.group(1).strip() if m2 else raw_method
-                sub_el = method_col.select_one('.sub_line')
-                fmethod_detail = sub_el.get_text(strip=True) if sub_el else (m2.group(2).strip() if m2 else '')
-            else:
-                fmethod = ''
-                fmethod_detail = ''
-            # Event + Date — new Sherdog layout combines them in one td (no class)
-            ev_col = frow.select_one('td.col_event')
-            # Fallback: positional td[2] (new layout: event+date combined)
-            if not ev_col and len(fcols) > 2:
-                ev_col = fcols[2]
-            fevent = ''
-            fdate_str = ''
-            if ev_col:
-                ev_text = ev_col.get_text(' ', strip=True)
-                # Try to split date (e.g. "Sep / 09 / 2025" or "Sep 09, 2025")
-                date_m = re.search(
-                    r'((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s*[/,]?\s*\d{1,2}\s*[/,]?\s*\d{4})',
-                    ev_text, re.IGNORECASE
-                )
-                if date_m:
-                    fdate_str = re.sub(r'\s*/\s*', ' ', date_m.group(1)).strip()
-                    fevent = ev_text[:date_m.start()].strip().rstrip(' -,')
-                else:
-                    ev_a = ev_col.find('a')
-                    fevent = ev_a.get_text(strip=True) if ev_a else ev_text
-            # Date, Round, Time — class-based first, then positional fallback
-            fdate_el  = (frow.select_one('td.col_date')  or frow.select_one('td[class*="date"]'))
-            fround_el = (frow.select_one('td.col_round') or frow.select_one('td[class*="round"]'))
-            ftime_el  = (frow.select_one('td.col_time')  or frow.select_one('td[class*="time"]'))
-            # Positional fallback for new layout: round=td[4], time=td[5]
-            if not fdate_el and not fdate_str and len(fcols) > 2:
-                fdate_str = ''  # already extracted above from ev_col
-            if not fround_el and len(fcols) > 4:
-                fround_el = fcols[4]
-            if not ftime_el and len(fcols) > 5:
-                ftime_el = fcols[5]
-            fight_history.append({
-                'result':        fresult,
-                'opponent':      opp_name,
-                'method':        fmethod,
-                'method_detail': fmethod_detail,
-                'event':         fevent,
-                'date':          fdate_el.get_text(strip=True) if fdate_el else fdate_str,
-                'round':         fround_el.get_text(strip=True) if fround_el else '',
-                'time':          ftime_el.get_text(strip=True)  if ftime_el  else '',
-            })
-        data['fight_history'] = fight_history
-
-        print(
-            f"  ✅ Sherdog: {fighter_name} | record={data['sherdog_record']} | "
-            f"KO={data['wins_by_ko']} Sub={data['wins_by_submission']} "
-            f"Dec={data['wins_by_decision']} | "
-            f"dob={data['dob']} height={data['height']} team={data['team']} "
-            f"nickname={data['nickname']} | history={len(fight_history)} fights"
-        )
-        return data
-
-    except Exception as e:
-        print(f"  ❌ Sherdog error for '{fighter_name}': {e}")
-        return get_empty_sherdog_data()
-
-def get_empty_sherdog_data():
-    """Return empty Sherdog data structure with N/A fallbacks"""
-    return {
-        'sherdog_record': 'N/A',
-        'wins_by_ko': 0,
-        'wins_by_submission': 0,
-        'wins_by_decision': 0,
-        'losses_by_ko': 0,
-        'losses_by_submission': 0,
-        'losses_by_decision': 0,
-        'dob':         'N/A',
-        'height':      'N/A',
-        'weight':      'N/A',
-        'nationality': 'N/A',
-        'team':        'N/A',
-        'nickname':    None,
-        'fight_history': [],
-    }
-
-# Mapping: DK ID (str) → UFCStats ID (str)
-# To find UFCStats IDs:
-# 1. Go to ufcstats.com/fighter-details/[ID]
-# 2. Get the [ID] part from the URL
-# 3. Or extract from ufc_fighter_details.csv/ufc_fighter_tott.csv 'URL' column
-#
-# TODO: Populate with real IDs for current card (20-24 fighters)
-id_mapping = {
-    # "42160385": "93fe7332d16c6ad9",  # Example format - DK ID → UFCStats ID
-    # Add all fighter IDs from DK CSV here...
-}
-
-
-def _parse_of(cell_text):
-    """Parse UFCStats 'X of Y' cell text → (landed, attempted). Returns (0,0) on failure."""
-    m = re.match(r'(\d+)\s+of\s+(\d+)', cell_text.strip(), re.IGNORECASE)
-    return (int(m.group(1)), int(m.group(2))) if m else (0, 0)
-
-
-def scrape_betting_odds(matchup):
-    """
-    Scrape moneyline + over/under odds from BestFightOdds for one matchup.
-    matchup format: "Fighter A vs. Fighter B"
-    Returns: {
-        fighter1_name, fighter2_name,
-        fighter1_moneyline, fighter2_moneyline,
-        over_under_rounds, over_odds, under_odds,
-        fighter1_ko_odds, fighter2_ko_odds,
-        fighter1_decision_odds, fighter2_decision_odds
-    } or {} on failure.
-    """
-    import re
-    ua = random.choice([
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-    ])
-    headers = {
-        'User-Agent': ua,
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Connection': 'keep-alive',
-        'Referer': 'https://www.bestfightodds.com/',
-    }
-
-    # Extract the two fighter names from "A vs. B"
-    parts = [p.strip() for p in re.split(r' vs\.? ', matchup, maxsplit=1)]
-    if len(parts) != 2:
-        print(f"  ⚠️  Cannot parse matchup: '{matchup}'")
-        return {}
-    name1, name2 = parts
-
-    try:
-        # BestFightOdds uses a query string for search
-        query = name1.split()[-1]  # last name of fighter 1 usually sufficient
-        url = f"https://www.bestfightodds.com/search?query={quote_plus(query)}"
-        print(f"  🔍 BestFightOdds search: {url}")
-        session = requests.Session()
-        session.headers.update(headers)
-        # Prime session with homepage
-        try:
-            session.get('https://www.bestfightodds.com/', timeout=10)
-            time.sleep(random.uniform(2, 4))
-        except Exception:
-            pass
-        resp = session.get(url, timeout=10)
-        resp.raise_for_status()
-        time.sleep(random.uniform(5, 10))
-        soup = BeautifulSoup(resp.content, 'html.parser')
-
-        def _norm(s):
-            return re.sub(r'[^a-z0-9]', '', s.lower())
-
-        # Look for an event/fight link whose text contains both fighter last names
-        n1_last = _norm(name1.split()[-1])
-        n2_last = _norm(name2.split()[-1])
-        fight_link = None
-        for a in soup.find_all('a', href=True):
-            txt = _norm(a.get_text())
-            if n1_last in txt and n2_last in txt:
-                href = a['href']
-                fight_link = href if href.startswith('http') else 'https://www.bestfightodds.com' + href
-                break
-
-        if not fight_link:
-            print(f"  ❌ BestFightOdds: no fight page found for '{matchup}'")
-            return {}
-
-        print(f"  📄 Found fight page: {fight_link}")
-        resp2 = session.get(fight_link, timeout=10)
-        resp2.raise_for_status()
-        time.sleep(random.uniform(5, 10))
-        soup2 = BeautifulSoup(resp2.content, 'html.parser')
-
-        odds = {
-            'fighter1_name': name1,
-            'fighter2_name': name2,
-            'fighter1_moneyline': 'N/A',
-            'fighter2_moneyline': 'N/A',
-            'over_under_rounds': 'N/A',
-            'over_odds': 'N/A',
-            'under_odds': 'N/A',
-            'fighter1_ko_odds': 'N/A',
-            'fighter2_ko_odds': 'N/A',
-            'fighter1_decision_odds': 'N/A',
-            'fighter2_decision_odds': 'N/A',
-        }
-
-        # BestFightOdds renders odds in a table with class 'odds-table' or similar.
-        # Each row is a market (Moneyline, Over/Under, KO, etc.).
-        # Fighter names appear as column headers; odds are in <td class="odds-td">.
-        # Strategy: find all table rows, look for fighter-name headers to map columns,
-        # then extract moneyline row values.
-        tables = soup2.select('table') or []
-        for table in tables:
-            headers_row = table.find('tr')
-            if not headers_row:
-                continue
-            cols = [th.get_text(strip=True) for th in headers_row.find_all(['th', 'td'])]
-            # Map column index to fighter
-            f1_col = next((i for i, c in enumerate(cols) if n1_last in _norm(c)), None)
-            f2_col = next((i for i, c in enumerate(cols) if n2_last in _norm(c)), None)
-            if f1_col is None or f2_col is None:
-                continue
-
-            for row in table.find_all('tr')[1:]:
-                cells = row.find_all(['td', 'th'])
-                row_label = _norm(cells[0].get_text()) if cells else ''
-
-                def _cell(idx):
-                    if idx < len(cells):
-                        return cells[idx].get_text(strip=True) or 'N/A'
-                    return 'N/A'
-
-                if 'moneyline' in row_label or 'ml' == row_label or row_label == '':
-                    odds['fighter1_moneyline'] = _cell(f1_col)
-                    odds['fighter2_moneyline'] = _cell(f2_col)
-                elif 'over' in row_label or 'under' in row_label or 'total' in row_label:
-                    odds['over_under_rounds'] = _cell(0)
-                    odds['over_odds']  = _cell(f1_col)
-                    odds['under_odds'] = _cell(f2_col)
-                elif 'ko' in row_label or 'tko' in row_label or 'finish' in row_label:
-                    odds['fighter1_ko_odds'] = _cell(f1_col)
-                    odds['fighter2_ko_odds'] = _cell(f2_col)
-                elif 'decision' in row_label or 'dec' in row_label:
-                    odds['fighter1_decision_odds'] = _cell(f1_col)
-                    odds['fighter2_decision_odds'] = _cell(f2_col)
-            break  # found and processed main table
-
-        print(f"  ✅ Odds for {matchup}: ML {odds['fighter1_moneyline']} / {odds['fighter2_moneyline']}")
-        return odds
-
-    except Exception as e:
-        print(f"  ❌ Error scraping BestFightOdds for '{matchup}': {e}")
-        return {}
-
-
-def scrape_fightmatrix_fighter_data(dk_name):
-    print(f"TODO: Implement real FightMatrix scraping for {dk_name}")
-    return {}
-
-def scrape_espn_fighter_data(dk_name):
-    print(f"TODO: Implement real ESPN MMA scraping for {dk_name}")
-    return {}
-
-def scrape_ufcstats_fighter(dk_name):
-    """
-    Scrape UFCStats.com for a fighter's career stat page.
-    Returns a dict with keys:
-      td_defense (str, e.g. "64%"), striking_defense (str, e.g. "57%"),
-      sub_avg (float), slpm (float), sapm (float), str_acc (float), td_avg (float)
-    Returns {} on failure or no match.
-
-    Source: http://ufcstats.com/statistics/fighters?action=search&...
-    This is the official UFC stat database — fully public, no auth required.
-    Polite delays are included to avoid hammering the server.
-    """
-    parts = dk_name.strip().split()
-    if not parts:
-        return {}
-    first = parts[0]
-    last  = parts[-1] if len(parts) > 1 else ''
-
-    # Strip name suffixes (Jr., Sr., II, III, IV) before choosing the char= letter,
-    # because UFCStats indexes fighters by their actual last name, not the suffix.
-    # e.g. "Michael Aswell Jr." → last="Jr." → char='j' is WRONG; should be 'a'.
-    _SUFFIXES = {'jr', 'jr.', 'sr', 'sr.', 'ii', 'iii', 'iv'}
-    name_for_char = [p for p in parts if p.lower() not in _SUFFIXES]
-    last_for_char = name_for_char[-1] if len(name_for_char) > 1 else (name_for_char[0] if name_for_char else last)
-
-    try:
-        # Use the char= browse endpoint (first letter of last name).
-        # The ?action=search endpoint ignores its parameters server-side and
-        # always returns the default 'A' alphabetical page, so it only works
-        # for fighters whose last name starts with 'A'. char= is reliable.
-        # Reuse the shared _perfight_get cache so fighters already scraped by
-        # SCRAPE_PERFIGHT don't require additional network requests here.
-        char = (last_for_char[0] if last_for_char else first[0]).lower()
-        search_url = f"http://ufcstats.com/statistics/fighters?char={char}&page=all"
-        print(f"  🔍 UFCStats browse (char={char}): {dk_name}")
-        html = _perfight_get(search_url)
-        if not html:
-            return {}
-        soup = BeautifulSoup(html, 'html.parser')
-
-        def _norm(s):
-            return re.sub(r'[^a-z]', '', s.lower())
-
-        norm_q = _norm(dk_name)
-
-        # Find best matching fighter link in results table
-        profile_url = None
-        for row in soup.select('table.b-statistics__table tbody tr'):
-            cells = row.find_all('td')
-            if len(cells) < 2:
-                continue
-            fn = cells[0].get_text(strip=True)
-            ln = cells[1].get_text(strip=True)
-            full = f"{fn} {ln}".strip()
-            if _norm(full) == norm_q or _norm(fn + ln) == _norm(dk_name.replace(' ', '')):
-                link = cells[0].find('a') or cells[1].find('a')
-                if link and link.get('href'):
-                    profile_url = link['href']
-                    print(f"  ✅ UFCStats match: '{full}' → {profile_url}")
-                    break
-
-        # Fallback: fuzzy — pick the closest name in results
-        if not profile_url:
-            candidates = []
-            for row in soup.select('table.b-statistics__table tbody tr'):
-                cells = row.find_all('td')
-                if len(cells) < 2:
-                    continue
-                fn = cells[0].get_text(strip=True)
-                ln = cells[1].get_text(strip=True)
-                full = f"{fn} {ln}".strip()
-                link = cells[0].find('a') or cells[1].find('a')
-                if link and link.get('href') and full:
-                    candidates.append((full, link['href']))
-
-            if candidates:
-                names  = [c[0] for c in candidates]
-                result = process.extractOne(_norm(dk_name), [_norm(n) for n in names])
-                if result and result[1] >= 80:
-                    idx = [_norm(n) for n in names].index(result[0])
-                    profile_url = candidates[idx][1]
-                    print(f"  ~ UFCStats [FUZZY] '{dk_name}' → '{candidates[idx][0]}' (score {result[1]})")
-
-        if not profile_url:
-            print(f"  ❌ UFCStats: no profile found for '{dk_name}'")
-            return {}
-
-        # Fetch fighter profile page (reuses shared _perfight_get cache — zero
-        # extra requests if SCRAPE_PERFIGHT already ran for this fighter)
-        if not profile_url.startswith('http'):
-            profile_url = 'http://ufcstats.com' + profile_url
-        html2 = _perfight_get(profile_url)
-        if not html2:
-            return {}
-        soup2 = BeautifulSoup(html2, 'html.parser')
-
-        # UFCStats profile page has a stat box:
-        # <li class="b-list__box-list-item ...">
-        #   <i class="b-list__box-item-title ...">SLpM:</i> 3.43
-        # Pattern: find all stat items and build a dict label → value
-        stats_out = {}
-        for item in soup2.select('li.b-list__box-list-item'):
-            label_el = item.select_one('i.b-list__box-item-title')
-            if not label_el:
-                continue
-            label = label_el.get_text(strip=True).rstrip(':').lower()
-            # Value is the text after removing the label
-            label_el.extract()
-            value = item.get_text(strip=True)
-            stats_out[label] = value
-
-        def _pct(val):
-            """Convert '64%' → 64.0 or return 'N/A'"""
-            if not val or val in ('--', ''):
-                return 'N/A'
-            val = str(val).replace('%', '').strip()
-            try:
-                return float(val)
-            except ValueError:
-                return 'N/A'
-
-        def _num(val):
-            if not val or val in ('--', ''):
-                return None
-            try:
-                return float(str(val).replace('%', '').strip())
-            except ValueError:
-                return None
-
-        # Extract nickname and record from page header — not in the stat box
-        nick_el   = soup2.find('p', class_='b-content__Nickname')
-        rec_el    = soup2.find('span', class_='b-content__title-record')
-        nickname  = nick_el.get_text(strip=True) if nick_el else None
-        record_raw = rec_el.get_text(strip=True).replace('Record:', '').strip() if rec_el else None
-
-        result = {
-            'td_defense':       stats_out.get('td def.', stats_out.get('td def', 'N/A')),
-            'striking_defense': stats_out.get('str. def', stats_out.get('str def', 'N/A')),
-            'sub_avg':          _num(stats_out.get('sub. avg.', stats_out.get('sub avg', None))),
-            'slpm':             _num(stats_out.get('slpm')),
-            'sapm':             _num(stats_out.get('sapm')),
-            'str_acc':          _num(stats_out.get('str. acc.', stats_out.get('str acc', None))),
-            'td_avg':           _num(stats_out.get('td avg.', stats_out.get('td avg', None))),
-            'td_acc':           _num(stats_out.get('td acc.', stats_out.get('td acc', None))),
-            # Bio fields – already on the same page, zero extra requests
-            'height':   stats_out.get('height', 'N/A'),
-            'reach':    stats_out.get('reach',  'N/A'),
-            'stance':   stats_out.get('stance', 'N/A').title() if stats_out.get('stance') else 'N/A',
-            'dob':      stats_out.get('dob',    'N/A'),
-            'nickname': nickname,
-            'record':   record_raw,
-            'weight_lbs': stats_out.get('weight', None),  # e.g. '115 lbs.'
-        }
-        print(f"  ✅ UFCStats stats for '{dk_name}': {result}")
-        return result
-
-    except Exception as e:
-        print(f"  ❌ UFCStats error for '{dk_name}': {e}")
-        return {}
-
-
-# ---------------------------------------------------------------------------
-# UFCStats per-fight scraper: KD + CTRL time (last N fights)
-# ---------------------------------------------------------------------------
-_PERFIGHT_CACHE_PATH = os.path.join(
-    os.path.dirname(__file__), '..', 'public', 'ufcstats_perfight_cache.json'
+from fuzzywuzzy import process
+
+# ── Pull in all scraper helpers from the split modules ──────────────────────
+# ag_utils: name normalisation, JSON save-with-backup
+from ag_utils import normalize_name, save_to_json
+
+# ag_sherdog: Sherdog event card, fighter profile, and BestFightOdds scrapers
+from ag_sherdog import (
+    scrape_sherdog_event_card,
+    _match_sherdog_card,
+    scrape_sherdog_fighter_data,
 )
-_PERFIGHT_ALPHA_URL  = 'http://ufcstats.com/statistics/fighters?char={letter}&page=all'
-_PERFIGHT_HEADERS    = {
-    'User-Agent': (
-        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
-        '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
-    ),
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'Accept-Language': 'en-US,en;q=0.5',
-}
-_PERFIGHT_FIGHT_LIMIT   = 5      # analyze last N completed fights
-_PERFIGHT_DELAY_MIN     = 8.0
-_PERFIGHT_DELAY_MAX     = 15.0
-_PERFIGHT_FUZZY_MIN     = 72
 
-_perfight_cache = None  # lazy-loaded once per run
+# ag_ufcstats: UFCStats.com fighter-profile scraper (td_def, str_def, bio)
+from ag_ufcstats import scrape_ufcstats_fighter
 
+# ag_perfight: UFCStats per-fight (KD/CTRL) and defensive grappling scrapers
+from ag_perfight import scrape_ufcstats_perfight, scrape_ufcstats_def_grappling
 
-def _perfight_load_cache():
-    global _perfight_cache
-    if _perfight_cache is not None:
-        return _perfight_cache
-    path = os.path.normpath(_PERFIGHT_CACHE_PATH)
-    if os.path.exists(path):
-        with open(path, encoding='utf-8') as f:
-            _perfight_cache = json.load(f)
-    else:
-        _perfight_cache = {}
-    return _perfight_cache
-
-
-def _perfight_save_cache():
-    global _perfight_cache
-    if _perfight_cache is None:
-        return
-    path = os.path.normpath(_PERFIGHT_CACHE_PATH)
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, 'w', encoding='utf-8') as f:
-        json.dump(_perfight_cache, f, indent=1)
-
-
-def _perfight_get(url):
-    """Fetch url, caching the result.  Always adds a polite delay on live fetches."""
-    cache = _perfight_load_cache()
-    if url in cache:
-        return cache[url]
-    delay = random.uniform(_PERFIGHT_DELAY_MIN, _PERFIGHT_DELAY_MAX)
-    print(f"    [wait {delay:.1f}s] GET {url}")
-    time.sleep(delay)
-    try:
-        resp = requests.get(url, headers=_PERFIGHT_HEADERS, timeout=18)
-        resp.raise_for_status()
-        cache[url] = resp.text
-        _perfight_save_cache()
-        return resp.text
-    except Exception as e:
-        print(f"    [ERROR] {url}: {e}")
-        return None
-
-
-def _ctrl_to_secs(ctrl_str):
-    try:
-        m, s = ctrl_str.strip().split(':')
-        return int(m) * 60 + int(s)
-    except Exception:
-        return 0
-
-
-def scrape_ufcstats_perfight(dk_name):
-    """
-    Scrape UFCStats for a fighter's last _PERFIGHT_FIGHT_LIMIT completed fights.
-    Aggregates avg_kd_per_fight, avg_ctrl_secs, grappling_control_pct.
-    All network fetches are cached to avoid re-scraping.
-    Returns dict or {} on failure.
-    """
-    from fuzzywuzzy import fuzz as _fuzz
-
-    parts = dk_name.strip().split()
-    letter = (parts[-1][0] if parts and parts[-1] else 'a').lower()
-    if not letter.isalpha():
-        letter = 'a'
-
-    # ── find profile URL ──────────────────────────────────────────────────
-    alpha_html = _perfight_get(_PERFIGHT_ALPHA_URL.format(letter=letter))
-    if not alpha_html:
-        return {}
-
-    soup = BeautifulSoup(alpha_html, 'html.parser')
-    table = soup.find('table', class_='b-statistics__table')
-    if not table:
-        return {}
-
-    best_score, best_url = 0, None
-    for row in table.find_all('tr')[1:]:
-        cells = row.find_all('td')
-        if len(cells) < 2:
-            continue
-        first = cells[0].get_text(strip=True)
-        last  = cells[1].get_text(strip=True)
-        full  = f"{first} {last}"
-        a_tag = cells[0].find('a', href=True) or cells[1].find('a', href=True)
-        if not a_tag:
-            continue
-        score = _fuzz.token_sort_ratio(dk_name.lower(), full.lower())
-        if score > best_score:
-            best_score = score
-            best_url   = a_tag['href']
-
-    if best_score < _PERFIGHT_FUZZY_MIN or not best_url:
-        print(f"  ✗ per-fight: no profile found for '{dk_name}' (best score {best_score})")
-        return {}
-
-    # ── fetch profile for fight history ──────────────────────────────────
-    profile_html = _perfight_get(best_url)
-    if not profile_html:
-        return {}
-
-    psoup = BeautifulSoup(profile_html, 'html.parser')
-    ptable = psoup.find('table', class_='b-fight-details__table')
-    if not ptable:
-        return {}
-
-    fights = []
-    for row in ptable.find_all('tr')[1:]:
-        cells = row.find_all('td')
-        if len(cells) < 10:
-            continue
-        wl = cells[0].get_text(strip=True).lower()
-        if wl not in ('win', 'loss', 'nc', 'draw'):
-            continue
-
-        # determine which <p> index is our fighter
-        name_ps = cells[1].find_all('p')
-        our_idx = 0
-        if name_ps:
-            name0 = name_ps[0].get_text(strip=True)
-            if _fuzz.token_sort_ratio(dk_name.lower(), name0.lower()) < 60:
-                our_idx = 1
-
-        # KD
-        kd_ps = cells[2].find_all('p')
-        if kd_ps and len(kd_ps) > our_idx:
-            kd_raw = kd_ps[our_idx].get_text(strip=True)
-            our_kd = int(kd_raw) if kd_raw.isdigit() else 0
-        else:
-            kd_parts = cells[2].get_text(' ', strip=True).split()
-            our_kd = int(kd_parts[our_idx]) if len(kd_parts) > our_idx and kd_parts[our_idx].isdigit() else 0
-
-        # total fight time in seconds
-        rnd_text  = cells[8].get_text(strip=True)
-        time_text = cells[9].get_text(strip=True)
-        try:
-            finished_round = int(rnd_text)
-            m, s = time_text.split(':')
-            total_secs = (finished_round - 1) * 5 * 60 + int(m) * 60 + int(s)
-        except Exception:
-            total_secs = 0
-
-        fight_links = [
-            a['href'] for a in row.find_all('a', href=True)
-            if 'fight-details' in a['href']
-        ]
-        if not fight_links:
-            continue
-
-        fights.append({
-            'fight_url':  fight_links[0],
-            'our_idx':    our_idx,
-            'our_kd':     our_kd,
-            'total_secs': total_secs,
-        })
-        if len(fights) >= _PERFIGHT_FIGHT_LIMIT:
-            break
-
-    if not fights:
-        return {}
-
-    # ── per-fight CTRL from fight detail pages ────────────────────────────
-    ctrl_times, kd_total, time_total = [], 0, 0
-    head_l_tot = head_a_tot = 0
-    body_l_tot = body_a_tot = 0
-    leg_l_tot  = leg_a_tot  = 0
-    dist_l_tot = dist_a_tot = 0
-    clinch_l_tot = clinch_a_tot = 0
-    ground_l_tot = ground_a_tot = 0
-
-    for fight in fights:
-        fight_html = _perfight_get(fight['fight_url'])
-        ctrl_secs = 0
-        if fight_html:
-            fsoup  = BeautifulSoup(fight_html, 'html.parser')
-            tables = fsoup.find_all('table')
-            if tables:
-                data_rows = tables[0].find_all('tr')
-                if len(data_rows) >= 2:
-                    dcells = data_rows[1].find_all('td')
-                    if len(dcells) >= 10:
-                        ctrl_cell = dcells[9]
-                        ps = ctrl_cell.find_all('p')
-                        if ps and len(ps) > fight['our_idx']:
-                            ctrl_secs = _ctrl_to_secs(ps[fight['our_idx']].get_text(strip=True))
-                        else:
-                            raw = ctrl_cell.get_text(' ', strip=True).split()
-                            if len(raw) > fight['our_idx']:
-                                ctrl_secs = _ctrl_to_secs(raw[fight['our_idx']])
-
-            # ── Significant strikes by target / position (table index 2) ────
-            # Columns: 0=Fighter 1=SigStr 2=SigStr% 3=Head 4=Body 5=Leg
-            #          6=Distance 7=Clinch 8=Ground
-            if len(tables) >= 3:
-                sig_rows = tables[2].find_all('tr')
-                if len(sig_rows) >= 2:
-                    sc = sig_rows[1].find_all('td')
-
-                    def _get_of(col_idx, our_idx=fight['our_idx']):
-                        if len(sc) <= col_idx:
-                            return (0, 0)
-                        ps2 = sc[col_idx].find_all('p')
-                        if ps2 and len(ps2) > our_idx:
-                            return _parse_of(ps2[our_idx].get_text(strip=True))
-                        raw2 = sc[col_idx].get_text(' ', strip=True).split()
-                        start = our_idx * 3
-                        if len(raw2) >= start + 3 and raw2[start + 1].lower() == 'of':
-                            try:
-                                return (int(raw2[start]), int(raw2[start + 2]))
-                            except (ValueError, IndexError):
-                                pass
-                        return (0, 0)
-
-                    hl, ha = _get_of(3)  # Head
-                    bl, ba = _get_of(4)  # Body
-                    ll, la = _get_of(5)  # Leg
-                    dl, da = _get_of(6)  # Distance
-                    cl, ca = _get_of(7)  # Clinch
-                    gl, ga = _get_of(8)  # Ground
-                    head_l_tot += hl;   head_a_tot += ha
-                    body_l_tot += bl;   body_a_tot += ba
-                    leg_l_tot  += ll;   leg_a_tot  += la
-                    dist_l_tot += dl;   dist_a_tot += da
-                    clinch_l_tot += cl; clinch_a_tot += ca
-                    ground_l_tot += gl; ground_a_tot += ga
-
-        ctrl_times.append(ctrl_secs)
-        kd_total   += fight['our_kd']
-        time_total += fight['total_secs']
-
-    n = len(fights)
-
-    # Strike distribution: % of landed sig strikes by target and position
-    by_target = head_l_tot + body_l_tot + leg_l_tot
-    by_pos    = dist_l_tot + clinch_l_tot + ground_l_tot
-
-    def _spct(part, total):
-        return round(part / total * 100) if total > 0 else None
-
-    return {
-        'avg_kd_per_fight':       round(kd_total / n, 2),
-        'avg_ctrl_secs':          round(sum(ctrl_times) / n, 1),
-        'grappling_control_pct':  round(sum(ctrl_times) / time_total * 100, 1) if time_total > 0 else None,
-        'fights_analyzed':        n,
-        'head_str_pct':     _spct(head_l_tot,   by_target),
-        'body_str_pct':     _spct(body_l_tot,   by_target),
-        'leg_str_pct':      _spct(leg_l_tot,    by_target),
-        'distance_str_pct': _spct(dist_l_tot,   by_pos),
-        'clinch_str_pct':   _spct(clinch_l_tot, by_pos),
-        'ground_str_pct':   _spct(ground_l_tot, by_pos),
-    }
-
-
-
-# ---------------------------------------------------------------------------
-# UFCStats defensive grappling scraper
-# Extracts — from the same per-fight detail pages used by scrape_ufcstats_perfight
-# (all results served from the shared _perfight_get cache, so if SCRAPE_PERFIGHT
-# already ran there are zero extra network requests):
-#
-#   avg_opp_ctrl_secs       — seconds/fight the OPPONENT controlled this fighter
-#   avg_reversals_per_fight — bottom→top transitions per fight (escape activity)
-#   implied_sub_def_pct     — (opp_sub_att - subs_conceded) / opp_sub_att × 100
-#   opp_sub_attempts_vs     — raw opp sub attempts over analyzed fights
-#   subs_conceded           — fights lost by submission
-#
-# NOTE: No public source (UFCStats, Sherdog, Tapology) publishes a formal
-# "Submission Defense %" column.  implied_sub_def_pct is derived from fight-level
-# data and is the closest honest proxy available.
-# ---------------------------------------------------------------------------
-def scrape_ufcstats_def_grappling(dk_name):
-    """
-    Scrape defensive grappling metrics for *dk_name* from UFCStats fight detail
-    pages (last _PERFIGHT_FIGHT_LIMIT completed fights).
-    All HTTP fetches go through _perfight_get() — results are permanently cached,
-    so running SCRAPE_DEF_GRAPPLING after SCRAPE_PERFIGHT costs zero extra requests.
-
-    Returns dict with keys:
-        avg_opp_ctrl_secs, avg_reversals_per_fight, implied_sub_def_pct,
-        opp_sub_attempts_vs, subs_conceded, def_fights_analyzed
-    or {} on failure.
-    """
-    from fuzzywuzzy import fuzz as _fuzz
-
-    parts = dk_name.strip().split()
-    letter = (parts[-1][0] if parts and parts[-1] else 'a').lower()
-    if not letter.isalpha():
-        letter = 'a'
-
-    # ── Locate fighter profile URL (same browse-page logic as scrape_ufcstats_perfight) ──
-    alpha_html = _perfight_get(_PERFIGHT_ALPHA_URL.format(letter=letter))
-    if not alpha_html:
-        return {}
-
-    soup  = BeautifulSoup(alpha_html, 'html.parser')
-    table = soup.find('table', class_='b-statistics__table')
-    if not table:
-        return {}
-
-    best_score, best_url = 0, None
-    for row in table.find_all('tr')[1:]:
-        cells = row.find_all('td')
-        if len(cells) < 2:
-            continue
-        first = cells[0].get_text(strip=True)
-        last  = cells[1].get_text(strip=True)
-        full  = f"{first} {last}"
-        a_tag = cells[0].find('a', href=True) or cells[1].find('a', href=True)
-        if not a_tag:
-            continue
-        score = _fuzz.token_sort_ratio(dk_name.lower(), full.lower())
-        if score > best_score:
-            best_score = score
-            best_url   = a_tag['href']
-
-    if best_score < _PERFIGHT_FUZZY_MIN or not best_url:
-        print(f"  \u2717 def-grappling: no profile for '{dk_name}' (best score {best_score})")
-        return {}
-
-    # ── Fetch fighter profile to get fight history ────────────────────────────
-    profile_html = _perfight_get(best_url)
-    if not profile_html:
-        return {}
-
-    psoup  = BeautifulSoup(profile_html, 'html.parser')
-    ptable = psoup.find('table', class_='b-fight-details__table')
-    if not ptable:
-        return {}
-
-    # ── Collect fight detail URLs (up to _PERFIGHT_FIGHT_LIMIT) ──────────────
-    fights_meta = []
-    for row in ptable.find_all('tr')[1:]:
-        cells = row.find_all('td')
-        if len(cells) < 10:
-            continue
-        wl = cells[0].get_text(strip=True).lower()
-        if wl not in ('win', 'loss', 'nc', 'draw'):
-            continue
-
-        # Determine our fighter's column index (0 or 1)
-        name_ps = cells[1].find_all('p')
-        our_idx = 0
-        if name_ps:
-            name0 = name_ps[0].get_text(strip=True)
-            if _fuzz.token_sort_ratio(dk_name.lower(), name0.lower()) < 60:
-                our_idx = 1
-        opp_idx = 1 - our_idx
-
-        fight_links = [
-            a['href'] for a in row.find_all('a', href=True)
-            if 'fight-details' in a['href']
-        ]
-        if not fight_links:
-            continue
-
-        fights_meta.append({
-            'fight_url': fight_links[0],
-            'wl':        wl,
-            'our_idx':   our_idx,
-            'opp_idx':   opp_idx,
-        })
-        if len(fights_meta) >= _PERFIGHT_FIGHT_LIMIT:
-            break
-
-    if not fights_meta:
-        return {}
-
-    # ── Per-fight detail extraction ───────────────────────────────────────────
-    # UFCStats fight detail "Totals" table cell layout (each <td> has two <p>
-    # tags — one per fighter — indexed by our_idx / opp_idx):
-    #   dcells[0]  Fighter names
-    #   dcells[1]  KD
-    #   dcells[2]  Sig.Str
-    #   dcells[3]  Sig.Str %
-    #   dcells[4]  Total Str
-    #   dcells[5]  TD
-    #   dcells[6]  TD %
-    #   dcells[7]  Sub.Att  ← opponent's attempts against us  (opp_idx)
-    #   dcells[8]  Rev.     ← our reversals / escapes         (our_idx)
-    #   dcells[9]  CTRL     ← opponent's control time over us (opp_idx)
-
-    def _cell_int(dcells, col, fighter_idx):
-        """Return int from dcells[col] for fighter_idx (0 or 1), 0 on failure."""
-        if col >= len(dcells):
-            return 0
-        ps = dcells[col].find_all('p')
-        if ps and len(ps) > fighter_idx:
-            txt = ps[fighter_idx].get_text(strip=True)
-            return int(txt) if txt.isdigit() else 0
-        raw = dcells[col].get_text(' ', strip=True).split()
-        if len(raw) > fighter_idx and raw[fighter_idx].isdigit():
-            return int(raw[fighter_idx])
-        return 0
-
-    opp_ctrl_list = []
-    rev_list      = []
-    opp_sub_total = 0
-    subs_conceded = 0
-
-    for fm in fights_meta:
-        fight_html    = _perfight_get(fm['fight_url'])
-        opp_ctrl_secs = 0
-        our_rev       = 0
-        opp_sub_att   = 0
-
-        if fight_html:
-            fsoup  = BeautifulSoup(fight_html, 'html.parser')
-            tables = fsoup.find_all('table')
-
-            if tables:
-                data_rows = tables[0].find_all('tr')
-                if len(data_rows) >= 2:
-                    dcells = data_rows[1].find_all('td')
-                    if len(dcells) >= 10:
-                        # Opponent sub attempts against us
-                        opp_sub_att = _cell_int(dcells, 7, fm['opp_idx'])
-                        # Our reversals (bottom→top transitions)
-                        our_rev     = _cell_int(dcells, 8, fm['our_idx'])
-                        # Opponent control time over us
-                        opp_ctrl_ps = dcells[9].find_all('p')
-                        if opp_ctrl_ps and len(opp_ctrl_ps) > fm['opp_idx']:
-                            opp_ctrl_secs = _ctrl_to_secs(
-                                opp_ctrl_ps[fm['opp_idx']].get_text(strip=True)
-                            )
-                        else:
-                            raw = dcells[9].get_text(' ', strip=True).split()
-                            if len(raw) > fm['opp_idx']:
-                                opp_ctrl_secs = _ctrl_to_secs(raw[fm['opp_idx']])
-
-            # Was this fight lost by submission? Check fight detail page method header.
-            if fm['wl'] == 'loss':
-                method_text = ''
-                for item in fsoup.select('.b-fight-details__text-item'):
-                    lbl = item.select_one('.b-fight-details__text-item-label')
-                    if lbl and 'Method' in lbl.get_text():
-                        method_text = item.get_text(' ', strip=True).lower()
-                        break
-                if not method_text:
-                    mt = fsoup.find(string=lambda t: t and 'Method:' in t)
-                    if mt:
-                        sib = mt.find_next(string=True)
-                        method_text = (sib.strip() if sib else '').lower()
-                if 'sub' in method_text:
-                    subs_conceded += 1
-
-        opp_ctrl_list.append(opp_ctrl_secs)
-        rev_list.append(our_rev)
-        opp_sub_total += opp_sub_att
-
-    n = len(fights_meta)
-    implied_sub_def = None
-    if opp_sub_total > 0:
-        defended        = max(opp_sub_total - subs_conceded, 0)
-        implied_sub_def = round(defended / opp_sub_total * 100, 1)
-    elif n > 0:
-        # No sub attempts recorded against this fighter across analyzed fights →
-        # they have effectively defended 100% of all (zero) attempts.
-        # This avoids null for most strikers who simply have never been sub-targeted.
-        implied_sub_def = 100.0
-
-    result = {
-        'avg_opp_ctrl_secs':       round(sum(opp_ctrl_list) / n, 1),
-        'avg_reversals_per_fight': round(sum(rev_list) / n, 2),
-        'implied_sub_def_pct':     implied_sub_def,
-        'opp_sub_attempts_vs':     opp_sub_total,
-        'subs_conceded':           subs_conceded,
-        'def_fights_analyzed':     n,
-    }
-    print(
-        f"  \u2713 def-grappling '{dk_name}': "
-        f"opp_ctrl={result['avg_opp_ctrl_secs']}s  "
-        f"rev={result['avg_reversals_per_fight']}/fight  "
-        f"implied_sub_def={result['implied_sub_def_pct']}%  "
-        f"opp_sub_att={opp_sub_total}  subs_conceded={subs_conceded}  "
-        f"({n} fights)"
-    )
-    return result
 
 def csv_to_json(
     dk_path="DKSalaries.csv",  # Changed to current directory (no ../)
@@ -1329,6 +72,27 @@ def csv_to_json(
 ):
     try:
         print("Loading DKSalaries.csv from:", dk_path)
+
+        # ── Load previous JSON for Sherdog field preservation ─────────────────
+        # When SCRAPE_SHERDOG=0 (the default), the pipeline rebuilds everything from
+        # scratch and loses fight_history / nationality / team that previous runs
+        # scraped from Sherdog.  We load the existing output file once here so the
+        # Sherdog-skipped branch can copy those fields over for matching fighters.
+        _prev_sherdog = {}  # { normalized_name: fighter_dict_from_prev_run }
+        if os.path.exists(output_path):
+            try:
+                with open(output_path) as _pf:
+                    _prev_data = json.load(_pf)
+                for _pfight in _prev_data.get('fights', []):
+                    for _pf in _pfight.get('fighters', []):
+                        _pname = normalize_name(_pf.get('name', ''))
+                        if _pname:
+                            _prev_sherdog[_pname] = _pf
+                if _prev_sherdog:
+                    print(f"ℹ️  Loaded previous JSON ({len(_prev_sherdog)} fighters) for Sherdog field preservation")
+            except Exception as _e:
+                print(f"ℹ️  Could not load previous JSON for Sherdog preservation: {_e}")
+
         # The CSV in this repo has a proper header on the first line and
         # data starting on the second line. Do not skip rows here.
         dk_df = pd.read_csv(dk_path, header=0)
@@ -1462,13 +226,6 @@ def csv_to_json(
                     }
                 })
                 print(f"  Added fighter: {row['Name'].strip()} | Salary: ${row['Salary']} | AvgPoints: {fighters[-1]['avgPointsPerGame']}")
-
-            # ── DISASTER MODE: swap salaries so low expected-scorers are priciest ──
-            if DISASTER_MODE and len(fighters) == 2:
-                fighters[0]['salary'], fighters[1]['salary'] = fighters[1]['salary'], fighters[0]['salary']
-                fighters[0]['salary_mode'] = 'reversed'
-                fighters[1]['salary_mode'] = 'reversed'
-                print(f"  💀 DISASTER MODE: Swapped salaries — {fighters[0]['name']} (${fighters[0]['salary']}) ↔ {fighters[1]['name']} (${fighters[1]['salary']})")
 
             fights.append({
                 "fight_id": len(fights),
@@ -1864,6 +621,34 @@ def csv_to_json(
         else:
             print("ℹ️  Per-fight scraping skipped (set SCRAPE_PERFIGHT=1 to enable — adds ~15–30 min on first run)")
 
+        # ── Data Quality Warnings ─────────────────────────────────────────────
+        warnings_found = []
+        for fight in fights:
+            for f in fight['fighters']:
+                name = f['name']
+                avg_pts = f.get('avgPointsPerGame', 0)
+                n_fights = f.get('stats', {}).get('fights_analyzed', None)
+                no_ufc_history = f.get('record', 'N/A') == 'N/A'
+
+                if no_ufc_history:
+                    warnings_found.append(
+                        f"  ⚠️  {name} — no UFC-master history (Bellator/regional crossover). "
+                        f"AvgPoints={avg_pts} based on limited UFC data."
+                    )
+                elif n_fights is not None and n_fights < 5 and avg_pts > 80:
+                    warnings_found.append(
+                        f"  ⚠️  {name} — AvgPoints={avg_pts} but only {n_fights} UFC fight(s) scraped. "
+                        f"Small sample — projection may be unreliable."
+                    )
+
+        if warnings_found:
+            print("\n" + "="*80)
+            print("⚠️  DATA QUALITY WARNINGS")
+            print("="*80)
+            for w in warnings_found:
+                print(w)
+            print("="*80 + "\n")
+
 
         # ── Defensive grappling enrichment ────────────────────────────────────
         # Extracts from the same UFCStats fight detail pages (all cached):
@@ -2217,7 +1002,14 @@ def csv_to_json(
                         else:
                             print(f"  🔎 Fallback search for {dk_name} (not on event card)")
                     sd = scrape_sherdog_fighter_data(dk_name, profile_url=direct_url)
-                    if sd.get('sherdog_record', 'N/A') == 'N/A':
+                    has_sherdog_data = (
+                        bool(sd.get('fight_history')) or
+                        sd.get('dob', 'N/A') not in ('N/A', '') or
+                        bool(sd.get('wins_by_ko', 0)) or
+                        bool(sd.get('wins_by_submission', 0)) or
+                        bool(sd.get('wins_by_decision', 0))
+                    )
+                    if not has_sherdog_data:
                         sh_missed += 1
                         continue
                     # Unique fields only Sherdog provides
@@ -2271,6 +1063,37 @@ def csv_to_json(
         else:
             print("ℹ️  Sherdog scraping skipped (set SCRAPE_SHERDOG=1 to enable — adds ~3–6 min)")
 
+            # ── Preserve Sherdog-sourced fields from previous run ──────────────
+            # Fields that only Sherdog populates and that the pipeline cannot
+            # reconstruct from CSV/UFCStats sources:
+            #   fight_history  — full pro career fight list (used by FullFightRecord modal)
+            #   nationality    — country of birth
+            #   team           — home gym / training camp
+            # Copy each of these from the previous JSON if:
+            #   (a) the fighter appears in the previous JSON by normalised name, AND
+            #   (b) the current fighter dict is missing that field / has an empty value.
+            # This means re-running the pipeline NEVER wipes Sherdog data that was
+            # already scraped; only SCRAPE_SHERDOG=1 can overwrite it.
+            preserved = 0
+            sherdog_only_fields = ['fight_history', 'nationality', 'team']
+            if _prev_sherdog:
+                for fight in fights:
+                    for f in fight['fighters']:
+                        key = normalize_name(f.get('name', ''))
+                        prev = _prev_sherdog.get(key)
+                        if not prev:
+                            continue
+                        for field in sherdog_only_fields:
+                            prev_val = prev.get(field)
+                            # Only copy if prev has a real value and current is missing/empty
+                            if prev_val and not f.get(field):
+                                f[field] = prev_val
+                                preserved += 1
+            if preserved:
+                print(f"ℹ️  Preserved {preserved} Sherdog field(s) from previous run (fight_history / nationality / team)")
+            else:
+                print("ℹ️  No previous Sherdog data found to preserve — run with SCRAPE_SHERDOG=1 to populate")
+
 
         data = {
             "event": {
@@ -2278,8 +1101,7 @@ def csv_to_json(
                 "date": event_date_str,
                 "location": "Las Vegas, Nevada, USA"
             },
-            "fights": fights,
-            "disaster_mode": DISASTER_MODE
+            "fights": fights
         }
 
         save_to_json(data, output_path)

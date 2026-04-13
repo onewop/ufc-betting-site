@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-stone-950">
+    <div className="relative min-h-screen overflow-x-hidden bg-stone-950">
       {/* Video bg */}
       <video
         autoPlay

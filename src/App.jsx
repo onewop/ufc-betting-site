@@ -10,7 +10,7 @@ import Home from "./components/Home";
 import TeamCombinations from "./components/TeamCombinations";
 import FightAnalyzer from "./components/FightAnalyzer";
 import VideoVault from "./components/VideoVault";
-import ManualTeams from "./components/ManualTeams";
+import SmartAIPicks from "./components/SmartAIPicks";
 import DFSPicksProjections from "./components/DFSPicksProjections";
 import VideosV2 from "./components/VideosV2";
 import LatestOdds from "./components/LatestOdds";
@@ -35,7 +35,7 @@ const navLinks = [
     to: "/team-combinations",
     label: "Fantasy Teams",
   },
-  { to: "/manual-teams", label: "Manual Teams" },
+  { to: "/smart-picks", label: "Smart AI Picks" },
   { to: "/fight-analyzer", label: "Fight Analyzer - Latest Card" },
   { to: "/odds", label: "Live Odds" },
   { to: "/predictions", label: "Predictions & Projections" },
@@ -60,7 +60,6 @@ const AppShell = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [eventTitle, setEventTitle] = useState("Latest UFC Event");
   const [theme, setTheme] = useState("dark");
-  const [compactBottomNav, setCompactBottomNav] = useState(false);
   const [authToken, setAuthToken] = useState(
     localStorage.getItem(AUTH_TOKEN_KEY) || "",
   );
@@ -99,14 +98,6 @@ const AppShell = () => {
   useEffect(() => {
     localStorage.setItem("combat_vault_theme", theme);
   }, [theme]);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 359px)");
-    const applyCompact = () => setCompactBottomNav(mediaQuery.matches);
-    applyCompact();
-    mediaQuery.addEventListener("change", applyCompact);
-    return () => mediaQuery.removeEventListener("change", applyCompact);
-  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -245,13 +236,13 @@ const AppShell = () => {
 
   return (
     <div
-      className={`min-h-screen pb-20 xl:pb-0 ${theme === "light" ? "theme-light bg-stone-100 text-stone-900" : "bg-gray-900"}`}
+      className={`min-h-screen pb-14 xl:pb-0 ${theme === "light" ? "theme-light bg-stone-100 text-stone-900" : "bg-gray-900"}`}
     >
       <nav
         className="sticky top-0 z-50 text-stone-100 shadow-lg border-b border-yellow-900/60"
         style={{ backgroundColor: "#92400e" }}
       >
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between xl:justify-center flex-col">
+        <div className="max-w-7xl mx-auto px-4 py-2 xl:py-3 flex items-center justify-between xl:justify-center flex-col">
           {/* Desktop nav links — visible only at xl (1280px+) */}
           <ul className="hidden xl:flex flex-wrap justify-center gap-x-5 gap-y-1">
             {navLinks.map(({ to, label }) => (
@@ -437,7 +428,10 @@ const AppShell = () => {
             />
           }
         />
-        <Route path="/manual-teams" element={<ManualTeams />} />
+        <Route
+          path="/smart-picks"
+          element={<SmartAIPicks currentUser={currentUser} />}
+        />
         <Route
           path="/fight-analyzer"
           element={<FightAnalyzer eventTitle={eventTitle} />}
@@ -483,6 +477,7 @@ const AppShell = () => {
 
       <nav
         className={`xl:hidden fixed bottom-0 left-0 right-0 z-[60] border-t border-yellow-900/60 backdrop-blur ${theme === "light" ? "bg-amber-100/95" : "bg-stone-950/95"}`}
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         aria-label="Mobile quick navigation"
       >
         <ul className="grid grid-cols-6">
@@ -495,9 +490,7 @@ const AppShell = () => {
               <li key={to}>
                 <Link
                   to={to}
-                  className={`flex min-h-[56px] items-center justify-center tracking-wide transition ${
-                    compactBottomNav ? "px-1" : "flex-col gap-0.5 text-[10px]"
-                  } ${
+                  className={`flex min-h-[44px] flex-col items-center justify-center gap-0 px-1 text-[9px] tracking-wide transition ${
                     active
                       ? "text-yellow-400 bg-yellow-900/20"
                       : theme === "light"
@@ -506,16 +499,8 @@ const AppShell = () => {
                   }`}
                   aria-label={label}
                 >
-                  <span
-                    className={`leading-none ${compactBottomNav ? "text-lg" : "text-base"}`}
-                  >
-                    {icon}
-                  </span>
-                  {(!compactBottomNav || active) && (
-                    <span className={compactBottomNav ? "text-[9px] ml-1" : ""}>
-                      {label}
-                    </span>
-                  )}
+                  <span className="text-sm leading-none">{icon}</span>
+                  <span className="leading-tight mt-0.5">{label}</span>
                 </Link>
               </li>
             );

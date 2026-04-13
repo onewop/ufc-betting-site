@@ -124,6 +124,10 @@ class OptimizeRequest(BaseModel):
     locked_fighters: list[str] = Field(default_factory=list, description="Fighter IDs to lock in every lineup")
     excluded_fighters: list[str] = Field(default_factory=list, description="Fighter IDs to exclude entirely")
     exposure_limit: float = Field(default=1.0, ge=0.0, le=1.0, description="Max exposure fraction per fighter (0.0–1.0)")
+    fighter_overrides: dict[str, dict[str, float]] = Field(
+        default_factory=dict,
+        description="Per-fighter exposure overrides: {fighter_id: {min_exposure: 0.0-1.0, max_exposure: 0.0-1.0}}",
+    )
 
     @field_validator("salary_mode")
     @classmethod

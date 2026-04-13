@@ -21,6 +21,7 @@ from backend.models import (
     CachedLineup,
 )
 from backend.optimizer import load_this_weeks_stats, _build_flat_fighters, run_optimizer
+from backend.projections import project_full_card, generate_smart_lineups, STRATEGIES
 
 import json
 
@@ -47,6 +48,67 @@ def get_fighters() -> FightersResponse:
         fights=fight_ids,
         fighters=[FighterOut(**f) for f in flat],
     )
+
+
+@router.get(
+    "/projections",
+    summary="Return matchup-aware projections for every fighter",
+)
+def get_projections():
+    """Return detailed projections with reasoning for the full card."""
+    try:
+        projections = project_full_card()
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc))
+    return {"projections": projections}
+
+
+@router.get(
+    "/smart-lineups",
+    summary="AI-recommended lineups with reasoning",
+)
+def get_smart_lineups(
+    num_lineups: int = 5,
+    strategy: str | None = None,
+    exclude: str | None = None,
+):
+    """
+    Generate recommended lineups with strategy explanations.
+
+    Query params:
+      - strategy: one of highest_projection, best_value, contrarian,
+        finish_upside, balanced. Omit for one-of-each overview.
+      - num_lineups: how many to return (1-20, default 5).
+      - exclude: comma-separated lineup fingerprints to skip (for regenerate).
+    """
+    if num_lineups < 1 or num_lineups > 20:
+        raise HTTPException(status_code=422, detail="num_lineups must be 1-20")
+    if strategy and strategy not in STRATEGIES:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Unknown strategy '{strategy}'. Valid: {', '.join(STRATEGIES.keys())}",
+        )
+    exclude_fps = [fp.strip() for fp in exclude.split("|") if fp.strip()] if exclude else None
+    try:
+        lineups = generate_smart_lineups(
+            num_lineups=num_lineups,
+            strategy=strategy,
+            exclude_fingerprints=exclude_fps,
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc))
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc))
+    return {"lineups": lineups, "num_generated": len(lineups)}
+
+
+@router.get(
+    "/strategies",
+    summary="List available AI lineup strategies",
+)
+def get_strategies():
+    """Return the list of available strategies with labels and descriptions."""
+    return {"strategies": STRATEGIES}
 
 
 @router.post(

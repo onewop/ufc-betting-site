@@ -181,7 +181,7 @@ const UserDashboard = ({ currentUser }) => {
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-4xl font-black text-white mb-8 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
+          className="text-2xl sm:text-4xl font-black text-white mb-8 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
         >
           My Dashboard
         </motion.h1>
@@ -195,7 +195,7 @@ const UserDashboard = ({ currentUser }) => {
         >
           <motion.div
             whileHover={{ scale: 1.05 }}
-            className="bg-card/80 backdrop-blur-sm border border-stone-700/50 rounded-xl p-6 shadow-pearl hover:shadow-neon transition-all duration-300"
+            className="bg-card/80 backdrop-blur-sm border border-stone-700/50 rounded-xl p-4 sm:p-6 shadow-pearl hover:shadow-neon transition-all duration-300"
           >
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center">
@@ -205,14 +205,14 @@ const UserDashboard = ({ currentUser }) => {
                 Saved Sets
               </div>
             </div>
-            <div className="text-3xl font-bold text-white">
+            <div className="text-xl sm:text-3xl font-bold text-white">
               {lineups.length}
             </div>
           </motion.div>
 
           <motion.div
             whileHover={{ scale: 1.05 }}
-            className="bg-card/80 backdrop-blur-sm border border-stone-700/50 rounded-xl p-6 shadow-pearl hover:shadow-neon transition-all duration-300"
+            className="bg-card/80 backdrop-blur-sm border border-stone-700/50 rounded-xl p-4 sm:p-6 shadow-pearl hover:shadow-neon transition-all duration-300"
           >
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 bg-secondary/20 rounded-lg flex items-center justify-center">
@@ -222,7 +222,7 @@ const UserDashboard = ({ currentUser }) => {
                 Total Lineups
               </div>
             </div>
-            <div className="text-3xl font-bold text-white">
+            <div className="text-xl sm:text-3xl font-bold text-white">
               {lineups.reduce(
                 (sum, l) => sum + (l.lineup_data?.length || 0),
                 0,
@@ -232,7 +232,7 @@ const UserDashboard = ({ currentUser }) => {
 
           <motion.div
             whileHover={{ scale: 1.05 }}
-            className="bg-card/80 backdrop-blur-sm border border-stone-700/50 rounded-xl p-6 shadow-pearl hover:shadow-neon transition-all duration-300"
+            className="bg-card/80 backdrop-blur-sm border border-stone-700/50 rounded-xl p-4 sm:p-6 shadow-pearl hover:shadow-neon transition-all duration-300"
           >
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
@@ -242,7 +242,7 @@ const UserDashboard = ({ currentUser }) => {
                 Best Proj FPTS
               </div>
             </div>
-            <div className="text-3xl font-bold text-secondary">
+            <div className="text-xl sm:text-3xl font-bold text-secondary">
               {lineups.length
                 ? Math.max(...lineups.map((l) => l.projected_fpts || 0))
                 : 0}
@@ -251,7 +251,7 @@ const UserDashboard = ({ currentUser }) => {
 
           <motion.div
             whileHover={{ scale: 1.05 }}
-            className="bg-card/80 backdrop-blur-sm border border-stone-700/50 rounded-xl p-6 shadow-pearl hover:shadow-neon transition-all duration-300"
+            className="bg-card/80 backdrop-blur-sm border border-stone-700/50 rounded-xl p-4 sm:p-6 shadow-pearl hover:shadow-neon transition-all duration-300"
           >
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
@@ -372,44 +372,73 @@ const UserDashboard = ({ currentUser }) => {
                   Saved {new Date(lineup.created_at).toLocaleDateString()}
                 </div>
 
-                {/* Expandable fighters */}
+                {/* Expandable fighters / parlay legs */}
                 <details className="mt-4">
                   <summary className="cursor-pointer text-primary hover:text-primary/80 text-sm font-medium flex items-center gap-2 transition-colors">
                     <span>👀</span>
-                    View {lineup.lineup_data?.length || 0} lineups
+                    {lineup.salary_mode === "parlay"
+                      ? `View ${lineup.lineup_data?.length || 0} legs`
+                      : `View ${lineup.lineup_data?.length || 0} lineups`}
                     <span className="text-xs">▼</span>
                   </summary>
                   <motion.div
                     initial={false}
                     className="mt-4 space-y-3 text-xs"
                   >
-                    {lineup.lineup_data?.map((l, idx) => (
-                      <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="bg-stone-950/80 backdrop-blur-sm p-4 rounded-xl border border-stone-800/50"
-                      >
+                    {lineup.salary_mode === "parlay" ? (
+                      // Parlay legs — each item is { description, odds, betType }
+                      <div className="bg-stone-950/80 backdrop-blur-sm p-4 rounded-xl border border-stone-800/50">
                         <div className="font-medium text-stone-300 mb-3 flex items-center gap-2">
-                          <span>🏃</span>
-                          Lineup {idx + 1}
+                          <span>🎯</span>
+                          Parlay Legs
                         </div>
                         <div className="grid grid-cols-1 gap-y-2">
-                          {l.map((f, i) => (
+                          {lineup.lineup_data?.map((leg, i) => (
                             <div
                               key={i}
                               className="text-stone-300 flex justify-between items-center py-1"
                             >
-                              <span>{f.name}</span>
-                              <span className="font-mono text-primary font-bold">
-                                ${f.salary}
+                              <span>{leg.description}</span>
+                              <span
+                                className={`font-mono font-bold ${leg.odds > 0 ? "text-green-400" : "text-red-400"}`}
+                              >
+                                {leg.odds > 0 ? `+${leg.odds}` : leg.odds}
                               </span>
                             </div>
                           ))}
                         </div>
-                      </motion.div>
-                    ))}
+                      </div>
+                    ) : (
+                      // DFS lineups — each item is an array of fighters
+                      lineup.lineup_data?.map((l, idx) => (
+                        <motion.div
+                          key={idx}
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="bg-stone-950/80 backdrop-blur-sm p-4 rounded-xl border border-stone-800/50"
+                        >
+                          <div className="font-medium text-stone-300 mb-3 flex items-center gap-2">
+                            <span>🏃</span>
+                            Lineup {idx + 1}
+                          </div>
+                          <div className="grid grid-cols-1 gap-y-2">
+                            {Array.isArray(l) &&
+                              l.map((f, i) => (
+                                <div
+                                  key={i}
+                                  className="text-stone-300 flex justify-between items-center py-1"
+                                >
+                                  <span>{f.name}</span>
+                                  <span className="font-mono text-primary font-bold">
+                                    ${f.salary}
+                                  </span>
+                                </div>
+                              ))}
+                          </div>
+                        </motion.div>
+                      ))
+                    )}
                   </motion.div>
                 </details>
               </motion.div>
@@ -640,7 +669,6 @@ const UserDashboard = ({ currentUser }) => {
           </div>
         </details>
       </motion.div>
-
     </div>
   );
 };

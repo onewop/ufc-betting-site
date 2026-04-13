@@ -41,5 +41,14 @@ module.exports = {
       },
     },
   },
+  safelist: [
+    "bg-cyan-500",
+    "bg-cyan-600",
+    "hover:bg-cyan-400",
+    "text-slate-900",
+    "border-cyan-500",
+    "border-cyan-500/40",
+    "text-cyan-400",
+  ],
   plugins: [require("@tailwindcss/forms")],
 };

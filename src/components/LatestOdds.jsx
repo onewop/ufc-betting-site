@@ -701,13 +701,39 @@ const LatestOdds = () => {
         {!loading &&
           odds.length > 0 &&
           (() => {
-            const earliest = new Date(odds[0].commence_time).getTime();
+            // Filter to only fights on the current card by matching fighter
+            // names against the DK slate (word-overlap handles nickname variants
+            // like "Lupita Godinez" ↔ "Loopy Godinez", "Patricio Pitbull" ↔
+            // "Patricio Freire"). Falls back to all events if slate not loaded.
+            const cardWordSet =
+              dkFighters.length > 0
+                ? new Set(
+                    dkFighters
+                      .flatMap((n) => n.toLowerCase().split(/\s+/))
+                      .filter((w) => w.length >= 3),
+                  )
+                : null;
+            const isCardFight = (event) => {
+              if (!cardWordSet) return true;
+              return [event.home_team, event.away_team]
+                .filter(Boolean)
+                .some((name) =>
+                  name
+                    .toLowerCase()
+                    .split(/\s+/)
+                    .some((w) => w.length >= 3 && cardWordSet.has(w)),
+                );
+            };
+            const cardOdds = odds.filter(isCardFight);
+            const displayOdds = cardOdds.length > 0 ? cardOdds : odds;
+
+            const earliest = new Date(displayOdds[0].commence_time).getTime();
             const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
-            const nextEventFights = odds.filter(
+            const nextEventFights = displayOdds.filter(
               (e) =>
                 new Date(e.commence_time).getTime() - earliest <= TWO_DAYS_MS,
             );
-            const futureFights = odds.filter(
+            const futureFights = displayOdds.filter(
               (e) =>
                 new Date(e.commence_time).getTime() - earliest > TWO_DAYS_MS,
             );
@@ -726,7 +752,7 @@ const LatestOdds = () => {
               return acc;
             }, {});
             const nextEventDate = new Date(
-              odds[0].commence_time,
+              displayOdds[0].commence_time,
             ).toLocaleDateString("en-US", {
               weekday: "long",
               month: "long",

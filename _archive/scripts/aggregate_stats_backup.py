@@ -12,13 +12,6 @@ import re
 from urllib.parse import quote_plus
 import random
 
-# ── DISASTER MODE ──────────────────────────────────────────────────────────────
-# When enabled, salaries are swapped per matchup so the expected low-scorer
-# becomes the most expensive pick. Safe and reversible — does NOT alter any
-# stats, projections, or core scoring logic.
-# Usage: DISASTER_MODE=1 python3 scripts/aggregate_stats.py
-DISASTER_MODE = os.environ.get('DISASTER_MODE', '0') == '1'
-
 def normalize_name(name):
     """Aggressively normalize fighter name for matching"""
     if pd.isna(name):
@@ -1463,13 +1456,6 @@ def csv_to_json(
                 })
                 print(f"  Added fighter: {row['Name'].strip()} | Salary: ${row['Salary']} | AvgPoints: {fighters[-1]['avgPointsPerGame']}")
 
-            # ── DISASTER MODE: swap salaries so low expected-scorers are priciest ──
-            if DISASTER_MODE and len(fighters) == 2:
-                fighters[0]['salary'], fighters[1]['salary'] = fighters[1]['salary'], fighters[0]['salary']
-                fighters[0]['salary_mode'] = 'reversed'
-                fighters[1]['salary_mode'] = 'reversed'
-                print(f"  💀 DISASTER MODE: Swapped salaries — {fighters[0]['name']} (${fighters[0]['salary']}) ↔ {fighters[1]['name']} (${fighters[1]['salary']})")
-
             fights.append({
                 "fight_id": len(fights),
                 "matchup": matchup,
@@ -2278,8 +2264,7 @@ def csv_to_json(
                 "date": event_date_str,
                 "location": "Las Vegas, Nevada, USA"
             },
-            "fights": fights,
-            "disaster_mode": DISASTER_MODE
+            "fights": fights
         }
 
         save_to_json(data, output_path)

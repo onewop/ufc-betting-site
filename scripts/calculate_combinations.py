@@ -1,10 +1,25 @@
 import json
 import itertools
+import os
 
-def load_fighters(file_path="../public/fighters.json"):
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+_PUBLIC_DIR = os.path.join(_SCRIPT_DIR, "..", "public")
+
+def load_fighters(file_path=None):
+    if file_path is None:
+        file_path = os.path.join(_PUBLIC_DIR, "this_weeks_stats.json")
     try:
         with open(file_path, "r") as f:
-            return json.load(f)
+            data = json.load(f)
+        fighters = []
+        for fight in data.get("fights", []):
+            for fighter in fight.get("fighters", []):
+                fighters.append({
+                    "name": fighter["name"],
+                    "salary": fighter["salary"],
+                    "fight_id": fight["fight_id"],
+                })
+        return fighters
     except FileNotFoundError:
         print(f"Error: {file_path} not found")
         return []
@@ -21,7 +36,9 @@ def calculate_combinations(fighters, max_salary=50000, team_size=6):
 
     return valid_combinations
 
-def save_combinations(combinations, output_file="../public/combinations.json"):
+def save_combinations(combinations, output_file=None):
+    if output_file is None:
+        output_file = os.path.join(_PUBLIC_DIR, "combinations.json")
     with open(output_file, "w") as f:
         json.dump(combinations, f, indent=2)
 

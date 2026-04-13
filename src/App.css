@@ -46,12 +46,10 @@ body {
     #111827 0%,
     #374151 100%
   ); /* Dark gradient */
-  background-image: none; /* Assumes octagon-bg.jpg in public/ */
+  background-image: none;
   background-size: cover;
   background-position: center;
-  background-attachment: fixed;
   background-blend-mode: overlay;
-  opacity: 0.9; /* Subtle overlay for readability */
 }
 
 .neon-button {
