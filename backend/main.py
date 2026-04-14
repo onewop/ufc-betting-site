@@ -3,7 +3,7 @@ UFC DFS Optimizer — FastAPI application entry point.
 
 Run with:
     cd ufc-betting-site-main
-    uvicorn backend.main:app --reload --port 8000
+    uvicorn main:app --reload --port 8000
 """
 from __future__ import annotations
 
@@ -18,11 +18,11 @@ load_dotenv()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.database import Base, engine
-from backend.routers.auth import router as auth_router
-from backend.routers.lineups import router as lineups_router
-from backend.routers.optimize import router as optimize_router
-from backend.routers.payments import router as payments_router
+from database import Base, engine
+from routers.auth import router as auth_router
+from routers.lineups import router as lineups_router
+from routers.optimize import router as optimize_router
+from routers.payments import router as payments_router
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
