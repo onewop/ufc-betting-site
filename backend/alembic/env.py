@@ -8,7 +8,7 @@ from alembic import context
 
 # ── Project imports ───────────────────────────────────────────────────────────
 # Import Base (and all models so Alembic can autogenerate migrations)
-from backend.database import Base, DATABASE_URL  # noqa: F401
+from database import Base, DATABASE_URL  # noqa: F401
 import backend.models  # noqa: F401 — registers ORM models on Base.metadata
 
 # this is the Alembic Config object, which provides

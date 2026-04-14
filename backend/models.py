@@ -12,7 +12,7 @@ from pydantic import BaseModel, EmailStr, Field, field_validator
 from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, JSON, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from backend.database import Base
+from database import Base
 
 # ═════════════════════════════════════════════════════════════════════════════
 # Section 1 — SQLAlchemy ORM models

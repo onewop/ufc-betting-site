@@ -8,8 +8,8 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from backend.database import get_db
-from backend.models import (
+from database import get_db
+from models import (
     CachedLineupOut,
     EventCreate,
     EventOut,
@@ -20,8 +20,8 @@ from backend.models import (
     Event,
     CachedLineup,
 )
-from backend.optimizer import load_this_weeks_stats, _build_flat_fighters, run_optimizer
-from backend.projections import project_full_card, generate_smart_lineups, STRATEGIES
+from optimizer import load_this_weeks_stats, _build_flat_fighters, run_optimizer
+from projections import project_full_card, generate_smart_lineups, STRATEGIES
 
 import json
 

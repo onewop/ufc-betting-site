@@ -109,8 +109,8 @@ from pydfs_lineup_optimizer import (
 )
 from pydfs_lineup_optimizer.rules import MaxFromOneTeamRule
 
-from backend.models import LineupOut, OptimizeRequest
-from backend.projections import project_full_card
+from models import LineupOut, OptimizeRequest
+from projections import project_full_card
 
 logger = logging.getLogger(__name__)
 

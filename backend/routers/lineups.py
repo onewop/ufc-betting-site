@@ -13,9 +13,9 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from backend.database import get_db
-from backend.models import SavedLineup, SavedLineupCreate, SavedLineupOut, User
-from backend.routers.auth import get_current_user
+from database import get_db
+from models import SavedLineup, SavedLineupCreate, SavedLineupOut, User
+from routers.auth import get_current_user
 
 logger = logging.getLogger(__name__)
 
