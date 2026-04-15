@@ -15,10 +15,7 @@ from fastapi import APIRouter, HTTPException
 
 router = APIRouter(prefix="/api", tags=["stats"])
 
-# From backend/routers/ → parent = backend/ → parent = repo root → public/
-_STATS_PATH = (
-    Path(__file__).resolve().parent.parent.parent / "public" / "this_weeks_stats.json"
-)
+_STATS_PATH = Path("/app/public/this_weeks_stats.json")
 
 
 @router.get("/this-weeks-stats")

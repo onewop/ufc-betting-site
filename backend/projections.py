@@ -35,7 +35,7 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 # From backend/ → parent = repo root → public/
-_STATS_PATH = Path(__file__).resolve().parent.parent / "public" / "this_weeks_stats.json"
+_STATS_PATH = Path("/app/public/this_weeks_stats.json")
 
 
 # ═══════════════════════════════════════════════════════════════════════════
