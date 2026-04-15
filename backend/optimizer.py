@@ -96,6 +96,7 @@ Uses pydfs-lineup-optimizer with DraftKings MMA settings:
 from __future__ import annotations
 import json
 import logging
+import os
 import random
 from pathlib import Path
 from typing import Any
@@ -114,7 +115,12 @@ from projections import project_full_card
 
 logger = logging.getLogger(__name__)
 
-_STATS_PATH = Path(__file__).resolve().parent / "this_weeks_stats.json"
+_STATS_PATH = Path(
+    os.getenv(
+        "STATS_FILE",
+        str(Path(__file__).resolve().parent.parent / "public" / "this_weeks_stats.json"),
+    )
+)
 
 
 # ── Salary bias parameters — see module docstring for mode descriptions ──────

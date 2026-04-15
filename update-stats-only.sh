@@ -68,21 +68,15 @@ export SCRAPE_SHERDOG=1
 
 python3 scripts/aggregate_stats.py
 
-# ── Sync public/ → build/ + backend/ ────────────────────────────────────────
+# ── Sync public/ → build/ ────────────────────────────────────────────────────
 echo ""
-echo "── Syncing outputs to build/ and backend/ ..."
+echo "── Syncing outputs to build/ ..."
 for f in this_weeks_stats.json current_event.json DKSalaries.csv upcoming.csv; do
     if [[ -f "public/$f" ]]; then
         cp "public/$f" "build/$f"
         echo "   ✓ build/$f"
     fi
 done
-
-# Always sync this_weeks_stats.json to backend/ so Railway can find it
-if [[ -f "public/this_weeks_stats.json" ]]; then
-    cp "public/this_weeks_stats.json" "backend/this_weeks_stats.json"
-    echo "   ✓ backend/this_weeks_stats.json"
-fi
 
 echo ""
 echo "=============================================="
