@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import api from "../services/api";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // YouTube Data API v3 key (optional).  If set, the component will search for
@@ -470,11 +471,7 @@ const VideosV2 = () => {
   // Before:  (VideoVault) flattened fighters into a flat grid — no grouping
   // After:   keeps fights array intact so FightSection renders per-matchup
   useEffect(() => {
-    fetch("/this_weeks_stats.json", { cache: "no-store" })
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
+    api.get("/api/this-weeks-stats")
       .then((data) => {
         // data.event may be an object {name, date, location} or a plain string
         if (data.event) setEventName(data.event.name || data.event);

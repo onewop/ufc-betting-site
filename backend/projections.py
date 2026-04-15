@@ -28,19 +28,14 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import re
 from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
-_STATS_PATH = Path(
-    os.getenv(
-        "STATS_FILE",
-        str(Path(__file__).resolve().parent.parent / "public" / "this_weeks_stats.json"),
-    )
-)
+# From backend/ → parent = repo root → public/
+_STATS_PATH = Path(__file__).resolve().parent.parent / "public" / "this_weeks_stats.json"
 
 
 # ═══════════════════════════════════════════════════════════════════════════

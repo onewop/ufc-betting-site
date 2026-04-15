@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import api from "../services/api";
 import FighterImage from "./FighterImage";
 
 // ── helpers ────────────────────────────────────────────────────────────────
@@ -144,8 +145,7 @@ export default function VideoStudio() {
 
   // ── load data ──────────────────────────────────────────────────────────
   useEffect(() => {
-    fetch("/this_weeks_stats.json")
-      .then((r) => r.json())
+    api.get("/api/this-weeks-stats")
       .then((data) => {
         setFights(data.fights ?? []);
         const ev = data.event;

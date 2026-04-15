@@ -23,6 +23,7 @@ from routers.auth import router as auth_router
 from routers.lineups import router as lineups_router
 from routers.optimize import router as optimize_router
 from routers.payments import router as payments_router
+from routers.stats import router as stats_router
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -68,6 +69,7 @@ def create_app() -> FastAPI:
     app.include_router(lineups_router)
     app.include_router(optimize_router)
     app.include_router(payments_router)
+    app.include_router(stats_router)
 
     # ── Health check ─────────────────────────────────────────────────────────
     @app.get("/health", tags=["meta"])

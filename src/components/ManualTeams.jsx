@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { DK_PLAYERS, DK_BY_NAME } from "../data/dkSlate";
+import api from "../services/api";
 
 const ManualTeams = () => {
   const [fighters, setFighters] = useState([]);
@@ -13,8 +14,7 @@ const ManualTeams = () => {
   const maxSalary = 50000;
 
   useEffect(() => {
-    fetch("/this_weeks_stats.json")
-      .then((res) => res.json())
+    api.get("/api/this-weeks-stats")
       .then((data) => {
         const parsed = [];
         (data.fights || []).forEach((fight, fightIdx) => {

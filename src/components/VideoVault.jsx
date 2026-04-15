@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import api from "../services/api";
 
 // ─── Shield SVG (simplified heater shape, reused per card) ─────────────────
 const Shield = ({ accent = "#fbbf24", fill = "#1c1a13", size = 48 }) => (
@@ -111,11 +112,7 @@ const VideoVault = () => {
   const [loadingFighters, setLoadingFighters] = useState(true);
 
   useEffect(() => {
-    fetch("/this_weeks_stats.json", { cache: "no-store" })
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
+    api.get("/api/this-weeks-stats")
       .then((data) => {
         if (data.event) setEventName(data.event.name || data.event);
         setFights(data.fights || []);

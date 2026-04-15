@@ -12,6 +12,7 @@
 
 import { useState, useEffect } from "react";
 import DebugFighterStats from "../components/DebugFighterStats";
+import api from "../services/api";
 
 const DebugStatsPage = ({ currentUser }) => {
   const [fights, setFights] = useState([]);
@@ -23,11 +24,7 @@ const DebugStatsPage = ({ currentUser }) => {
   // Pull from the same data source as the live site — no special endpoint needed.
   useEffect(() => {
     setLoading(true);
-    fetch("/this_weeks_stats.json", { cache: "no-cache" })
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-        return res.json();
-      })
+    api.get("/api/this-weeks-stats")
       .then((data) => {
         const fightList = data?.fights ?? [];
         setFights(fightList);

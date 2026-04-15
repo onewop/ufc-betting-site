@@ -393,11 +393,7 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
   };
 
   useEffect(() => {
-    fetch("/this_weeks_stats.json", { cache: "no-store" })
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
+    api.get("/api/this-weeks-stats")
       .then((data) => {
         if (data.event) setEventName(data.event.name || data.event);
         setFights(data.fights || []);

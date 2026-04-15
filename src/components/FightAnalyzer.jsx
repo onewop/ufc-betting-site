@@ -5,6 +5,7 @@ import KeyNotes from "./KeyNotes";
 import FullFightRecord from "./FullFightRecord";
 import { motion, AnimatePresence } from "framer-motion";
 import { _computeAngles, _LEVEL } from "./fightAnalyzerHelpers";
+import api from "../services/api";
 import FightStatsSection from "./FightStatsSection";
 
 const generalQuestions = [
@@ -104,73 +105,69 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
   useEffect(() => {
     setError(null);
 
-    fetch("/this_weeks_stats.json")
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status} ${res.statusText}`);
-        return res.json();
-      })
+    api.get("/api/this-weeks-stats")
       .then((data) => {
-          const rawFights = data.fights || [];
+        const rawFights = data.fights || [];
 
-          // Add fight_id to each fight and map fighter data
-          const processedFights = rawFights.map((fight, index) => ({
-            fight_id: index,
-            matchup: fight.matchup,
-            weight_class: fight.weight_class,
-            fighters: (fight.fighters || []).map((f) => ({
-              // Spread all fields from JSON first so nothing is lost
-              ...f,
-              // Normalise the id field used for display/lookup
-              id: f.dk_id || f.id || index,
-              salary: f.salary,
-              avgPointsPerGame: f.avgPointsPerGame || 0,
-              // Record — use real values from JSON, never override with 0
-              wins: f.wins ?? 0,
-              losses: f.losses ?? 0,
-              draws: f.draws ?? 0,
-              record:
-                f.record ||
-                (f.wins != null ? `${f.wins}-${f.losses}-${f.draws}` : "N/A"),
-              // Physical
-              nickname: f.nickname || null,
-              height: f.height || "N/A",
-              reach: f.reach || "N/A",
-              stance: f.stance || "N/A",
-              // Career milestones — populated by ufc-master.csv enrichment
-              current_win_streak: f.current_win_streak ?? "N/A",
-              current_loss_streak: f.current_loss_streak ?? "N/A",
-              wins_ko_tko: f.wins_ko_tko ?? "N/A",
-              wins_submission: f.wins_submission ?? "N/A",
-              wins_decision: f.wins_decision ?? "N/A",
-              finish_rate_pct: f.finish_rate_pct ?? "N/A",
-              decision_rate_pct: f.decision_rate_pct ?? "N/A",
-              // Stats object — keep nested for getValue("stats.slpm") dot-path
-              // Spread ALL fields from JSON first so avg_kd_per_fight,
-              // avg_ctrl_secs, grappling_control_pct, avg_opp_ctrl_secs,
-              // avg_reversals_per_fight, implied_sub_def_pct, etc. are preserved.
-              stats: {
-                ...f.stats,
-                slpm: f.stats?.slpm ?? 0,
-                sapm: f.stats?.sapm ?? 0,
-                striking_accuracy: f.stats?.striking_accuracy ?? 0,
-                striking_defense: f.stats?.striking_defense ?? "N/A",
-                td_avg: f.stats?.td_avg ?? 0,
-                td_accuracy: f.stats?.td_accuracy ?? 0,
-                td_defense: f.stats?.td_defense ?? "N/A",
-              },
-              // Flat aliases used by processQuestion helpers
+        // Add fight_id to each fight and map fighter data
+        const processedFights = rawFights.map((fight, index) => ({
+          fight_id: index,
+          matchup: fight.matchup,
+          weight_class: fight.weight_class,
+          fighters: (fight.fighters || []).map((f) => ({
+            // Spread all fields from JSON first so nothing is lost
+            ...f,
+            // Normalise the id field used for display/lookup
+            id: f.dk_id || f.id || index,
+            salary: f.salary,
+            avgPointsPerGame: f.avgPointsPerGame || 0,
+            // Record — use real values from JSON, never override with 0
+            wins: f.wins ?? 0,
+            losses: f.losses ?? 0,
+            draws: f.draws ?? 0,
+            record:
+              f.record ||
+              (f.wins != null ? `${f.wins}-${f.losses}-${f.draws}` : "N/A"),
+            // Physical
+            nickname: f.nickname || null,
+            height: f.height || "N/A",
+            reach: f.reach || "N/A",
+            stance: f.stance || "N/A",
+            // Career milestones — populated by ufc-master.csv enrichment
+            current_win_streak: f.current_win_streak ?? "N/A",
+            current_loss_streak: f.current_loss_streak ?? "N/A",
+            wins_ko_tko: f.wins_ko_tko ?? "N/A",
+            wins_submission: f.wins_submission ?? "N/A",
+            wins_decision: f.wins_decision ?? "N/A",
+            finish_rate_pct: f.finish_rate_pct ?? "N/A",
+            decision_rate_pct: f.decision_rate_pct ?? "N/A",
+            // Stats object — keep nested for getValue("stats.slpm") dot-path
+            // Spread ALL fields from JSON first so avg_kd_per_fight,
+            // avg_ctrl_secs, grappling_control_pct, avg_opp_ctrl_secs,
+            // avg_reversals_per_fight, implied_sub_def_pct, etc. are preserved.
+            stats: {
+              ...f.stats,
+              slpm: f.stats?.slpm ?? 0,
+              sapm: f.stats?.sapm ?? 0,
               striking_accuracy: f.stats?.striking_accuracy ?? 0,
-              takedown_accuracy: f.stats?.td_accuracy ?? 0,
-            })),
-          }));
+              striking_defense: f.stats?.striking_defense ?? "N/A",
+              td_avg: f.stats?.td_avg ?? 0,
+              td_accuracy: f.stats?.td_accuracy ?? 0,
+              td_defense: f.stats?.td_defense ?? "N/A",
+            },
+            // Flat aliases used by processQuestion helpers
+            striking_accuracy: f.stats?.striking_accuracy ?? 0,
+            takedown_accuracy: f.stats?.td_accuracy ?? 0,
+          })),
+        }));
 
-          setFights(processedFights);
+        setFights(processedFights);
 
-          const allFighters = processedFights.flatMap(
-            (fight) => fight.fighters || [],
-          );
-          setFighters(allFighters);
-          setLoading(false);
+        const allFighters = processedFights.flatMap(
+          (fight) => fight.fighters || [],
+        );
+        setFighters(allFighters);
+        setLoading(false);
       })
       .catch((err) => {
         console.error("Failed to load fighters:", err.message);
@@ -1505,7 +1502,12 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
           className="border border-yellow-700/40 p-2 rounded-lg w-full md:w-1/3 mb-4 min-h-[44px] text-sm"
           style={{ backgroundColor: "#1c1917", color: "#f5f5f4" }}
         >
-          <option value="" style={{ backgroundColor: "#1c1917", color: "#f5f5f4" }}>Select a Fight</option>
+          <option
+            value=""
+            style={{ backgroundColor: "#1c1917", color: "#f5f5f4" }}
+          >
+            Select a Fight
+          </option>
           {fights.map((fight) => (
             <option
               key={fight.fight_id}
