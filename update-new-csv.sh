@@ -143,15 +143,21 @@ echo "── Regenerating upcoming.csv matchup template (preserving existing odd
 python3 scripts/generate_upcoming_template.py --merge
 echo "   ✓ upcoming.csv updated"
 
-# ── Step 5: Sync public/ → build/ ─────────────────────────────────────────────
+# ── Step 5: Sync public/ → build/ + backend/ ─────────────────────────────────
 echo ""
-echo "── Syncing outputs to build/ ..."
+echo "── Syncing outputs to build/ and backend/ ..."
 for f in this_weeks_stats.json current_event.json DKSalaries.csv upcoming.csv; do
     if [[ -f "public/$f" ]]; then
         cp "public/$f" "build/$f"
         echo "   ✓ build/$f"
     fi
 done
+
+# Always sync this_weeks_stats.json to backend/ so Railway can find it
+if [[ -f "public/this_weeks_stats.json" ]]; then
+    cp "public/this_weeks_stats.json" "backend/this_weeks_stats.json"
+    echo "   ✓ backend/this_weeks_stats.json"
+fi
 
 echo ""
 echo "=============================================="

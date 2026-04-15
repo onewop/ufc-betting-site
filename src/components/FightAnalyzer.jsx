@@ -102,57 +102,14 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
   }, [selectedFight, fights]);
 
   useEffect(() => {
-    console.log("🔍 Starting fetch for /this_weeks_stats.json");
-    setError(null); // Clear previous errors
+    setError(null);
 
-    console.log("📡 Initiating fetch with cache: no-store");
-    fetch("/this_weeks_stats.json", {
-      cache: "no-store", // Bypass cache
-      headers: {
-        Accept: "application/json",
-      },
-    })
+    fetch("/this_weeks_stats.json")
       .then((res) => {
-        console.log("📊 Response received:", {
-          status: res.status,
-          ok: res.ok,
-          statusText: res.statusText,
-          contentType: res.headers.get("Content-Type"),
-        });
-
-        if (!res.ok) {
-          throw new Error(
-            `HTTP error! Status: ${res.status} ${res.statusText}`,
-          );
-        }
-
-        return res.text(); // Get raw text first to debug
+        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status} ${res.statusText}`);
+        return res.json();
       })
-      .then((text) => {
-        console.log(
-          "📄 Raw response (first 500 chars):",
-          text.substring(0, 500),
-        );
-        console.log("   Total response length:", text.length, "bytes");
-
-        try {
-          const data = JSON.parse(text);
-          console.log("✅ JSON.parse succeeded!");
-          console.log("   Data structure keys:", Object.keys(data));
-          console.log(
-            "   Fights array length:",
-            data.fights?.length || "missing",
-          );
-          console.log("   Full parsed data:", data);
-          if (data.fights && data.fights.length > 0) {
-            console.log("   First fight:", data.fights[0]);
-            console.log(
-              "   First fighter stats:",
-              data.fights[0].fighters?.[0]?.stats,
-            );
-          }
-
-          // Use data.fights (correct structure from JSON)
+      .then((data) => {
           const rawFights = data.fights || [];
 
           // Add fight_id to each fight and map fighter data
@@ -207,29 +164,16 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
             })),
           }));
 
-          console.log("🥊 Processed fights (with fight_id):", processedFights);
-
           setFights(processedFights);
 
-          // Flatten fighters for setFighters if needed
           const allFighters = processedFights.flatMap(
             (fight) => fight.fighters || [],
           );
           setFighters(allFighters);
-          console.log("👥 All fighters flattened:", allFighters);
-
           setLoading(false);
-          console.log("✨ Fetch complete - loading set to false");
-        } catch (parseErr) {
-          console.error("❌ JSON.parse failed!");
-          console.error("   Error message:", parseErr.message);
-          console.error("   Error stack:", parseErr.stack);
-          throw new Error("Invalid JSON format: " + parseErr.message);
-        }
       })
       .catch((err) => {
-        console.error("💥 Fetch error:", err.message);
-        console.error("   Full error object:", err);
+        console.error("Failed to load fighters:", err.message);
         setError("Failed to load fighters: " + err.message);
         setLoading(false);
       });
@@ -1558,11 +1502,16 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
         <select
           value={selectedFight}
           onChange={(e) => setSelectedFight(e.target.value)}
-          className="border border-yellow-700/40 bg-stone-900 text-stone-100 p-2 rounded-lg w-full md:w-1/3 mb-4 min-h-[44px] text-sm"
+          className="border border-yellow-700/40 p-2 rounded-lg w-full md:w-1/3 mb-4 min-h-[44px] text-sm"
+          style={{ backgroundColor: "#1c1917", color: "#f5f5f4" }}
         >
-          <option value="">Select a Fight</option>
+          <option value="" style={{ backgroundColor: "#1c1917", color: "#f5f5f4" }}>Select a Fight</option>
           {fights.map((fight) => (
-            <option key={fight.fight_id} value={fight.fight_id}>
+            <option
+              key={fight.fight_id}
+              value={fight.fight_id}
+              style={{ backgroundColor: "#1c1917", color: "#f5f5f4" }}
+            >
               {fight.fighters.map((f) => f.name).join(" vs. ")}
             </option>
           ))}

@@ -34,7 +34,7 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-_STATS_PATH = Path(__file__).resolve().parent.parent / "public" / "this_weeks_stats.json"
+_STATS_PATH = Path(__file__).resolve().parent / "this_weeks_stats.json"
 
 
 # ═══════════════════════════════════════════════════════════════════════════

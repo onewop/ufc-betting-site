@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import api from "../services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import WelcomeBonusSelector from "./WelcomeBonusSelector";
 
@@ -915,21 +916,17 @@ export default function ParlayBuilder({ currentUser }) {
     if (currentUser && token) {
       // Save to backend — reuse lineups endpoint with salary_mode: "parlay"
       try {
-        const res = await fetch("http://localhost:8000/api/lineups", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
+        await api.post(
+          "/api/lineups",
+          {
             name,
             lineup_data: legs,
             total_salary: 0,
             projected_fpts: 0,
             salary_mode: "parlay",
-          }),
-        });
-        if (!res.ok) throw new Error("Server error");
+          },
+          token,
+        );
         setSaveStatus("saved");
       } catch {
         setSaveStatus("error");

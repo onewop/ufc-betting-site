@@ -1,7 +1,16 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 export default function Home() {
+  const [eventTitle, setEventTitle] = useState("UFC Fight Night");
+
+  useEffect(() => {
+    fetch("/current_event.json")
+      .then((r) => r.json())
+      .then((d) => { if (d.title) setEventTitle(d.title); })
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-stone-950">
       {/* Video bg */}
@@ -71,7 +80,7 @@ export default function Home() {
                 "2px 2px 0 #4a5240, 4px 4px 0 #2d3020, 0 0 40px rgba(100,120,80,0.3)",
             }}
           >
-            UFC Fight Night: <span className="text-yellow-600">Moicano vs. Duncan</span>
+            {eventTitle}
           </h1>
           <div className="w-32 h-1 bg-gradient-to-r from-transparent via-yellow-700 to-transparent mx-auto mb-4"></div>
           <p className="text-stone-400 text-sm leading-relaxed tracking-wide mb-4">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import api from "../services/api";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -21,10 +22,8 @@ const UserDashboard = ({ currentUser }) => {
       return;
     }
 
-    fetch("http://localhost:8000/api/lineups", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
+    api
+      .get("/api/lineups", token)
       .then((data) => {
         setLineups(Array.isArray(data) ? data : []);
         setLoading(false);
@@ -71,14 +70,7 @@ const UserDashboard = ({ currentUser }) => {
     const token = localStorage.getItem("authToken");
     if (!token) return;
     try {
-      const res = await fetch(
-        "http://localhost:8000/api/create-checkout-session",
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-      const data = await res.json();
+      const data = await api.post("/api/create-checkout-session", {}, token);
       if (data.url) {
         window.location.href = data.url;
       }
@@ -148,10 +140,7 @@ const UserDashboard = ({ currentUser }) => {
     if (!window.confirm("Delete this lineup set?")) return;
 
     const token = localStorage.getItem("authToken");
-    await fetch(`http://localhost:8000/api/lineups/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await api.del(`/api/lineups/${id}`, token);
 
     setLineups(lineups.filter((l) => l.id !== id));
   };

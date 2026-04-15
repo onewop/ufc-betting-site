@@ -13,6 +13,7 @@
 
 import { useState, useEffect } from "react";
 import { comb, buildDraftKingsCSV } from "../utils/optimizerHelpers";
+import api from "../services/api";
 
 export default function useOptimizer() {
   const [fighters, setFighters] = useState([]);
@@ -39,11 +40,8 @@ export default function useOptimizer() {
 
   // ── Fetch fighters on mount ────────────────────────────────────────────
   useEffect(() => {
-    fetch("http://localhost:8000/api/fighters")
-      .then((res) => {
-        if (!res.ok) throw new Error(`Server error ${res.status}`);
-        return res.json();
-      })
+    api
+      .get("/api/fighters")
       .then((data) => {
         const realFighters = data.fighters;
         setFighters(realFighters);
@@ -118,25 +116,15 @@ export default function useOptimizer() {
         }
       });
 
-      const response = await fetch("http://localhost:8000/api/optimize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          num_lineups: numTeams,
-          salary_mode: salaryMode,
-          locked_fighters: lockedIds,
-          excluded_fighters: excludedIds,
-          exposure_limit: 1.0,
-          fighter_overrides: fighterOverrides,
-        }),
+      const data = await api.post("/api/optimize", {
+        num_lineups: numTeams,
+        salary_mode: salaryMode,
+        locked_fighters: lockedIds,
+        excluded_fighters: excludedIds,
+        exposure_limit: 1.0,
+        fighter_overrides: fighterOverrides,
       });
 
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.detail || `Server error ${response.status}`);
-      }
-
-      const data = await response.json();
       const rawLineups = Array.isArray(data.lineups)
         ? data.lineups
         : Array.isArray(data)
@@ -239,24 +227,17 @@ export default function useOptimizer() {
     );
 
     try {
-      const res = await fetch("http://localhost:8000/api/lineups", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
+      await api.post(
+        "/api/lineups",
+        {
           name,
           lineup_data: randomTeams,
           total_salary: avgSalary,
           projected_fpts: avgFpts,
           salary_mode: salaryMode,
-        }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || `Error ${res.status}`);
-      }
+        },
+        token,
+      );
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (err) {
@@ -270,14 +251,7 @@ export default function useOptimizer() {
     const token = localStorage.getItem("authToken");
     if (!token) return;
     try {
-      const res = await fetch(
-        "http://localhost:8000/api/create-checkout-session",
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-      const data = await res.json();
+      const data = await api.post("/api/create-checkout-session", {}, token);
       if (data.url) {
         window.location.href = data.url;
       }

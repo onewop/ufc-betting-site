@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import api from "../services/api";
 
 const SALARY_MODE_LABELS = {
   diverse: "DIVERSE",
@@ -25,18 +26,14 @@ const MySavedLineups = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("http://localhost:8000/api/lineups", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) {
-        setError("You must be logged in to view saved lineups.");
-        return;
-      }
-      if (!res.ok) throw new Error(`Server error ${res.status}`);
-      const data = await res.json();
+      const data = await api.get("/api/lineups", token);
       setLineups(data);
     } catch (err) {
-      setError(`Failed to load lineups: ${err.message}`);
+      if (err.message.includes("401")) {
+        setError("You must be logged in to view saved lineups.");
+      } else {
+        setError(`Failed to load lineups: ${err.message}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -55,11 +52,7 @@ const MySavedLineups = () => {
     if (!window.confirm("Delete this saved lineup set?")) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`http://localhost:8000/api/lineups/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.del(`/api/lineups/${id}`, token);
       setLineups((prev) => prev.filter((l) => l.id !== id));
     } catch (err) {
       setError(`Failed to delete lineup: ${err.message}`);

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#92400e</color>
+    <color name="colorPrimaryDark">#0c0a09</color>
+    <color name="colorAccent">#f59e0b</color>
+    <!-- App background — used as the Activity window background to prevent white flash -->
+    <color name="appBackground">#0c0a09</color>
+</resources>

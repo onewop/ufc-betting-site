@@ -43,8 +43,18 @@
   }
 }
 
+:root {
+  /* Single source of truth for the Android gesture-bar / iOS home-indicator height.
+     env() is resolved here once; nav and content both read var(--sab) from the
+     same computed value so they always update in the same style-recalculation pass,
+     preventing the nav from jumping relative to the content scroll area. */
+  --sab: env(safe-area-inset-bottom, 0px);
+}
+
 @layer base {
   html {
+    /* Fill the status-bar region with the nav colour on Android */
+    background-color: #92400e;
     font-size: 16px;
   }
 
@@ -159,8 +169,24 @@
 }
 
 body {
-  @apply bg-gray-900 text-white font-orbitron;
+  @apply text-white font-orbitron;
+  background-color: #0c0a09; /* prevent white flash before React mounts */
   overflow-x: hidden;
+  /* Prevent scroll-bounce from registering as Android back/home gestures */
+  overscroll-behavior: none;
+  /* Only allow vertical panning — horizontal swipes won't trigger nav gestures */
+  touch-action: pan-y;
+}
+
+#root {
+  background-color: #0c0a09;
+}
+
+/* Bottom padding that matches the fixed nav height (44 px = 2.75 rem) +
+   the gesture-bar inset. xl:pb-0 in Tailwind overrides this at desktop width.
+   Uses var(--sab) rather than env() directly so it's always in sync with the nav. */
+.nav-safe-bottom {
+  padding-bottom: calc(2.75rem + var(--sab));
 }
 
 .neon-button {

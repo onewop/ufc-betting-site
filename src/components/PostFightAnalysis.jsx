@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import api from "../services/api";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -47,12 +48,11 @@ const PostFightAnalysis = ({ currentUser }) => {
       if (currentUser) {
         const token = localStorage.getItem("authToken");
         if (token) {
-          const lineupRes = await fetch("http://localhost:8000/api/lineups", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (lineupRes.ok) {
-            const lineups = await lineupRes.json();
+          try {
+            const lineups = await api.get("/api/lineups", token);
             setUserLineups(lineups);
+          } catch {
+            // lineups are optional for this view
           }
         }
       }

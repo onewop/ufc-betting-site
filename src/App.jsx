@@ -23,6 +23,7 @@ import PostFightAnalysis from "./components/PostFightAnalysis";
 import ParlayBuilder from "./components/ParlayBuilder";
 // PRIVATE OWNER TOOL — not linked in any public navigation
 import DebugStatsPage from "./pages/DebugStatsPage";
+import api from "./services/api";
 
 // Auth keys for localStorage
 const AUTH_TOKEN_KEY = "authToken";
@@ -43,8 +44,6 @@ const navLinks = [
   { to: "/parlay-builder", label: "Parlay Builder" },
   { to: "/video-studio", label: "Creator Studio" },
 ];
-
-const currentEvent = "UFC Fight Night: Evloev vs. Murphy — March 21, 2026";
 
 const mobileNavLinks = [
   { to: "/", label: "Home", icon: "⌂" },
@@ -141,21 +140,16 @@ const AppShell = () => {
         attempts++;
         console.log(`🔄 Fetch attempt ${attempts}/${maxAttempts}`);
         try {
-          const response = await fetch("http://localhost:8000/auth/me", {
-            headers: { Authorization: `Bearer ${authToken}` },
-          });
-          if (response.ok) {
-            const user = await response.json();
-            console.log(
-              `📋 /auth/me returned subscription_status: ${user.subscription_status}`,
-            );
+          const user = await api.get("/auth/me", authToken);
+          console.log(
+            `📋 /auth/me returned subscription_status: ${user.subscription_status}`,
+          );
 
-            localStorage.setItem(AUTH_TOKEN_KEY, authToken);
-            localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
-            setCurrentUser(user);
+          localStorage.setItem(AUTH_TOKEN_KEY, authToken);
+          localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+          setCurrentUser(user);
 
-            return; // Success, stop retries
-          }
+          return; // Success, stop retries
         } catch (err) {
           console.error("Error fetching /auth/me:", err);
         }
@@ -178,28 +172,20 @@ const AppShell = () => {
 
   const handleLoginSuccess = async (token) => {
     try {
-      const response = await fetch("http://localhost:8000/auth/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const user = await api.get("/auth/me", token);
+      localStorage.setItem(AUTH_TOKEN_KEY, token);
+      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+      setAuthToken(token);
+      setCurrentUser(user);
+      console.log("✅ Full user loaded from /auth/me:", user);
 
-      if (response.ok) {
-        const user = await response.json();
-        localStorage.setItem(AUTH_TOKEN_KEY, token);
-        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
-        setAuthToken(token);
-        setCurrentUser(user);
-        console.log("✅ Full user loaded from /auth/me:", user);
-
-        if (user.subscription_status === "pro") {
-          setShowUpgradeSuccess(true);
-          setTimeout(() => setShowUpgradeSuccess(false), 6000);
-          console.log("🎉 User is now Pro!");
-        }
-      } else {
-        console.error("Failed to fetch /auth/me:", response.status);
+      if (user.subscription_status === "pro") {
+        setShowUpgradeSuccess(true);
+        setTimeout(() => setShowUpgradeSuccess(false), 6000);
+        console.log("🎉 User is now Pro!");
       }
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      console.error("Error fetching /auth/me:", error.message);
     }
   };
 
@@ -218,14 +204,11 @@ const AppShell = () => {
   const handleUpgrade = async () => {
     if (!authToken) return;
     try {
-      const res = await fetch(
-        "http://localhost:8000/api/create-checkout-session",
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${authToken}` },
-        },
+      const data = await api.post(
+        "/api/create-checkout-session",
+        {},
+        authToken,
       );
-      const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
       }
@@ -236,11 +219,14 @@ const AppShell = () => {
 
   return (
     <div
-      className={`min-h-screen pb-14 xl:pb-0 ${theme === "light" ? "theme-light bg-stone-100 text-stone-900" : "bg-gray-900"}`}
+      className={`min-h-screen nav-safe-bottom xl:pb-0 ${theme === "light" ? "theme-light bg-stone-100 text-stone-900" : "bg-gray-900"}`}
     >
       <nav
         className="sticky top-0 z-50 text-stone-100 shadow-lg border-b border-yellow-900/60"
-        style={{ backgroundColor: "#92400e" }}
+        style={{
+          backgroundColor: "#92400e",
+          paddingTop: "env(safe-area-inset-top, 0px)",
+        }}
       >
         <div className="max-w-7xl mx-auto px-4 py-2 xl:py-3 flex items-center justify-between xl:justify-center flex-col">
           {/* Desktop nav links — visible only at xl (1280px+) */}
@@ -347,8 +333,15 @@ const AppShell = () => {
               >
                 {theme === "dark" ? "☀" : "☾"}
               </button>
+              {currentUser && !menuOpen && (
+                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-yellow-900/70 text-yellow-400 text-xs font-bold border border-yellow-700/50">
+                  {(currentUser.username || currentUser.email || "?")
+                    .charAt(0)
+                    .toUpperCase()}
+                </span>
+              )}
               <button
-                className="flex flex-col gap-1.5 p-2 focus:outline-none"
+                className="flex flex-col gap-1.5 p-2 focus:outline-none min-h-[44px] min-w-[44px] items-center justify-center"
                 onClick={() => setMenuOpen((o) => !o)}
                 aria-label="Toggle menu"
               >
@@ -367,7 +360,24 @@ const AppShell = () => {
 
           {/* Hamburger dropdown */}
           {menuOpen && (
-            <ul className="xl:hidden flex flex-col border-t border-yellow-900/60 w-full">
+            <ul className="xl:hidden flex flex-col border-t border-yellow-900/60 w-full bg-stone-900">
+              {currentUser && (
+                <li className="px-6 py-3 border-b border-yellow-900/40 flex items-center gap-2">
+                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-yellow-900/50 text-yellow-400 text-xs font-bold">
+                    {(currentUser.username || currentUser.email || "?")
+                      .charAt(0)
+                      .toUpperCase()}
+                  </span>
+                  <span className="text-yellow-400 text-sm font-medium truncate">
+                    {currentUser.username || currentUser.email}
+                  </span>
+                  {currentUser.subscription_status === "pro" && (
+                    <span className="text-[10px] uppercase tracking-widest bg-yellow-600/30 text-yellow-400 px-1.5 py-0.5 rounded font-bold">
+                      Pro
+                    </span>
+                  )}
+                </li>
+              )}
               {navLinks.map(({ to, label }) => (
                 <li key={to}>
                   <Link
@@ -402,6 +412,45 @@ const AppShell = () => {
                     Upgrade to Pro
                   </button>
                 </li>
+              )}
+              {/* Auth buttons — always shown at bottom of mobile menu */}
+              {currentUser ? (
+                <li>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-6 py-3 hover:bg-red-900/40 transition text-red-400 border-t border-yellow-900/40"
+                  >
+                    Log Out
+                  </button>
+                </li>
+              ) : (
+                <>
+                  <li className="border-t border-yellow-900/40">
+                    <button
+                      onClick={() => {
+                        openAuth("login");
+                        setMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-6 py-3 hover:bg-yellow-900/40 transition text-yellow-400 font-medium"
+                    >
+                      Log In
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => {
+                        openAuth("register");
+                        setMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-6 py-3 hover:bg-yellow-900/40 transition text-yellow-300"
+                    >
+                      Register
+                    </button>
+                  </li>
+                </>
               )}
             </ul>
           )}
@@ -476,21 +525,22 @@ const AppShell = () => {
       <Footer />
 
       <nav
-        className={`xl:hidden fixed bottom-0 left-0 right-0 z-[60] border-t border-yellow-900/60 backdrop-blur ${theme === "light" ? "bg-amber-100/95" : "bg-stone-950/95"}`}
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        className={`xl:hidden fixed bottom-0 left-0 right-0 z-[60] border-t border-yellow-900/60 touch-none ${theme === "light" ? "bg-amber-100" : "bg-stone-950"}`}
+        style={{ paddingBottom: "var(--sab)" }}
         aria-label="Mobile quick navigation"
       >
-        <ul className="grid grid-cols-6">
+        <ul className="flex flex-row w-full">
           {mobileNavLinks.map(({ to, label, icon }) => {
             const active =
               to === "/"
                 ? location.pathname === "/"
                 : location.pathname.startsWith(to);
             return (
-              <li key={to}>
+              <li key={to} className="flex-1">
                 <Link
                   to={to}
-                  className={`flex min-h-[44px] flex-col items-center justify-center gap-0 px-1 text-[9px] tracking-wide transition ${
+                  // transition-colors only — never animate layout/size on mount
+                  className={`flex min-h-[44px] flex-row items-center justify-center gap-1 px-0.5 text-[9px] tracking-wide transition-colors duration-150 ${
                     active
                       ? "text-yellow-400 bg-yellow-900/20"
                       : theme === "light"
@@ -500,7 +550,7 @@ const AppShell = () => {
                   aria-label={label}
                 >
                   <span className="text-sm leading-none">{icon}</span>
-                  <span className="leading-tight mt-0.5">{label}</span>
+                  <span className="leading-tight">{label}</span>
                 </Link>
               </li>
             );

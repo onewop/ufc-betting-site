@@ -18,6 +18,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from "react";
+import api from "../services/api";
 import {
   BarChart,
   Bar,
@@ -485,8 +486,8 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
         setLoading(false);
 
         // Fetch matchup-aware backend projections (non-blocking enhancement)
-        fetch("http://localhost:8000/api/projections")
-          .then((r) => (r.ok ? r.json() : null))
+        api
+          .get("/api/projections")
           .then((data) => {
             if (data?.projections) {
               const byName = {};

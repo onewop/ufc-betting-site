@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import api from "../services/api";
 
 const AuthModal = ({
   isOpen,
@@ -48,19 +49,8 @@ const AuthModal = ({
     setLoading(true);
     setError("");
 
-    fetch("http://localhost:8000/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: loginEmail, password: loginPassword }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          return response.json().then((errorData) => {
-            throw new Error(errorData.detail || "Login failed");
-          });
-        }
-        return response.json();
-      })
+    api
+      .post("/auth/login", { email: loginEmail, password: loginPassword })
       .then((data) => {
         setLoading(false);
         onLoginSuccess(data.access_token, data.user);
@@ -86,22 +76,11 @@ const AuthModal = ({
     setLoading(true);
     setError("");
 
-    fetch("http://localhost:8000/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    api
+      .post("/auth/register", {
         email: regEmail,
         username: regUsername,
         password: regPassword,
-      }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          return response.json().then((errorData) => {
-            throw new Error(errorData.detail || "Registration failed");
-          });
-        }
-        return response.json();
       })
       .then((data) => {
         setLoading(false);
@@ -117,7 +96,7 @@ const AuthModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
       <div className="bg-stone-900 rounded-xl w-full max-w-md overflow-hidden relative">
         {/* Tabs */}
         <div className="flex border-b border-stone-700">

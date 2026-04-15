@@ -11,8 +11,7 @@
  */
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import WelcomeBonusSelector from "./WelcomeBonusSelector";
-
-const API_BASE = "http://localhost:8000";
+import api from "../services/api";
 
 // ─── Strategy metadata (mirrors backend STRATEGIES dict) ────────────────
 const STRATEGIES = [
@@ -248,9 +247,7 @@ const SmartAIPicks = ({ currentUser }) => {
   useEffect(() => {
     const fetchProjections = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/projections`);
-        if (!res.ok) throw new Error(`Projections: ${res.status}`);
-        const data = await res.json();
+        const data = await api.get("/api/projections");
         setProjections(data.projections || []);
       } catch (err) {
         console.error("Failed to load projections:", err);
@@ -284,11 +281,7 @@ const SmartAIPicks = ({ currentUser }) => {
       if (exclude) params.set("exclude", exclude);
 
       try {
-        const res = await fetch(
-          `${API_BASE}/api/smart-lineups?${params.toString()}`,
-        );
-        if (!res.ok) throw new Error(`Server error ${res.status}`);
-        const data = await res.json();
+        const data = await api.get(`/api/smart-lineups?${params.toString()}`);
         const newLineups = data.lineups || [];
 
         if (newLineups.length === 0 && append) {
@@ -397,21 +390,13 @@ const SmartAIPicks = ({ currentUser }) => {
     }
     setSaveStatus(`saving-${index}`);
     try {
-      const res = await fetch(`${API_BASE}/api/lineups`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: `AI: ${lineup.strategy} #${index + 1} – ${new Date().toLocaleDateString()}`,
-          lineup_data: [lineup.fighters],
-          total_salary: lineup.total_salary,
-          projected_fpts: lineup.projected_fpts,
-          salary_mode: "ai_pick",
-        }),
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post("/api/lineups", {
+        name: `AI: ${lineup.strategy} #${index + 1} – ${new Date().toLocaleDateString()}`,
+        lineup_data: [lineup.fighters],
+        total_salary: lineup.total_salary,
+        projected_fpts: lineup.projected_fpts,
+        salary_mode: "ai_pick",
+      }, token);
       setSaveStatus(`saved-${index}`);
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (err) {
