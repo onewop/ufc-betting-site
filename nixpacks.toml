@@ -8,4 +8,4 @@ cmds = ["python -m venv --copies /opt/venv && . /opt/venv/bin/activate && pip in
 cmds = ["test -f public/this_weeks_stats.json && echo 'BUILD OK: public/this_weeks_stats.json found' || (echo 'BUILD FAIL: public/this_weeks_stats.json missing from build context' && exit 1)"]
 
 [start]
-cmd = "echo '=== DEBUG ===' && echo CWD:$(pwd) && ls -la && echo '=== /app ===' && ls -la /app/ 2>&1 || echo 'no /app' && echo '=== find main.py ===' && find / -name main.py -path '*/backend/*' 2>/dev/null | head -5 && echo '=== find stats ===' && find / -name this_weeks_stats.json 2>/dev/null | head -5 && echo '=== END ==='  "
+cmd = "cd /app/backend && /opt/venv/bin/uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"
