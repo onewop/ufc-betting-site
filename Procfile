@@ -1,1 +1,1 @@
-web: cd /app/backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+web: echo "=== DEBUG ===" && echo "CWD: $(pwd)" && echo "HOME: $HOME" && ls -la && echo "=== /app ===" && ls -la /app/ 2>/dev/null || echo "/app does not exist" && echo "=== find backend ===" && find / -name "main.py" -path "*/backend/*" 2>/dev/null | head -5 && echo "=== find stats ===" && find / -name "this_weeks_stats.json" 2>/dev/null | head -5 && echo "=== END DEBUG ==="
