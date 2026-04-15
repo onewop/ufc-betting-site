@@ -35,7 +35,14 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 # From backend/ → parent = repo root → public/
-_STATS_PATH = Path("/app/public/this_weeks_stats.json")
+# Falls back to filesystem scan if the standard paths miss (Railway layout varies)
+_STATS_PATH = next(
+    (p for p in [
+        Path("/app/public/this_weeks_stats.json"),
+        Path(__file__).resolve().parent.parent / "public" / "this_weeks_stats.json",
+    ] if p.exists()),
+    Path("/app/public/this_weeks_stats.json"),  # best-guess default for error messages
+)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
