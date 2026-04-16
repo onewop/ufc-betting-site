@@ -8,28 +8,15 @@ import { _computeAngles, _LEVEL } from "./fightAnalyzerHelpers";
 import api from "../services/api";
 import FightStatsSection from "./FightStatsSection";
 
-const generalQuestions = [
-  "Who has the striking advantage?",
-  "Who lands more strikes per minute?",
-  "Compare striking accuracy.",
-  "Who has better striking defense?",
-  "Who has the grappling / wrestling edge?",
-  "How does each fighter's takedown offense compare to the other's defense?",
-  "Analyze takedown defense statistics.",
-  "Who has more submission wins?",
-  "Compare their win/loss records.",
-  "Who has the better finish rate?",
-  "Who wins by KO/TKO more often?",
-  "Who is on the better win streak?",
-  "Compare reach and physical attributes.",
-  "What is the DFS salary value breakdown?",
-  "Who wins? Overall fight prediction.",
-];
-
-const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
+const FightAnalyzer = ({
+  eventTitle = "Latest UFC Event",
+  currentUser = null,
+}) => {
   const [fighters, setFighters] = useState([]);
   const [fights, setFights] = useState([]);
   const [selectedFight, setSelectedFight] = useState("");
+  const [fightDropdownOpen, setFightDropdownOpen] = useState(false);
+  const fightDropdownRef = useRef(null);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(true);
@@ -42,6 +29,7 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
     key: "EVENT",
     order: "desc",
   });
+  const [analysis, setAnalysis] = useState(null);
   const [showRecordModal, setShowRecordModal] = useState(false);
   const [selectedFighterForRecord, setSelectedFighterForRecord] =
     useState(null);
@@ -105,7 +93,8 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
   useEffect(() => {
     setError(null);
 
-    api.get("/api/this-weeks-stats")
+    api
+      .get("/api/this-weeks-stats")
       .then((data) => {
         const rawFights = data.fights || [];
 
@@ -225,6 +214,66 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
       .then((data) => setLiveData(data))
       .catch(() => console.log("Live data fetch failed."));
   }, []);
+
+  const generateAnalysis = useCallback((results) => {
+    if (!results || results.length === 0) return;
+    const upsets = [];
+    const valueFighters = [];
+    results.forEach((result) => {
+      const boutParts = result.BOUT?.split(" vs. ") || ["", ""];
+      const winner = result.OUTCOME === "W/L" ? boutParts[0] : boutParts[1];
+      const loser = result.OUTCOME === "W/L" ? boutParts[1] : boutParts[0];
+      if (result.METHOD === "KO/TKO" && result.ROUND === "1") {
+        upsets.push({
+          winner,
+          loser,
+          method: result.METHOD,
+          round: result.ROUND,
+          time: result.TIME,
+        });
+      }
+      if (result.METHOD === "KO/TKO" || result.METHOD === "Submission") {
+        valueFighters.push({
+          name: winner,
+          method: result.METHOD,
+          round: result.ROUND,
+          time: result.TIME,
+          weightclass: result.WEIGHTCLASS,
+        });
+      }
+    });
+    const methods = results.reduce((acc, r) => {
+      const m = r.METHOD || "Unknown";
+      acc[m] = (acc[m] || 0) + 1;
+      return acc;
+    }, {});
+    const finishes = results.filter(
+      (r) =>
+        r.METHOD !== "Decision - Unanimous" &&
+        r.METHOD !== "Decision - Split" &&
+        r.METHOD !== "Decision - Majority",
+    );
+    setAnalysis({
+      eventName: results[0]?.EVENT || "",
+      totalFights: results.length,
+      upsets,
+      valueFighters,
+      cardAnalysis: {
+        finishRate: ((finishes.length / results.length) * 100).toFixed(0),
+        avgRound: (
+          results.reduce((sum, r) => sum + (parseInt(r.ROUND) || 0), 0) /
+          results.length
+        ).toFixed(1),
+        methodBreakdown: methods,
+        koCount: results.filter((r) => r.METHOD === "KO/TKO").length,
+        subCount: results.filter((r) => r.METHOD === "Submission").length,
+      },
+    });
+  }, []);
+
+  useEffect(() => {
+    if (fightResults.length > 0) generateAnalysis(fightResults);
+  }, [fightResults, generateAnalysis]);
 
   const processQuestion = (questionOverride) => {
     const activeQuestion = questionOverride ?? question;
@@ -1386,9 +1435,7 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
             <h3 className="text-base font-bold text-stone-100 mb-2">
               {f1.name} vs {f2.name}
             </h3>
-            <p className="text-stone-400 text-sm mb-3">
-              Use a quick question button or type keywords like:
-            </p>
+            <p className="text-stone-400 text-sm mb-3">Type keywords like:</p>
             <div className="flex flex-wrap gap-2">
               {[
                 "striking",
@@ -1425,14 +1472,6 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
         </p>,
       );
     }
-  };
-
-  const handleQuestionButton = (q) => {
-    setQuestion(q);
-    // Pass `q` directly — React state updates are async, so the `question`
-    // state variable would still hold the old value if we called processQuestion()
-    // without an argument here.
-    processQuestion(q);
   };
 
   if (loading)
@@ -1496,36 +1535,108 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
           <div className="w-32 h-px bg-gradient-to-r from-transparent via-yellow-700 to-transparent mx-auto mt-3" />
         </div>
 
-        <select
-          value={selectedFight}
-          onChange={(e) => setSelectedFight(e.target.value)}
-          className="border border-yellow-700/40 p-2 rounded-lg w-full md:w-1/3 mb-4 min-h-[44px] text-sm"
-          style={{ backgroundColor: "#1c1917", color: "#f5f5f4" }}
+        {/* Custom fight dropdown — replaces native <select> to fix invisible options on Android WebView */}}
+        <div
+          ref={fightDropdownRef}
+          className="relative w-full md:w-1/3 mb-4"
+          onBlur={(e) => {
+            if (!fightDropdownRef.current?.contains(e.relatedTarget)) {
+              setFightDropdownOpen(false);
+            }
+          }}
         >
-          <option
-            value=""
-            style={{ backgroundColor: "#1c1917", color: "#f5f5f4" }}
+          <button
+            type="button"
+            onClick={() => setFightDropdownOpen((o) => !o)}
+            className="w-full min-h-[48px] flex items-center justify-between gap-2 border border-yellow-700/40 rounded-lg px-4 py-3 text-left bg-stone-950"
+            style={{
+              WebkitFontSmoothing: "antialiased",
+              MozOsxFontSmoothing: "grayscale",
+            }}
           >
-            Select a Fight
-          </option>
-          {fights.map((fight) => (
-            <option
-              key={fight.fight_id}
-              value={fight.fight_id}
-              style={{ backgroundColor: "#1c1917", color: "#f5f5f4" }}
+            <span
+              className="truncate font-bold tracking-wide"
+              style={{
+                fontSize: 17,
+                color: "#ffffff",
+                textShadow: "0 0 1px rgba(255,255,255,0.3)",
+              }}
             >
-              {fight.fighters.map((f) => f.name).join(" vs. ")}
-            </option>
-          ))}
-        </select>
+              {selectedFight
+                ? (fights
+                    .find((f) => f.fight_id === parseInt(selectedFight))
+                    ?.fighters.map((f) => f.name)
+                    .join(" vs. ") ?? "Select a Fight...")
+                : "Select a Fight..."}
+            </span>
+            <svg
+              style={{ width: 16, height: 16, flexShrink: 0 }}
+              className={
+                "transition-transform text-stone-400 " +
+                (fightDropdownOpen ? "rotate-180" : "")
+              }
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.5}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
 
-        <input
-          type="text"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          placeholder="Ask about striking, takedowns, or records..."
-          className="border border-yellow-700/40 bg-stone-900 text-stone-100 p-2 rounded-lg w-full mb-4 min-h-[44px] text-sm"
-        />
+          {fightDropdownOpen && (
+            <ul
+              className="absolute z-50 w-full mt-1 border border-yellow-700/40 rounded-lg overflow-y-auto max-h-64 shadow-xl"
+              style={{
+                backgroundColor: "#111827",
+                WebkitFontSmoothing: "antialiased",
+                MozOsxFontSmoothing: "grayscale",
+              }}
+            >
+              <li>
+                <button
+                  type="button"
+                  className="w-full text-left px-4 py-3 font-medium"
+                  style={{ fontSize: 17, color: "#6b7280" }}
+                  onClick={() => {
+                    setSelectedFight("");
+                    setFightDropdownOpen(false);
+                  }}
+                >
+                  Select a Fight...
+                </button>
+              </li>
+              {fights.map((fight) => (
+                <li key={fight.fight_id}>
+                  <button
+                    type="button"
+                    className="w-full text-left px-4 py-3 font-bold tracking-wide"
+                    style={{
+                      fontSize: 17,
+                      color: "#ffffff",
+                      textShadow: "0 0 1px rgba(255,255,255,0.3)",
+                      backgroundColor:
+                        parseInt(selectedFight) === fight.fight_id
+                          ? "#1f2937"
+                          : undefined,
+                    }}
+                    onClick={() => {
+                      setSelectedFight(String(fight.fight_id));
+                      setQuestion("Who wins? Overall fight prediction.");
+                      setFightDropdownOpen(false);
+                    }}
+                  >
+                    {fight.fighters.map((f) => f.name).join(" vs. ")}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
         <button
           onClick={() => processQuestion()}
@@ -1840,6 +1951,87 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
               </summary>
 
               <div className="border-t border-yellow-700/30 p-4 sm:p-6">
+                {/* Fight Night Stats */}
+                {analysis && (
+                  <>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                      {[
+                        { label: "Total Fights", value: analysis.totalFights, color: "text-yellow-400" },
+                        { label: "KO / TKO", value: analysis.cardAnalysis.koCount, color: "text-red-400" },
+                        { label: "Submissions", value: analysis.cardAnalysis.subCount, color: "text-blue-400" },
+                        { label: "Finish Rate", value: `${analysis.cardAnalysis.finishRate}%`, color: "text-green-400" },
+                      ].map(({ label, value, color }) => (
+                        <div key={label} className="bg-stone-800/60 border border-yellow-700/20 rounded-xl p-4 text-center">
+                          <div className={`text-2xl font-black ${color}`}>{value}</div>
+                          <div className="text-stone-500 text-[10px] uppercase tracking-widest mt-1">{label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+                      {/* Biggest Upsets */}
+                      <div className="bg-stone-800/50 border border-red-900/40 rounded-xl p-4">
+                        <h2 className="text-xs font-bold tracking-[0.3em] uppercase text-red-400 mb-3">💥 Biggest Upsets</h2>
+                        {analysis.upsets.length > 0 ? (
+                          <div className="space-y-2">
+                            {analysis.upsets.map((u, i) => (
+                              <div key={i} className="bg-stone-900/60 rounded-lg p-3 border border-red-900/30">
+                                <div className="font-bold text-white text-sm">{u.winner}</div>
+                                <div className="text-stone-400 text-xs">def. {u.loser}</div>
+                                <div className="text-red-400 text-xs mt-1">{u.method} · R{u.round} · {u.time}</div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-stone-500 text-sm">No first-round finishes this card</p>
+                        )}
+                      </div>
+
+                      {/* Best Value Fighters */}
+                      <div className="bg-stone-800/50 border border-green-900/40 rounded-xl p-4">
+                        <h2 className="text-xs font-bold tracking-[0.3em] uppercase text-green-400 mb-3">💎 Best Value Fighters</h2>
+                        {analysis.valueFighters.length > 0 ? (
+                          <div className="space-y-2">
+                            {analysis.valueFighters.slice(0, 5).map((f, i) => (
+                              <div key={i} className="bg-stone-900/60 rounded-lg p-3 border border-green-900/30">
+                                <div className="font-bold text-white text-sm">{f.name}</div>
+                                <div className="text-stone-400 text-xs">{f.weightclass}</div>
+                                <div className="text-green-400 text-xs mt-1">{f.method} · R{f.round} · {f.time}</div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-stone-500 text-sm">No finishes recorded</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Method Breakdown + Key Insights */}
+                    {analysis.cardAnalysis.methodBreakdown && (
+                      <div className="mb-6 grid grid-cols-2 gap-4">
+                        <div>
+                          <h3 className="text-[10px] font-bold uppercase tracking-widest text-yellow-500 mb-2">Finish Methods</h3>
+                          <div className="space-y-1">
+                            {Object.entries(analysis.cardAnalysis.methodBreakdown).map(([method, count]) => (
+                              <div key={method} className="flex justify-between text-xs">
+                                <span className="text-stone-400 truncate pr-2">{method}</span>
+                                <span className="font-bold text-white">{count}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="text-[10px] font-bold uppercase tracking-widest text-yellow-500 mb-2">Key Insights</h3>
+                          <div className="space-y-1 text-xs text-stone-300">
+                            <p>• {analysis.cardAnalysis.finishRate}% finish rate</p>
+                            <p>• Avg fight: {analysis.cardAnalysis.avgRound} rounds</p>
+                            <p>• {analysis.totalFights} total bouts on the card</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs sm:text-sm font-mono">
                     <thead>
@@ -1982,45 +2174,6 @@ const FightAnalyzer = ({ eventTitle = "Latest UFC Event" }) => {
             </details>
           </div>
         )}
-
-        <div className="flex items-center gap-3 mb-4">
-          <div className="h-px flex-1 bg-yellow-700/30" />
-          <h2 className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600">
-            ◈ QUICK QUESTION BUTTONS
-          </h2>
-          <div className="h-px flex-1 bg-yellow-700/30" />
-        </div>
-
-        <div className="md:hidden pb-6">
-          <details className="rounded-lg border border-stone-700 bg-stone-900/80">
-            <summary className="px-4 py-3 text-xs font-bold uppercase tracking-widest text-yellow-500">
-              Show Quick Questions
-            </summary>
-            <div className="grid grid-cols-1 gap-3 p-3 border-t border-stone-700">
-              {generalQuestions.map((question, index) => (
-                <button
-                  key={`mobile-q-${index}`}
-                  onClick={() => handleQuestionButton(question)}
-                  className="bg-stone-900 border border-yellow-700/40 text-stone-300 text-xs font-bold tracking-wide py-3 px-4 rounded-lg hover:bg-stone-800 hover:border-yellow-600/60 hover:text-yellow-400 transition duration-200 text-left min-h-[44px]"
-                >
-                  {question}
-                </button>
-              ))}
-            </div>
-          </details>
-        </div>
-
-        <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-4 pb-10">
-          {generalQuestions.map((question, index) => (
-            <button
-              key={index}
-              onClick={() => handleQuestionButton(question)}
-              className="bg-stone-900 border border-yellow-700/40 text-stone-300 text-xs font-bold tracking-wide py-3 px-4 rounded-lg hover:bg-stone-800 hover:border-yellow-600/60 hover:text-yellow-400 transition duration-200 text-left"
-            >
-              {question}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* === FULL FIGHT RECORD MODAL — POLISHED === */}
