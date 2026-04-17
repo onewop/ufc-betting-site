@@ -7,7 +7,9 @@ export default function Home() {
   useEffect(() => {
     fetch("/current_event.json")
       .then((r) => r.json())
-      .then((d) => { if (d.title) setEventTitle(d.title); })
+      .then((d) => {
+        if (d.title) setEventTitle(d.title);
+      })
       .catch(() => {});
   }, []);
 
@@ -121,25 +123,41 @@ export default function Home() {
                 This Week's Weigh-In Videos
               </h3>
               <p className="text-stone-400 text-sm leading-relaxed mb-4">
-                Weigh-In Videos will be available Friday morning after the official weigh-ins.
+                Weigh-In Videos will be available Friday morning after the
+                official weigh-ins.
                 <br />
-                <span className="text-stone-500">Full Weigh-In Video (~2 hours) • Official Highlights (~5–6 minutes) • Individual 5–10 second fighter clips</span>
+                <span className="text-stone-500">
+                  Full Weigh-In Video (~2 hours) • Official Highlights (~5–6
+                  minutes) • Individual 5–10 second fighter clips
+                </span>
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="border border-stone-700 rounded-lg p-4 bg-stone-950 text-center">
                   <div className="text-yellow-500 text-2xl mb-2">🎥</div>
-                  <h4 className="text-stone-200 font-semibold mb-1">Full Weigh-In Video</h4>
-                  <p className="text-stone-500 text-xs">Coming Friday morning</p>
+                  <h4 className="text-stone-200 font-semibold mb-1">
+                    Full Weigh-In Video
+                  </h4>
+                  <p className="text-stone-500 text-xs">
+                    Coming Friday morning
+                  </p>
                 </div>
                 <div className="border border-stone-700 rounded-lg p-4 bg-stone-950 text-center">
                   <div className="text-yellow-500 text-2xl mb-2">✂️</div>
-                  <h4 className="text-stone-200 font-semibold mb-1">Official Highlights</h4>
-                  <p className="text-stone-500 text-xs">Coming Friday morning</p>
+                  <h4 className="text-stone-200 font-semibold mb-1">
+                    Official Highlights
+                  </h4>
+                  <p className="text-stone-500 text-xs">
+                    Coming Friday morning
+                  </p>
                 </div>
                 <div className="border border-stone-700 rounded-lg p-4 bg-stone-950 text-center">
                   <div className="text-yellow-500 text-2xl mb-2">👤</div>
-                  <h4 className="text-stone-200 font-semibold mb-1">Fighter Clips</h4>
-                  <p className="text-stone-500 text-xs">Coming Friday morning</p>
+                  <h4 className="text-stone-200 font-semibold mb-1">
+                    Fighter Clips
+                  </h4>
+                  <p className="text-stone-500 text-xs">
+                    Coming Friday morning
+                  </p>
                 </div>
               </div>
             </div>
@@ -163,7 +181,9 @@ export default function Home() {
             className="border border-yellow-700/50 rounded-lg bg-stone-900 hover:bg-stone-800 p-4 transition-colors duration-200 group"
           >
             <div className="text-yellow-500 text-2xl mb-2">⊕</div>
-            <h3 className="text-stone-200 font-bold mb-1 uppercase tracking-wide">Fight Analyzer</h3>
+            <h3 className="text-stone-200 font-bold mb-1 uppercase tracking-wide">
+              Fight Analyzer
+            </h3>
             <p className="text-stone-400 text-sm">Deep stats & analysis</p>
           </Link>
           <Link
@@ -171,7 +191,9 @@ export default function Home() {
             className="border border-stone-700 rounded-lg bg-stone-900 hover:bg-stone-800 p-4 transition-colors duration-200 group"
           >
             <div className="text-stone-400 text-2xl mb-2">🎯</div>
-            <h3 className="text-stone-200 font-bold mb-1 uppercase tracking-wide">Parlay Builder</h3>
+            <h3 className="text-stone-200 font-bold mb-1 uppercase tracking-wide">
+              Parlay Builder
+            </h3>
             <p className="text-stone-400 text-sm">Build winning parlays</p>
           </Link>
           <Link
@@ -179,7 +201,9 @@ export default function Home() {
             className="border border-stone-700 rounded-lg bg-stone-900 hover:bg-stone-800 p-4 transition-colors duration-200 group"
           >
             <div className="text-stone-400 text-2xl mb-2">$</div>
-            <h3 className="text-stone-200 font-bold mb-1 uppercase tracking-wide">Live Odds</h3>
+            <h3 className="text-stone-200 font-bold mb-1 uppercase tracking-wide">
+              Live Odds
+            </h3>
             <p className="text-stone-400 text-sm">Real-time betting lines</p>
           </Link>
           <Link
@@ -187,7 +211,9 @@ export default function Home() {
             className="border border-stone-700 rounded-lg bg-stone-900 hover:bg-stone-800 p-4 transition-colors duration-200 group"
           >
             <div className="text-stone-400 text-2xl mb-2">◈</div>
-            <h3 className="text-stone-200 font-bold mb-1 uppercase tracking-wide">DFS Teams</h3>
+            <h3 className="text-stone-200 font-bold mb-1 uppercase tracking-wide">
+              DFS Teams
+            </h3>
             <p className="text-stone-400 text-sm">Optimize fantasy squads</p>
           </Link>
         </div>

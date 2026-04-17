@@ -14,7 +14,8 @@ const ManualTeams = () => {
   const maxSalary = 50000;
 
   useEffect(() => {
-    api.get("/api/this-weeks-stats")
+    api
+      .get("/api/this-weeks-stats")
       .then((data) => {
         const parsed = [];
         (data.fights || []).forEach((fight, fightIdx) => {

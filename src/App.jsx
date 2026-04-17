@@ -9,17 +9,16 @@ import {
 import Home from "./components/Home";
 import TeamCombinations from "./components/TeamCombinations";
 import FightAnalyzer from "./components/FightAnalyzer";
-import VideoVault from "./components/VideoVault";
+import VideoVault from "./creator/VideoVault";
 import SmartAIPicks from "./components/SmartAIPicks";
 import DFSPicksProjections from "./components/DFSPicksProjections";
-import VideosV2 from "./components/VideosV2";
+import VideosV2 from "./creator/VideosV2";
 import LatestOdds from "./components/LatestOdds";
-import VideoStudio from "./components/VideoStudio";
+import VideoStudio from "./creator/VideoStudio";
 import Footer from "./components/Footer";
 import AuthModal from "./components/AuthModal";
 import MySavedLineups from "./components/MySavedLineups";
 import UserDashboard from "./components/UserDashboard";
-import PostFightAnalysis from "./components/PostFightAnalysis";
 import ParlayBuilder from "./components/ParlayBuilder";
 // PRIVATE OWNER TOOL — not linked in any public navigation
 import DebugStatsPage from "./pages/DebugStatsPage";
@@ -40,9 +39,7 @@ const navLinks = [
   { to: "/fight-analyzer", label: "Fight Analyzer - Latest Card" },
   { to: "/odds", label: "Live Odds" },
   { to: "/predictions", label: "Predictions & Projections" },
-  { to: "/post-fight-analysis", label: "Post-Fight Analysis" },
   { to: "/parlay-builder", label: "Parlay Builder" },
-  { to: "/video-studio", label: "Creator Studio" },
 ];
 
 const mobileNavLinks = [
@@ -50,7 +47,6 @@ const mobileNavLinks = [
   { to: "/fight-analyzer", label: "Analyze", icon: "◈" },
   { to: "/odds", label: "Odds", icon: "$" },
   { to: "/predictions", label: "DFS", icon: "▦" },
-  { to: "/post-fight-analysis", label: "Analysis", icon: "📊" },
   { to: "/parlay-builder", label: "Parlay", icon: "🎯" },
 ];
 
@@ -483,24 +479,19 @@ const AppShell = () => {
         />
         <Route
           path="/fight-analyzer"
-          element={<FightAnalyzer eventTitle={eventTitle} />}
+          element={
+            <FightAnalyzer eventTitle={eventTitle} currentUser={currentUser} />
+          }
         />
-        <Route path="/video-vault" element={<VideoVault />} />
-        <Route path="/videos-v2" element={<VideosV2 />} />
         <Route path="/odds" element={<LatestOdds />} />
         <Route
           path="/predictions"
           element={<DFSPicksProjections eventTitle={eventTitle} />}
         />
-        <Route path="/video-studio" element={<VideoStudio />} />
         <Route path="/my-lineups" element={<MySavedLineups />} />
         <Route
           path="/dashboard"
           element={<UserDashboard currentUser={currentUser} />}
-        />
-        <Route
-          path="/post-fight-analysis"
-          element={<PostFightAnalysis currentUser={currentUser} />}
         />
         <Route
           path="/parlay-builder"

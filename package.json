@@ -28,6 +28,7 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
+    "postbuild": "cp vercel.json build/vercel.json",
     "test": "craco test",
     "eject": "react-scripts eject",
     "tailwind": "npx tailwindcss -i ./src/index.css -o ./public/output.css --watch"

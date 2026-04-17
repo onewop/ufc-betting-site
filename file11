@@ -1,0 +1,1000 @@
+  898                    ×
+  899                  </button>
+  900                </div>
+  901                {/* Content */}
+  902                <div className="flex-1 overflow-y-auto p-6">
+  903                  <FullFightRecord fighter={selectedFighterForRecord} />
+  904                </div>
+  905              </motion.div>
+  906            </motion.div>
+  907          )}
+  908        </AnimatePresence>
+  909      </div>
+  910    );
+  911  };
+  912  export default FightAnalyzer;
+  913  EOF
+  914  npm run build
+  915  # Remove the broken modal section
+  916  sed -i '/Full Fight Record Modal — WITH SMOOTH ANIMATION/,/export default FightAnalyzer;/d' src/components/FightAnalyzer.jsx
+  917  # Add the properly placed animated modal
+  918  cat >> src/components/FightAnalyzer.jsx << 'EOF'
+  919        {/* === FULL FIGHT RECORD MODAL — WITH SMOOTH ANIMATION === */}
+  920        <AnimatePresence mode="wait">
+  921          {showRecordModal && selectedFighterForRecord && (
+  922            <motion.div
+  923              key="record-modal"
+  924              initial={{ opacity: 0 }}
+  925              animate={{ opacity: 1 }}
+  926              exit={{ opacity: 0 }}
+  927              transition={{ duration: 0.2 }}
+  928              className="fixed inset-0 bg-black/80 z-[9999] flex items-center justify-center p-4"
+  929              onClick={closeRecordModal}
+  930            >
+  931              <motion.div
+  932                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+  933                animate={{ scale: 1, opacity: 1, y: 0 }}
+  934                exit={{ scale: 0.95, opacity: 0, y: 20 }}
+  935                transition={{ duration: 0.25, ease: "easeOut" }}
+  936                className="bg-stone-900 rounded-2xl w-full max-w-4xl max-h-[92vh] overflow-hidden flex flex-col shadow-2xl"
+  937                onClick={(e) => e.stopPropagation()}
+  938              >
+  939                {/* Header */}
+  940                <div className="flex justify-between items-center p-6 border-b border-stone-700 bg-stone-950">
+  941                  <h2 className="text-2xl font-bold text-stone-100">
+  942                    Full Fight Record — {selectedFighterForRecord.name}
+  943                  </h2>
+  944                  <button
+  945                    onClick={closeRecordModal}
+  946                    className="text-stone-400 hover:text-white text-4xl leading-none hover:scale-110 transition-transform"
+  947                  >
+  948                    ×
+  949                  </button>
+  950                </div>
+  951                {/* Content */}
+  952                <div className="flex-1 overflow-y-auto p-6">
+  953                  <FullFightRecord fighter={selectedFighterForRecord} />
+  954                </div>
+  955              </motion.div>
+  956            </motion.div>
+  957          )}
+  958        </AnimatePresence>
+  959      </div>
+  960    );
+  961  };
+  962  export default FightAnalyzer;
+  963  EOF
+  964  npm run build
+  965  # Remove any broken modal attempts
+  966  sed -i '/Full Fight Record Modal — WITH SMOOTH ANIMATION/,/export default FightAnalyzer;/d' src/components/FightAnalyzer.jsx
+  967  # Add the modal in the correct location (inside the main div, before the final closing)
+  968  cat >> src/components/FightAnalyzer.jsx << 'EOF'
+  969        {/* === FULL FIGHT RECORD MODAL — WITH SMOOTH ANIMATION === */}
+  970        <AnimatePresence mode="wait">
+  971          {showRecordModal && selectedFighterForRecord && (
+  972            <motion.div
+  973              key="record-modal"
+  974              initial={{ opacity: 0 }}
+  975              animate={{ opacity: 1 }}
+  976              exit={{ opacity: 0 }}
+  977              transition={{ duration: 0.2 }}
+  978              className="fixed inset-0 bg-black/80 z-[9999] flex items-center justify-center p-4"
+  979              onClick={closeRecordModal}
+  980            >
+  981              <motion.div
+  982                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+  983                animate={{ scale: 1, opacity: 1, y: 0 }}
+  984                exit={{ scale: 0.95, opacity: 0, y: 20 }}
+  985                transition={{ duration: 0.25, ease: "easeOut" }}
+  986                className="bg-stone-900 rounded-2xl w-full max-w-4xl max-h-[92vh] overflow-hidden flex flex-col shadow-2xl"
+  987                onClick={(e) => e.stopPropagation()}
+  988              >
+  989                {/* Header */}
+  990                <div className="flex justify-between items-center p-6 border-b border-stone-700 bg-stone-950">
+  991                  <h2 className="text-2xl font-bold text-stone-100">
+  992                    Full Fight Record — {selectedFighterForRecord.name}
+  993                  </h2>
+  994                  <button
+  995                    onClick={closeRecordModal}
+  996                    className="text-stone-400 hover:text-white text-4xl leading-none hover:scale-110 transition-transform"
+  997                  >
+  998                    ×
+  999                  </button>
+ 1000                </div>
+ 1001                {/* Content */}
+ 1002                <div className="flex-1 overflow-y-auto p-6">
+ 1003                  <FullFightRecord fighter={selectedFighterForRecord} />
+ 1004                </div>
+ 1005              </motion.div>
+ 1006            </motion.div>
+ 1007          )}
+ 1008        </AnimatePresence>
+ 1009      </div>
+ 1010    );
+ 1011  };
+ 1012  export default FightAnalyzer;
+ 1013  EOF
+ 1014  cd ~/ufc-betting-site-main
+ 1015  # 1. List the main folders and files
+ 1016  ls -la
+ 1017  # 2. Show the src structure (most important)
+ 1018  ls -la src/
+ 1019  # 3. List all components
+ 1020  ls -la src/components/ | head -30
+ 1021  # 4. List all pages/routes
+ 1022  ls -la src/pages/ || echo "No pages folder"
+ 1023  # 5. Show your main routing file (this tells me a lot)
+ 1024  cat src/App.jsx | head -80
+ 1025  cat .env | grep -E 'STRIPE|JWT|SECRET|KEY|PASSWORD'
+ 1026  # 1. Check if .env looks correct (should NOT show real keys here, just confirm it exists)
+ 1027  ls -la .env
+ 1028  # 2. Check current git status
+ 1029  git status
+ 1030  # 3. See what files were actually changed
+ 1031  git diff --stat
+ 1032  # 4. Check the Pro bypass fix (most important)
+ 1033  grep -n "Pro" backend/auth.py || echo "No 'Pro' mention found"
+ 1034  # 5. Check if rate limiting was added
+ 1035  grep -n "rate" backend/optimize.py || echo "No rate limit code found"
+ 1036  # 1. See where the auth and optimize files actually are
+ 1037  find backend -name "*.py" | head -20
+ 1038  # 2. Check current git status more clearly
+ 1039  git status --short
+ 1040  # 3. See the actual diff of the biggest changed files (this will tell us how messy it got)
+ 1041  git diff --stat | head -10
+ 1042  # 1. See exactly what changed in the big frontend files
+ 1043  git diff --stat src/components/Home.jsx src/components/UserDashboard.jsx src/components/FightAnalyzer.jsx
+ 1044  # 2. (Optional but smart) Stash everything so we can restore cleanly later
+ 1045  git stash push -m "claude-opus-cleanup-attempt-$(date +%Y%m%d-%H%M)"
+ 1046  source .venv/bin/activate
+ 1047  uvicorn backend.main:app --reload --port 8000
+ 1048  pkill -f uvicorn
+ 1049  uvicorn backend.main:app --reload --port 8000
+ 1050  pkill -f uvicorn
+ 1051  sudo pkill -f uvicorn
+ 1052  uvicorn backend.main:app --reload --port 8000
+ 1053  cd ufc-betting-site-main/
+ 1054  ./start-dev.sh 
+ 1055  cd ufc-betting-site-main/
+ 1056  # Remove any broken modal attempts
+ 1057  sed -i '/Full Fight Record Modal — WITH SMOOTH ANIMATION/,/export default FightAnalyzer;/d' src/components/FightAnalyzer.jsx
+ 1058  # Add the modal in the correct location (inside the main div, before the final closing)
+ 1059  cat >> src/components/FightAnalyzer.jsx << 'EOF'
+ 1060        {/* === FULL FIGHT RECORD MODAL — WITH SMOOTH ANIMATION === */}
+ 1061        <AnimatePresence mode="wait">
+ 1062          {showRecordModal && selectedFighterForRecord && (
+ 1063            <motion.div
+ 1064              key="record-modal"
+ 1065              initial={{ opacity: 0 }}
+ 1066              animate={{ opacity: 1 }}
+ 1067              exit={{ opacity: 0 }}
+ 1068              transition={{ duration: 0.2 }}
+ 1069              className="fixed inset-0 bg-black/80 z-[9999] flex items-center justify-center p-4"
+ 1070              onClick={closeRecordModal}
+ 1071            >
+ 1072              <motion.div
+ 1073                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+ 1074                animate={{ scale: 1, opacity: 1, y: 0 }}
+ 1075                exit={{ scale: 0.95, opacity: 0, y: 20 }}
+ 1076                transition={{ duration: 0.25, ease: "easeOut" }}
+ 1077                className="bg-stone-900 rounded-2xl w-full max-w-4xl max-h-[92vh] overflow-hidden flex flex-col shadow-2xl"
+ 1078                onClick={(e) => e.stopPropagation()}
+ 1079              >
+ 1080                {/* Header */}
+ 1081                <div className="flex justify-between items-center p-6 border-b border-stone-700 bg-stone-950">
+ 1082                  <h2 className="text-2xl font-bold text-stone-100">
+ 1083                    Full Fight Record — {selectedFighterForRecord.name}
+ 1084                  </h2>
+ 1085                  <button
+ 1086                    onClick={closeRecordModal}
+ 1087                    className="text-stone-400 hover:text-white text-4xl leading-none hover:scale-110 transition-transform"
+ 1088                  >
+ 1089                    ×
+ 1090                  </button>
+ 1091                </div>
+ 1092                {/* Content */}
+ 1093                <div className="flex-1 overflow-y-auto p-6">
+ 1094                  <FullFightRecord fighter={selectedFighterForRecord} />
+ 1095                </div>
+ 1096              </motion.div>
+ 1097            </motion.div>
+ 1098          )}
+ 1099        </AnimatePresence>
+ 1100      </div>
+ 1101    );
+ 1102  };
+ 1103  export default FightAnalyzer;
+ 1104  EOF
+ 1105  npm run build
+ 1106  cat > src/components/FullFightRecord.jsx << 'EOF'
+ 1107  /**
+ 1108   * FullFightRecord.jsx
+ 1109   *
+ 1110   * Displays a fighter's full professional fight record using REAL data from the fighter prop.
+ 1111   * Keeps most of your original styling and features.
+ 1112   */
+ 1113  import { useState, useMemo } from "react";
+ 1114  const FALLBACK_AVATAR_SM =
+ 1115    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%2344403a'/%3E%3Ctext x='16' y='21' text-anchor='middle' fill='%23a8a29e' font-size='14'%3E?%3C/text%3E%3C/svg%3E";
+ 1116  const FullFightRecord = ({ fighter }) => {
+ 1117    // ←←← THIS IS THE KEY CHANGE: Use real data instead of hardcoded
+ 1118    const fightHistory = fighter?.fight_history || fighter?.fights || [];
+ 1119    const [selectedYear, setSelectedYear] = useState("All");
+ 1120    const [selectedMethod, setSelectedMethod] = useState("All");
+ 1121    // Record summary
+ 1122    const record = useMemo(() => {
+ 1123      const wins = fightHistory.filter((f) => 
+ 1124        (f.result || "").toString().toUpperCase() === "W" || f.result === "win"
+ 1125      ).length;
+ 1126      const losses = fightHistory.filter((f) => 
+ 1127        (f.result || "").toString().toUpperCase() === "L" || f.result === "loss"
+ 1128      ).length;
+ 1129      const draws = fightHistory.filter((f) => 
+ 1130        (f.result || "").toString().toUpperCase() === "D" || f.result === "draw"
+ 1131      ).length;
+ 1132      return { wins, losses, draws };
+ 1133    }, [fightHistory]);
+ 1134    // Filter fights
+ 1135    const filteredFights = useMemo(() => {
+ 1136      return fightHistory.filter((fight) => {
+ 1137        const yearMatch = selectedYear === "All" || fight.date?.startsWith(selectedYear);
+ 1138        const methodMatch = selectedMethod === "All" || 
+ 1139          (fight.method && fight.method.toLowerCase().includes(selectedMethod.toLowerCase()));
+ 1140        return yearMatch && methodMatch;
+ 1141      });
+ 1142    }, [fightHistory, selectedYear, selectedMethod]);
+ 1143    // Unique years
+ 1144    const years = useMemo(() => {
+ 1145      const uniqueYears = [...new Set(fightHistory.map((f) => f.date?.slice(0, 4)).filter(Boolean))]
+ 1146        .sort()
+ 1147        .reverse();
+ 1148      return ["All", ...uniqueYears];
+ 1149    }, [fightHistory]);
+ 1150    const getMethodIcon = (method) => {
+ 1151      const m = (method || "").toLowerCase();
+ 1152      if (m.includes("ko") || m.includes("tko")) return "👊";
+ 1153      if (m.includes("sub")) return "🥋";
+ 1154      if (m.includes("dec")) return "📜";
+ 1155      return "⚔️";
+ 1156    };
+ 1157    const getRowClasses = (result) => {
+ 1158      const base = "border-b border-stone-700/50 hover:bg-stone-800/30 transition-colors";
+ 1159      const r = (result || "").toString().toUpperCase();
+ 1160      if (r === "W" || r === "WIN") return `${base} bg-green-900/10 border-l-4 border-l-green-500`;
+ 1161      if (r === "L" || r === "LOSS") return `${base} bg-red-900/10 border-l-4 border-l-red-500`;
+ 1162      return base;
+ 1163    };
+ 1164    const getResultBadgeClasses = (result) => {
+ 1165      const r = (result || "").toString().toUpperCase();
+ 1166      if (r === "W" || r === "WIN") return "bg-green-600 text-white font-bold px-2 py-1 rounded text-xs";
+ 1167      if (r === "L" || r === "LOSS") return "bg-red-600 text-white font-bold px-2 py-1 rounded text-xs";
+ 1168      return "bg-stone-600 text-stone-100 font-bold px-2 py-1 rounded text-xs";
+ 1169    };
+ 1170    if (fightHistory.length === 0) {
+ 1171      return (
+ 1172        <div className="text-center py-12 text-stone-400">
+ 1173          <p className="text-lg">No fight history available for this fighter yet.</p>
+ 1174        </div>
+ 1175      );
+ 1176    }
+ 1177    return (
+ 1178      <div className="max-w-7xl mx-auto">
+ 1179        {/* Header */}
+ 1180        <div className="text-center mb-8">
+ 1181          <h2 className="text-3xl font-bold text-stone-100 mb-2">
+ 1182            {fighter?.name || "Fighter"}'s Fight Record
+ 1183          </h2>
+ 1184          <p className="text-stone-400">Professional MMA Career</p>
+ 1185        </div>
+ 1186        {/* Record Summary - same style as yours */}
+ 1187        <div className="bg-stone-800/50 rounded-lg p-6 mb-8 border border-stone-700">
+ 1188          <div className="text-center">
+ 1189            <div className="text-4xl font-bold text-stone-100 mb-2">
+ 1190              {record.wins}-{record.losses}-{record.draws}
+ 1191            </div>
+ 1192            <div className="text-stone-400 text-sm">Wins • Losses • Draws</div>
+ 1193            <div className="flex justify-center gap-8 mt-4 text-sm">
+ 1194              <div className="text-green-400"><span className="font-semibold">{record.wins}</span> Wins</div>
+ 1195              <div className="text-red-400"><span className="font-semibold">{record.losses}</span> Losses</div>
+ 1196              {record.draws > 0 && (
+ 1197                <div className="text-stone-400"><span className="font-semibold">{record.draws}</span> Draws</div>
+ 1198              )}
+ 1199            </div>
+ 1200          </div>
+ 1201        </div>
+ 1202        {/* Filters - kept your exact styling */}
+ 1203        <div className="flex flex-wrap gap-4 mb-6 justify-center">
+ 1204          <div className="flex items-center gap-3 bg-stone-800/50 rounded-lg px-4 py-2 border border-stone-700">
+ 1205            <label className="text-stone-300 text-sm font-medium">Year:</label>
+ 1206            <select
+ 1207              value={selectedYear}
+ 1208              onChange={(e) => setSelectedYear(e.target.value)}
+ 1209              className="bg-stone-700 text-stone-100 px-3 py-1 rounded border border-stone-600 text-sm focus:outline-none focus:border-stone-500"
+ 1210            >
+ 1211              {years.map((year) => (
+ 1212                <option key={year} value={year}>{year}</option>
+ 1213              ))}
+ 1214            </select>
+ 1215          </div>
+ 1216          <div className="flex items-center gap-3 bg-stone-800/50 rounded-lg px-4 py-2 border border-stone-700">
+ 1217            <label className="text-stone-300 text-sm font-medium">Method:</label>
+ 1218            <select
+ 1219              value={selectedMethod}
+ 1220              onChange={(e) => setSelectedMethod(e.target.value)}
+ 1221              className="bg-stone-700 text-stone-100 px-3 py-1 rounded border border-stone-600 text-sm focus:outline-none focus:border-stone-500"
+ 1222            >
+ 1223              <option value="All">All Methods</option>
+ 1224              <option value="KO/TKO">KO/TKO</option>
+ 1225              <option value="Submission">Submission</option>
+ 1226              <option value="Decision">Decision</option>
+ 1227            </select>
+ 1228          </div>
+ 1229        </div>
+ 1230        {/* Fight Record Table - kept your original structure and styling */}
+ 1231        <div className="bg-stone-800/30 rounded-lg border border-stone-700 overflow-hidden">
+ 1232          <div className="overflow-x-auto">
+ 1233            <table className="w-full">
+ 1234              <thead className="bg-stone-800/80">
+ 1235                <tr>
+ 1236                  <th className="text-left py-4 px-6 text-stone-300 font-semibold text-sm uppercase tracking-wider">Date</th>
+ 1237                  <th className="text-left py-4 px-6 text-stone-300 font-semibold text-sm uppercase tracking-wider">Opponent</th>
+ 1238                  <th className="text-center py-4 px-6 text-stone-300 font-semibold text-sm uppercase tracking-wider">Result</th>
+ 1239                  <th className="text-left py-4 px-6 text-stone-300 font-semibold text-sm uppercase tracking-wider">Method</th>
+ 1240                  <th className="text-center py-4 px-6 text-stone-300 font-semibold text-sm uppercase tracking-wider">Round</th>
+ 1241                  <th className="text-center py-4 px-6 text-stone-300 font-semibold text-sm uppercase tracking-wider">Time</th>
+ 1242                  <th className="text-left py-4 px-6 text-stone-300 font-semibold text-sm uppercase tracking-wider">Event</th>
+ 1243                </tr>
+ 1244              </thead>
+ 1245              <tbody>
+ 1246                {filteredFights.map((fight, index) => (
+ 1247                  <tr key={index} className={getRowClasses(fight.result)}>
+ 1248                    <td className="py-4 px-6 text-stone-200 font-medium">
+ 1249                      {new Date(fight.date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+ 1250                    </td>
+ 1251                    <td className="py-4 px-6">
+ 1252                      <div className="flex items-center gap-3">
+ 1253                        <img
+ 1254                          src={fight.opponent?.photo || FALLBACK_AVATAR_SM}
+ 1255                          alt=""
+ 1256                          className="w-8 h-8 rounded-full object-cover bg-stone-700"
+ 1257                          onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_AVATAR_SM; }}
+ 1258                        />
+ 1259                        <span className="text-stone-200 font-medium hover:text-stone-100 transition-colors">
+ 1260                          {fight.opponent?.name || fight.opponent || "Unknown Opponent"}
+ 1261                        </span>
+ 1262                      </div>
+ 1263                    </td>
+ 1264                    <td className="py-4 px-6 text-center">
+ 1265                      <span className={getResultBadgeClasses(fight.result)}>
+ 1266                        {(fight.result || "?").toUpperCase()}
+ 1267                      </span>
+ 1268                    </td>
+ 1269                    <td className="py-4 px-6">
+ 1270                      <div className="flex items-center gap-2">
+ 1271                        <span className="text-lg">{getMethodIcon(fight.method)}</span>
+ 1272                        <span className="text-stone-200">{fight.method || "N/A"}</span>
+ 1273                      </div>
+ 1274                    </td>
+ 1275                    <td className="py-4 px-6 text-center text-stone-200 font-medium">{fight.round || "?"}</td>
+ 1276                    <td className="py-4 px-6 text-center text-stone-200 font-medium">{fight.time || "N/A"}</td>
+ 1277                    <td className="py-4 px-6 text-stone-200">{fight.event || "N/A"}</td>
+ 1278                  </tr>
+ 1279                ))}
+ 1280              </tbody>
+ 1281            </table>
+ 1282          </div>
+ 1283        </div>
+ 1284        <div className="mt-6 text-center text-stone-400 text-sm">
+ 1285          Showing {filteredFights.length} of {fightHistory.length} fights
+ 1286        </div>
+ 1287      </div>
+ 1288    );
+ 1289  };
+ 1290  export default FullFightRecord;
+ 1291  EOF
+ 1292  npm run build
+ 1293  grep -A 20 -B 5 "fight_history" src/components/FightAnalyzer.jsx
+ 1294  cat > src/components/FullFightRecord.jsx << 'EOF'
+ 1295  import { useState, useMemo } from "react";
+ 1296  const FALLBACK_AVATAR_SM =
+ 1297    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%2344403a'/%3E%3Ctext x='16' y='21' text-anchor='middle' fill='%23a8a29e' font-size='14'%3E?%3C/text%3E%3C/svg%3E";
+ 1298  const FullFightRecord = ({ fighter }) => {
+ 1299    // Try all possible places where fight history might be stored
+ 1300    const fightHistory = 
+ 1301      fighter?.fight_history || 
+ 1302      fighter?.fights || 
+ 1303      fighter?.fightHistory || 
+ 1304      [];
+ 1305    const [selectedYear, setSelectedYear] = useState("All");
+ 1306    const [selectedMethod, setSelectedMethod] = useState("All");
+ 1307    const record = useMemo(() => {
+ 1308      const wins = fightHistory.filter(f => 
+ 1309        String(f.result || "").toUpperCase().startsWith("W")
+ 1310      ).length;
+ 1311      const losses = fightHistory.filter(f => 
+ 1312        String(f.result || "").toUpperCase().startsWith("L")
+ 1313      ).length;
+ 1314      const draws = fightHistory.filter(f => 
+ 1315        String(f.result || "").toUpperCase().startsWith("D")
+ 1316      ).length;
+ 1317      return { wins, losses, draws };
+ 1318    }, [fightHistory]);
+ 1319    const filteredFights = useMemo(() => {
+ 1320      return fightHistory.filter(fight => {
+ 1321        const yearMatch = selectedYear === "All" || String(fight.date || "").startsWith(selectedYear);
+ 1322        const methodMatch = selectedMethod === "All" || 
+ 1323          String(fight.method || "").toLowerCase().includes(selectedMethod.toLowerCase());
+ 1324        return yearMatch && methodMatch;
+ 1325      });
+ 1326    }, [fightHistory, selectedYear, selectedMethod]);
+ 1327    const years = useMemo(() => {
+ 1328      const uniqueYears = [...new Set(
+ 1329        fightHistory.map(f => String(f.date || "").slice(0, 4)).filter(Boolean)
+ 1330      )].sort().reverse();
+ 1331      return ["All", ...uniqueYears];
+ 1332    }, [fightHistory]);
+ 1333    if (fightHistory.length === 0) {
+ 1334      return (
+ 1335        <div className="py-12 text-center">
+ 1336          <div className="text-5xl mb-4">📭</div>
+ 1337          <h3 className="text-xl font-semibold text-stone-100 mb-2">No Fight History Found</h3>
+ 1338          <p className="text-stone-400 max-w-sm mx-auto">
+ 1339            We couldn't find any fight history for {fighter?.name}. 
+ 1340            This is likely a data loading issue from Sherdog/UFCStats.
+ 1341          </p>
+ 1342        </div>
+ 1343      );
+ 1344    }
+ 1345    return (
+ 1346      <div className="max-w-7xl mx-auto">
+ 1347        <div className="text-center mb-8">
+ 1348          <h2 className="text-3xl font-bold text-stone-100 mb-1">
+ 1349            {fighter?.name}'s Full Fight Record
+ 1350          </h2>
+ 1351          <p className="text-stone-400">Data from Sherdog • Professional Career</p>
+ 1352        </div>
+ 1353        <div className="bg-stone-800/50 rounded-2xl p-6 mb-8 border border-stone-700 text-center">
+ 1354          <div className="text-5xl font-black text-stone-100">
+ 1355            {record.wins}-{record.losses}-{record.draws}
+ 1356          </div>
+ 1357          <div className="text-stone-400 mt-1">Career Record</div>
+ 1358        </div>
+ 1359        {/* Filters */}
+ 1360        <div className="flex flex-wrap gap-4 mb-8 justify-center">
+ 1361          <div className="flex items-center gap-3 bg-stone-800/50 rounded-xl px-5 py-2.5 border border-stone-700">
+ 1362            <span className="text-stone-300 text-sm">Year</span>
+ 1363            <select
+ 1364              value={selectedYear}
+ 1365              onChange={(e) => setSelectedYear(e.target.value)}
+ 1366              className="bg-stone-900 text-stone-100 px-4 py-1.5 rounded-lg border border-stone-600 text-sm"
+ 1367            >
+ 1368              {years.map(y => <option key={y} value={y}>{y}</option>)}
+ 1369            </select>
+ 1370          </div>
+ 1371          <div className="flex items-center gap-3 bg-stone-800/50 rounded-xl px-5 py-2.5 border border-stone-700">
+ 1372            <span className="text-stone-300 text-sm">Method</span>
+ 1373            <select
+ 1374              value={selectedMethod}
+ 1375              onChange={(e) => setSelectedMethod(e.target.value)}
+ 1376              className="bg-stone-900 text-stone-100 px-4 py-1.5 rounded-lg border border-stone-600 text-sm"
+ 1377            >
+ 1378              <option value="All">All</option>
+ 1379              <option value="KO">KO/TKO</option>
+ 1380              <option value="Submission">Submission</option>
+ 1381              <option value="Decision">Decision</option>
+ 1382            </select>
+ 1383          </div>
+ 1384        </div>
+ 1385        {/* Table */}
+ 1386        <div className="bg-stone-900 rounded-2xl overflow-hidden border border-stone-700">
+ 1387          <table className="w-full">
+ 1388            <thead>
+ 1389              <tr className="bg-stone-800">
+ 1390                <th className="py-4 px-6 text-left text-xs font-semibold text-stone-400">DATE</th>
+ 1391                <th className="py-4 px-6 text-left text-xs font-semibold text-stone-400">OPPONENT</th>
+ 1392                <th className="py-4 px-6 text-center text-xs font-semibold text-stone-400">RESULT</th>
+ 1393                <th className="py-4 px-6 text-left text-xs font-semibold text-stone-400">METHOD</th>
+ 1394                <th className="py-4 px-6 text-center text-xs font-semibold text-stone-400">ROUND</th>
+ 1395                <th className="py-4 px-6 text-center text-xs font-semibold text-stone-400">TIME</th>
+ 1396              </tr>
+ 1397            </thead>
+ 1398            <tbody className="divide-y divide-stone-800">
+ 1399              {filteredFights.map((fight, i) => (
+ 1400                <tr key={i} className="hover:bg-stone-800/50">
+ 1401                  <td className="py-4 px-6 text-sm text-stone-300">
+ 1402                    {fight.date ? new Date(fight.date).toLocaleDateString('en-US', {year:'numeric', month:'short', day:'numeric'}) : '—'}
+ 1403                  </td>
+ 1404                  <td className="py-4 px-6">
+ 1405                    <div className="flex items-center gap-3">
+ 1406                      <img src={FALLBACK_AVATAR_SM} alt="" className="w-7 h-7 rounded-full" />
+ 1407                      <span className="font-medium text-stone-200">{fight.opponent || fight.opponent_name || "Unknown"}</span>
+ 1408                    </div>
+ 1409                  </td>
+ 1410                  <td className="py-4 px-6 text-center">
+ 1411                    <span className={`inline-block px-3 py-0.5 rounded text-xs font-bold ${
+ 1412                      String(fight.result || "").toUpperCase().startsWith('W') ? 'bg-green-600 text-white' : 
+ 1413                      String(fight.result || "").toUpperCase().startsWith('L') ? 'bg-red-600 text-white' : 'bg-stone-600 text-white'
+ 1414                    }`}>
+ 1415                      {String(fight.result || "?").toUpperCase()}
+ 1416                    </span>
+ 1417                  </td>
+ 1418                  <td className="py-4 px-6 text-sm text-stone-300">{fight.method || "—"}</td>
+ 1419                  <td className="py-4 px-6 text-center text-sm text-stone-300">{fight.round || "—"}</td>
+ 1420                  <td className="py-4 px-6 text-center text-sm text-stone-300">{fight.time || "—"}</td>
+ 1421                </tr>
+ 1422              ))}
+ 1423            </tbody>
+ 1424          </table>
+ 1425        </div>
+ 1426        <div className="mt-6 text-center text-xs text-stone-500">
+ 1427          Showing {filteredFights.length} of {fightHistory.length} fights • Data from Sherdog
+ 1428        </div>
+ 1429      </div>
+ 1430    );
+ 1431  };
+ 1432  export default FullFightRecord;
+ 1433  EOF
+ 1434  npm run build
+ 1435  grep -A 50 -B 5 "fight_history" src/components/FightAnalyzer.jsx
+ 1436  python3 -c '
+ 1437  import json
+ 1438  with open("public/this_weeks_stats.json", "r") as f:
+ 1439      data = json.load(f)
+ 1440  print("Total fights in JSON:", len(data.get("fights", [])))
+ 1441  for fight in data.get("fights", [])[:5]:   # check first 5 fights
+ 1442      for fighter in fight.get("fighters", []):
+ 1443          name = fighter.get("name", "Unknown")
+ 1444          hist = fighter.get("fight_history", [])
+ 1445          print(f"→ {name} | fight_history length: {len(hist)}")
+ 1446          if len(hist) > 0:
+ 1447              print("   First fight:", hist[0])
+ 1448          print("---")
+ 1449  '
+ 1450  cd scripts
+ 1451  # Show the part where fight_history is supposed to be added
+ 1452  grep -A 30 -B 5 "fight_history\|sherdog" aggregate_stats.py
+ 1453  npm run build
+ 1454  mv /home/onewop/ufc-betting-site-main/src/components/DFSPicksProjections_full_backup.jsx    /home/onewop/ufc-betting-site-main/_archive/src_components/
+ 1455  mv /home/onewop/ufc-betting-site-main/src/components/DFSPicksProjections_part2_logic.jsx    /home/onewop/ufc-betting-site-main/_archive/src_components/
+ 1456  mv /home/onewop/ufc-betting-site-main/src/components/UserDashboard_backup_411lines.jsx    /home/onewop/ufc-betting-site-main/_archive/src_components/
+ 1457  mv /home/onewop/ufc-betting-site-main/scripts/aggregate_stats_backup.py    /home/onewop/ufc-betting-site-main/_archive/scripts/
+ 1458  mv /home/onewop/ufc-betting-site-main/src/mama.jpg    /home/onewop/ufc-betting-site-main/src/woo.jpg    /home/onewop/ufc-betting-site-main/_archive/src_images/
+ 1459  mv /home/onewop/ufc-betting-site-main/src_backup_before_video_vault_20260330    /home/onewop/ufc-betting-site-main/_archive/
+ 1460  echo "Done"
+ 1461  ls /home/onewop/ufc-betting-site-main/_archive/
+ 1462  ls /home/onewop/ufc-betting-site-main/_archive/scripts/
+ 1463  ls /home/onewop/ufc-betting-site-main/_archive/src_images/
+ 1464  ls /home/onewop/ufc-betting-site-main/src/mama.jpg /home/onewop/ufc-betting-site-main/src/woo.jpg 2>&1
+ 1465  ls /home/onewop/ufc-betting-site-main/_archive/scripts/ && ls /home/onewop/ufc-betting-site-main/_archive/src_components/
+ 1466  cd ufc-betting-site-main/
+ 1467  history 
+ 1468  ls -ald
+ 1469  ls -al
+ 1470  ls -al _archive/
+ 1471  ls -la
+ 1472  ls -la src/
+ 1473  ls -la scripts/
+ 1474  # 1. Current structure
+ 1475  ls -la src/components/
+ 1476  # 2. Check if the build still works after all the splits
+ 1477  npm run build
+ 1478  # Show current TeamCombinations component
+ 1479  ls -la src/components/ | grep -E 'TeamCombinations|projection'
+ 1480  # Show the python optimizer files
+ 1481  ls -la scripts/ | grep -E 'optimize|combination|lineup'
+ 1482  cat src/hooks/useOptimizer.js
+ 1483  cat src/utils/optimizerHelpers.js
+ 1484  npm run build
+ 1485  curl -X GET http://localhost:8000/api/projections | head -n 30
+ 1486  cd ufc-betting-site-main/
+ 1487  history | head
+ 1488  source .venv/bin/activate
+ 1489  SCRAPE_UFCSTATS_RESULTS=1 python3 scripts/aggregate_stats.py && python3 scripts/calculate_combinations.py
+ 1490  SCRAPE_UFCSTATS_RESULTS=1 SCRAPE_UFCSTATS=1 SCRAPE_PERFIGHT=1 SCRAPE_DEF_GRAPPLING=1 SCRAPE_SHERDOG=1 python3 scripts/aggregate_stats.py && python3 scripts/calculate_combinations.py
+ 1491  uvicorn backend.main:app --reload --port 8000
+ 1492  cd ufc-betting-site-main/
+ 1493  ./start-dev.sh 
+ 1494  cd ufc-betting-site-main/q
+ 1495  cd ufc-betting-site-main/
+ 1496  uvicorn backend.main:app --reload --port 8000
+ 1497  source .venv/bin/activate
+ 1498  uvicorn backend.main:app --reload --port 8000
+ 1499  cd ufc-betting-site-main/
+ 1500  source .venv/bin/activate
+ 1501  python -c "
+ 1502  from backend.projections import *   # or wherever your data loader is
+ 1503  print('Available stats/columns:')
+ 1504  # if you have a sample fighter dict or df
+ 1505  print([col for col in dir() if 'td_' in col.lower() or 'strike' in col.lower() or 'def' in col.lower()])
+ 1506  "
+ 1507  python -c "
+ 1508  import backend.projections as proj
+ 1509  print('Available names in projections.py:')
+ 1510  print([x for x in dir(proj) if not x.startswith('__')])
+ 1511  if hasattr(proj, 'get_fighter_data') or hasattr(proj, 'fighters') or hasattr(proj, 'df'):
+ 1512      print('Found data loader!')
+ 1513      # Try to print columns if possible
+ 1514  "
+ 1515  python -c "
+ 1516  import os
+ 1517  for root, dirs, files in os.walk('backend'):
+ 1518      for file in files:
+ 1519          if file.endswith('.py'):
+ 1520              with open(os.path.join(root, file), 'r', encoding='utf-8', errors='ignore') as f:
+ 1521                  content = f.read()
+ 1522                  if 'DataFrame' in content or 'pd.read' in content or 'takedowns' in content.lower() or 'strikes' in content.lower():
+ 1523                      print(f'Found potential data code in: {os.path.join(root, file)}')
+ 1524  "
+ 1525  ls backend/   # tell me what files you see
+ 1526  python -c "
+ 1527  from backend.scraper import *   # adjust filename if different
+ 1528  # or
+ 1529  import pandas as pd
+ 1530  # if you know the file path to your saved fighter data
+ 1531  df = pd.read_csv('path/to/fighter_stats.csv')   # guess common path
+ 1532  print(df.columns.tolist())
+ 1533  print(df.head(1).to_dict())
+ 1534  "
+ 1535  cd ufc-betting-site-main/
+ 1536  source .venv/bin/activate
+ 1537  ./start-dev.sh 
+ 1538  cd ufc-betting-site-main/
+ 1539  source .venv/bin/activate
+ 1540  uvicorn backend.main:app --reload --port 8000
+ 1541  cd ufc-betting-site-main/
+ 1542  source .venv/bin/activate
+ 1543  uvicorn backend.main:app --reload --port 8000
+ 1544  cd ufc-betting-site-main/
+ 1545  source .venv/bin/activate
+ 1546  ./update-new-csv.sh 
+ 1547  cd ufc-betting-site-main/
+ 1548  source .venv/bin/activate
+ 1549  ./start-dev.sh 
+ 1550  cd ufc-betting-site-main/
+ 1551  source .venv/bin/activate
+ 1552  uvicorn backend.main:app --reload --port 8000
+ 1553  cd ufc-betting-site-main/
+ 1554  source .venv/bin/activate
+ 1555  ./start-dev.sh 
+ 1556  cd ufc-betting-site-main/
+ 1557  source .venv/bin/activate
+ 1558  uvicorn backend.main:app --reload --port 8000
+ 1559  cd ufc-betting-site-main/
+ 1560  source .venv/bin/activate
+ 1561  npm install @capacitor/core @capacitor/cli @capacitor/ios
+ 1562  npx cap init
+ 1563  # Install Node Version Manager (nvm) if you don't have it
+ 1564  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+ 1565  # Close and reopen your terminal, then run:
+ 1566  nvm install 22
+ 1567  nvm use 22
+ 1568  # Verify
+ 1569  node -v   # should show v22.x.x
+ 1570  npm -v
+ 1571  npm install @capacitor/core @capacitor/cli @capacitor/ios
+ 1572  npx cap init
+ 1573  npx cap add ios
+ 1574  npx cap open ios
+ 1575  cd ufc-betting-site-main/
+ 1576  source .venv/bin/activate
+ 1577  node -v   # should show v22.x.x
+ 1578  npm -v
+ 1579  export NVM_DIR="$HOME/.nvm"
+ 1580  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+ 1581  nvm use 22
+ 1582  nvm install 22
+ 1583  nvm use 22
+ 1584  npm install @capacitor/core @capacitor/cli @capacitor/ios
+ 1585  npx cap init
+ 1586  npx cap add ios
+ 1587  npx cap open ios
+ 1588  npx cap remove ios
+ 1589  rm -rf ios
+ 1590  rm -rf node_modules/.cache   # optional but good to clear any old cache
+ 1591  npm list @capacitor/ios
+ 1592  npm uninstall @capacitor/ios
+ 1593  npm install
+ 1594  uvicorn backend.main:app --reload --port 8000
+ 1595  cd ufc-betting-site-main/
+ 1596  source .venv/bin/activate
+ 1597  ./start-dev.sh 
+ 1598  cd ufc-betting-site-main/
+ 1599  source .venv/bin/activate
+ 1600  npx cap add android
+ 1601  npm install @capacitor/android
+ 1602  os:~$ cd ufc-betting-site-main/
+ 1603  onewop@pop-os:~/ufc-betting-site-main$ source .venv/bin/activate
+ 1604  (.venv) onewop@pop-os:~/ufc-betting-site-main$ npx cap add android
+ 1605  [error] Could not find the android platform.
+ 1606  (.venv) onewop@pop-os:~/ufc-betting-site-main$ npm install @capacitor/android
+ 1607  added 1 package, and audited 1506 packages in 3s
+ 1608  323 packages are looking for funding
+ 1609  35 vulnerabilities (9 low, 6 moderate, 19 high, 1 critical)
+ 1610  To address issues that do not require attention, run:
+ 1611  To address all issues (including breaking changes), run:
+ 1612  Run `npm audit` for details.
+ 1613  (.venv) onewop@pop-os:~/ufc-betting-site-main$
+ 1614  npx cap add android
+ 1615  onewop@pop-os:~/ufc-betting-site-main$ source .venv/bin/activate
+ 1616  (.venv) onewop@pop-os:~/ufc-betting-site-main$ npx cap add android
+ 1617  [error] Could not find the android platform.
+ 1618  (.venv) onewop@pop-os:~/ufc-betting-site-main$ npm install @capacitor/android
+ 1619  added 1 package, and audited 1506 packages in 3s
+ 1620  323 packages are looking for funding
+ 1621  35 vulnerabilities (9 low, 6 moderate, 19 high, 1 critical)
+ 1622  To address issues that do not require attention, run:
+ 1623  To address all issues (including breaking changes), run:
+ 1624  Run `npm audit` for details.
+ 1625  (.venv) onewop@pop-os:~/ufc-betting-site-main$ os:~$ cd ufc-betting-site-main/
+ 1626  onewop@pop-os:~/ufc-betting-site-main$ source .venv/bin/activate
+ 1627  (.venv) onewop@pop-os:~/ufc-betting-site-main$ npx cap add android
+ 1628  [error] Could not find the android platform.
+ 1629  (.venv) onewop@pop-os:~/ufc-betting-site-main$ npm install @capacitor/android
+ 1630  added 1 package, and audited 1506 packages in 3s
+ 1631  323 packages are looking for funding
+ 1632  35 vulnerabilities (9 low, 6 moderate, 19 high, 1 critical)
+ 1633  To address issues that do not require attention, run:
+ 1634  To address all issues (including breaking changes), run:
+ 1635  Run `npm audit` for details.
+ 1636  (.venv) onewop@pop-os:~/ufc-betting-site-main$
+ 1637  os:~$: command not found
+ 1638  bash: onewop@pop-os:~/ufc-betting-site-main$: No such file or directory
+ 1639  bash: syntax error near unexpected token `onewop@pop-os:~/ufc-betting-site-main$'
+ 1640  [error]: command not found
+ 1641  Command 'You' not found, did you mean:
+ 1642    command 'cou' from snap charmed-openstack-upgrader (2.2.3)
+ 1643  See 'snap info <snapname>' for additional versions.
+ 1644  bash: syntax error near unexpected token `onewop@pop-os:~/ufc-betting-site-main$'
+ 1645  Command 'added' not found, did you mean:
+ 1646    command 'addld' from deb libsword-utils (1.9.0+dfsg-5build1)
+ 1647  Try: sudo apt install <deb name>
+ 1648  323: command not found
+ 1649  Command 'run' not found, did you mean:
+ 1650    command 'rue' from snap darkdimension-rue (1.0.7)
+ 1651    command 'rup' from deb rstat-client (4.0.1-11)
+ 1652    command 'zrun' from deb moreutils (0.67-1)
+ 1653    command 'grun' from deb grun (0.9.3+git20200303-3)
+ 1654    command 'crun' from deb crun (1.12-1)
+ 1655    command 'srun' from deb slurm-client (23.02.6-1ubuntu2)
+ 1656    command 'runq' from deb exim4-daemon-heavy (4.97-4ubuntu4.3)
+ 1657    command 'runq' from deb exim4-daemon-light (4.97-4ubuntu4.3)
+ 1658    command 'runq' from deb sendmail-bin (8.17.2-1)
+ 1659    command 'rn' from deb trn4 (4.0-test77-16)
+ 1660    command 'zun' from deb python3-zunclient (4.7.0-0ubuntu1)
+ 1661    command 'runc' from deb runc (1.3.4-0ubuntu1~24.04.1)
+ 1662  See 'snap info <snapname>' for additional versions.
+ 1663  bash: syntax error near unexpected token `('
+ 1664  To: command not found
+ 1665  added 2 packages, removed 1 package, changed 15 packages, and audited 1507 packages in 6s
+ 1666  323 packages are looking for funding
+ 1667  # npm audit report
+ 1668  @tootallnate/once  <3.0.1
+ 1669  @tootallnate/once vulnerable to Incorrect Control Flow Scoping - https://github.com/advisories/GHSA-vpq2-c234-7xj6
+ 1670  fix available via `npm audit fix`
+ 1671  node_modules/@tootallnate/once
+ 1672  nth-check  <2.0.1
+ 1673  Severity: high
+ 1674  Inefficient Regular Expression Complexity in nth-check - https://github.com/advisories/GHSA-rp65-9cf3-cjxr
+ 1675  fix available via `npm audit fix --force`
+ 1676  Will install react-scripts@0.0.0, which is a breaking change
+ 1677  node_modules/@svgr/plugin-svgo/node_modules/nth-check
+ 1678  postcss  <8.4.31
+ 1679  Severity: moderate
+ 1680  PostCSS line return parsing error - https://github.com/advisories/GHSA-7fh5-64p2-3v2j
+ 1681  fix available via `npm audit fix --force`
+ 1682  Will install react-scripts@0.0.0, which is a breaking change
+ 1683  node_modules/resolve-url-loader/node_modules/postcss
+ 1684  serialize-javascript  <=7.0.4
+ 1685  Severity: high
+ 1686  Serialize JavaScript is Vulnerable to RCE via RegExp.flags and Date.prototype.toISOString() - https://github.com/advisories/GHSA-5c6j-r48x-rmvq
+ 1687  Serialize JavaScript has CPU Exhaustion Denial of Service via crafted array-like objects - https://github.com/advisories/GHSA-qj8w-gfj5-8c6v
+ 1688  fix available via `npm audit fix --force`
+ 1689  Will install react-scripts@0.0.0, which is a breaking change
+ 1690  node_modules/rollup-plugin-terser/node_modules/serialize-javascript
+ 1691  node_modules/serialize-javascript
+ 1692  underscore  <=1.13.7
+ 1693  Severity: high
+ 1694  Underscore has unlimited recursion in _.flatten and _.isEqual, potential for DoS attack - https://github.com/advisories/GHSA-qpx9-hpmf-5gmw
+ 1695  fix available via `npm audit fix`
+ 1696  node_modules/underscore
+ 1697  webpack-dev-server  <=5.2.0
+ 1698  Severity: moderate
+ 1699  webpack-dev-server users' source code may be stolen when they access a malicious web site with non-Chromium based browser - https://github.com/advisories/GHSA-9jgg-88mc-972h
+ 1700  webpack-dev-server users' source code may be stolen when they access a malicious web site - https://github.com/advisories/GHSA-4v9v-hfq4-rm2v
+ 1701  fix available via `npm audit fix --force`
+ 1702  Will install react-scripts@0.0.0, which is a breaking change
+ 1703  node_modules/react-scripts/node_modules/webpack-dev-server
+ 1704  27 vulnerabilities (9 low, 4 moderate, 14 high)
+ 1705  To address issues that do not require attention, run:
+ 1706  To address all issues (including breaking changes), run:
+ 1707  bash: syntax error near unexpected token `('
+ 1708  npm warn using --force Recommended protections disabled.
+ 1709  npm warn audit Updating react-scripts to 0.0.0, which is a SemVer major change.
+ 1710  npm warn audit Updating @craco/craco to 5.9.0, which is a SemVer major change.
+ 1711  removed 883 packages, changed 3 packages, and audited 624 packages in 1s
+ 1712  135 packages are looking for funding
+ 1713    run `npm fund` for details
+ 1714  found 0 vulnerabilities
+ 1715  Command 'Run' not found, did you mean:
+ 1716    command 'zun' from deb python3-zunclient (4.7.0-0ubuntu1)
+ 1717  Try: sudo apt install <deb name>
+ 1718  bash: syntax error near unexpected token `onewop@pop-os:~/ufc-betting-site-main$'
+ 1719  (.venv) onewop@pop-os:~/ufc-betting-site-main$ npx cap add android
+ 1720  [error] Could not find installation of TypeScript.
+ 1721          To use capacitor.config.ts files, you must install TypeScript in your project, e.g. w/ npm install -D typescript
+ 1722  (.venv) onewop@pop-os:~/ufc-betting-site-main$
+ 1723  e4xit
+ 1724  rm -rf node_modules package-lock.json
+ 1725  npm install
+ 1726  cd ufc-betting-site-main/
+ 1727  source .venv/bin/activate
+ 1728  uvicorn backend.main:app --reload --port 8000
+ 1729  cd ufc-betting-site-main/
+ 1730  source .venv/bin/activate
+ 1731  ./start-dev.sh 
+ 1732  cd ufc-betting-site-main/
+ 1733  source .venv/bin/activate
+ 1734  npm run build
+ 1735  npm install -D typescript
+ 1736  npx cap add android
+ 1737  npm run build
+ 1738  # 2. Sync everything to the Android folder
+ 1739  npx cap sync android
+ 1740  # 3. Open the project in Android Studio
+ 1741  npx cap open android
+ 1742  flatpak install Android Studio
+ 1743  npm run build
+ 1744  npx cap sync android
+ 1745  npx cap open android
+ 1746  flatpak run com.google.AndroidStudio
+ 1747  npm run build          # rebuild web assets
+ 1748  npx cap sync android   # sync again
+ 1749  flatpak run com.google.AndroidStudio
+ 1750  cd ufc-betting-site-main/
+ 1751  source .venv/bin/activate
+ 1752  npm list @capacitor/core @capacitor/cli @capacitor/android
+ 1753  npm run build
+ 1754  npx cap sync android
+ 1755  cd ufc-betting-site-main/
+ 1756  source .venv/bin/activate
+ 1757  npx cap sync android
+ 1758  npx cap open android
+ 1759  history 
+ 1760  npm run build
+ 1761  npx cap sync android
+ 1762  npx cap open android
+ 1763  flatpak run com.google.AndroidStudio
+ 1764  pkill -f studio.sh
+ 1765  pkill -f "Android Studio"
+ 1766  pkill -f jetbrains
+ 1767  rm -f ~/.cache/JetBrains/AndroidStudio*/*.lock
+ 1768  rm -f ~/.config/JetBrains/AndroidStudio*/.lock
+ 1769  flatpak run com.google.AndroidStudio
+ 1770  pkill -9 -f "Android Studio"
+ 1771  pkill -9 -f studio.sh
+ 1772  pkill -9 -f jetbrains
+ 1773  pkill -9 -f "/app/extra/bin/studio"
+ 1774  rm -rf ~/.cache/JetBrains/AndroidStudio*
+ 1775  rm -rf ~/.config/JetBrains/AndroidStudio*/.lock
+ 1776  rm -f /tmp/.jetbrains*
+ 1777  flatpak run com.google.AndroidStudio
+ 1778  pkill -9 -f studio
+ 1779  find ~/.local/share/JetBrains -name "*.lock" 2>/dev/null
+ 1780  find ~/.local/share/applications -name "*.lock" 2>/dev/null
+ 1781  # Find the socket
+ 1782  find /tmp /run/user -name "*.lock" -user $USER 2>/dev/null
+ 1783  # Or just reboot if you can't find it
+ 1784  flatpak run com.google.AndroidStudio
+ 1785  history 
+ 1786  cd ufc-betting-site-main/
+ 1787  source .venv/bin/activate
+ 1788  uvicorn backend.main:app --reload --port 8000
+ 1789  cd ufc-betting-site-main/
+ 1790  source .venv/bin/activate
+ 1791  ./start-dev.sh 
+ 1792  rm -f ~/.var/app/com.google.AndroidStudio/config/Google/AndroidStudio2025.3.3/.lock
+ 1793  echo "Lock removed, exit code: $?"
+ 1794  steam 
+ 1795  cd ufc-betting-site-main/
+ 1796  source .venv/bin/activate
+ 1797  uvicorn backend.main:app --reload --port 8000
+ 1798  cd ufc-betting-site-main/
+ 1799  source .venv/bin/activate
+ 1800  ./start-dev.sh 
+ 1801  history 
+ 1802  SCRAPE_UFCSTATS_RESULTS=1 SCRAPE_UFCSTATS=1 SCRAPE_PERFIGHT=1 SCRAPE_DEF_GRAPPLING=1 SCRAPE_SHERDOG=1 python3 scripts/aggregate_stats.py && python3 scripts/calculate_combinations.py
+ 1803  cd ufc-betting-site-main/
+ 1804  source .venv/bin/activate
+ 1805  SCRAPE_UFCSTATS_RESULTS=1 SCRAPE_UFCSTATS=1 SCRAPE_PERFIGHT=1 SCRAPE_DEF_GRAPPLING=1 SCRAPE_SHERDOG=1 python3 scripts/aggregate_stats.py && python3 scripts/calculate_combinations.py
+ 1806  rm -f DKSalaries.csv
+ 1807  rm -f DKSalaries.csv.bak 
+ 1808  SCRAPE_UFCSTATS_RESULTS=1 SCRAPE_UFCSTATS=1 SCRAPE_PERFIGHT=1 SCRAPE_DEF_GRAPPLING=1 SCRAPE_SHERDOG=1 python3 scripts/aggregate_stats.py && python3 scripts/calculate_combinations.py
+ 1809  git status
+ 1810  git add .
+ 1811  git commit -m "Update for production deployment - April 2026"
+ 1812  git push origin main
+ 1813  ls -la
+ 1814  ls -la | grep -E "backend|app|main.py|uvicorn"
+ 1815  ls -la backend/
+ 1816  ls -la backend/ | grep -E "Procfile|railway|Dockerfile"
+ 1817  # Also show me the requirements
+ 1818  cat backend/requirements.txt
+ 1819  git add backend/requirements.txt         backend/Procfile         backend/railway.json         backend/database.py         backend/.env.example         backend/alembic.ini         backend/alembic/
+ 1820  git commit -m "Prepare backend for Railway + PostgreSQL deployment"
+ 1821  git push origin main
+ 1822  ls backend/
+ 1823  vim railway.json
+ 1824  cd ~/ufc-betting-site-main
+ 1825  git add railway.json
+ 1826  git commit -m "Add railway.json for proper backend deployment"
+ 1827  git push origin main
+ 1828  cat railway.json
+ 1829  cp backend/requirements.txt .
+ 1830  cp backend/Procfile .
+ 1831  git add requirements.txt Procfile
+ 1832  git commit -m "Copy requirements.txt and Procfile to root for Railway deployment"
+ 1833  git push origin main
+ 1834  vim nixpacks.toml
+ 1835  git add nixpacks.toml
+ 1836  git commit -m "Add nixpacks.toml for correct Railway backend deployment"
+ 1837  git push origin main
+ 1838  cd backend/
+ 1839  ls
+ 1840  ls -al requirements.txt 
+ 1841  cat requirements.txt 
+ 1842  vim Dockerfile
+ 1843  git add backend/Dockerfile
+ 1844  git commit -m "Add Dockerfile for reliable Railway deployment"
+ 1845  git push origin main
+ 1846  git add backend/Dockerfile
+ 1847  git commit -m "Add Dockerfile for reliable Railway deployment"
+ 1848  cd ..
+ 1849  git rm --cached __pycache__/database.cpython-312.pyc 2>/dev/null || true
+ 1850  git add backend/Dockerfile
+ 1851  git commit -m "Add Dockerfile for reliable Railway deployment"
+ 1852  git push origin main
+ 1853  cat backend/Dockerfile 
+ 1854  uvicorn backend.main:app --reload --port 8000
+ 1855  vim backend/Dockerfile 
+ 1856  cat backend/Dockerfile
+ 1857  git add backend/Dockerfile
+ 1858  git commit -m "Fix Dockerfile to properly handle Railway $PORT variable"
+ 1859  git push origin main
+ 1860  vim backend/Dockerfile 
+ 1861  git add backend/Dockerfile
+ 1862  git commit -m "Update Dockerfile with reliable shell command for PORT"
+ 1863  git push origin main
+ 1864  vim backend/Dockerfile 
+ 1865  git add backend/Dockerfile
+ 1866  git commit -m "Update Dockerfile with reliable shell command for PORT2"
+ 1867  git push origin main
+ 1868  cat backend/Dockerfile 
+ 1869  rm -f backend/railway.json
+ 1870  git add backend/
+ 1871  git commit -m "Remove conflicting railway.json from backend folder"
+ 1872  git push origin main
+ 1873  vim railway.json
+ 1874  git add .
+ 1875  git commit -m "Move railway.json to root and simplify config"
+ 1876  git push origin main
+ 1877  cat railway.json
+ 1878  vim backend/main.py 
+ 1879  cat backend/main.py
+ 1880  cat backend/main.py | grep -i backend
+ 1881  vim backend/main.py 
+ 1882  git add backend/main.py
+ 1883  git commit -m "Fix remaining imports for Railway deployment"
+ 1884  git push origin main
+ 1885  grep -r "from backend\." backend/
+ 1886  grep -rl "from backend\." backend/ | xargs sed -i 's/from backend\./from /g'
+ 1887  sed -i 's/from backend.database/from database/g' backend/alembic/env.py
+ 1888  git add backend/
+ 1889  git commit -m "Fix all backend. imports for Railway subfolder deployment"
+ 1890  git push origin main
+ 1891  python -c "import secrets; print(secrets.token_hex(32))"
+ 1892  cd ufc-betting-site-main/
+ 1893  cat .env
+ 1894  vim .env
+ 1895  npm run build
+ 1896  npx cap sync android
+ 1897  history > file11

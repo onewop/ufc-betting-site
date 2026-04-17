@@ -11,3 +11,4 @@ venv/
 .env.local
 .env*.local
 .aider*
+.vercel

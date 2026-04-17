@@ -471,7 +471,8 @@ const VideosV2 = () => {
   // Before:  (VideoVault) flattened fighters into a flat grid — no grouping
   // After:   keeps fights array intact so FightSection renders per-matchup
   useEffect(() => {
-    api.get("/api/this-weeks-stats")
+    api
+      .get("/api/this-weeks-stats")
       .then((data) => {
         // data.event may be an object {name, date, location} or a plain string
         if (data.event) setEventName(data.event.name || data.event);

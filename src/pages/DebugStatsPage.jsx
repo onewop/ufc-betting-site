@@ -24,7 +24,8 @@ const DebugStatsPage = ({ currentUser }) => {
   // Pull from the same data source as the live site — no special endpoint needed.
   useEffect(() => {
     setLoading(true);
-    api.get("/api/this-weeks-stats")
+    api
+      .get("/api/this-weeks-stats")
       .then((data) => {
         const fightList = data?.fights ?? [];
         setFights(fightList);

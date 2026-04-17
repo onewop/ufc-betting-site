@@ -393,7 +393,8 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
   };
 
   useEffect(() => {
-    api.get("/api/this-weeks-stats")
+    api
+      .get("/api/this-weeks-stats")
       .then((data) => {
         if (data.event) setEventName(data.event.name || data.event);
         setFights(data.fights || []);
