@@ -20,6 +20,7 @@ import AuthModal from "./components/AuthModal";
 import MySavedLineups from "./components/MySavedLineups";
 import UserDashboard from "./components/UserDashboard";
 import ParlayBuilder from "./components/ParlayBuilder";
+import ValueBets from "./components/ValueBets";
 // PRIVATE OWNER TOOL — not linked in any public navigation
 import DebugStatsPage from "./pages/DebugStatsPage";
 import api from "./services/api";
@@ -40,6 +41,7 @@ const navLinks = [
   { to: "/odds", label: "Live Odds" },
   { to: "/predictions", label: "Predictions & Projections" },
   { to: "/parlay-builder", label: "Parlay Builder" },
+  { to: "/value-bets", label: "+EV Value Bets" },
 ];
 
 const mobileNavLinks = [
@@ -496,6 +498,10 @@ const AppShell = () => {
         <Route
           path="/parlay-builder"
           element={<ParlayBuilder currentUser={currentUser} />}
+        />
+        <Route
+          path="/value-bets"
+          element={<ValueBets eventTitle={eventTitle} />}
         />
         {/* PRIVATE OWNER TOOL — /debug-stats — not in nav, not linked publicly */}
         <Route
