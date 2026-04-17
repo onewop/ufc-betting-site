@@ -1,4 +1,7 @@
-const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000";
+// In production (Vercel), API_BASE is "" so requests go to the same origin
+// and Vercel's /api/* rewrite proxies them to Railway — no CORS needed.
+// In local dev, set REACT_APP_API_BASE=http://localhost:8000 in .env.local
+const API_BASE = process.env.REACT_APP_API_BASE ?? "";
 
 // Tries to extract FastAPI's `detail` field from error response bodies
 // so validation / auth error messages are surfaced to the UI as-is.
