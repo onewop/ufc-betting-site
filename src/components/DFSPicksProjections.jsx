@@ -612,7 +612,7 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
                 key: "table",
               },
               {
-                label: "🔍 Matchup Intel",
+                label: "🎯 Fight Predictions",
                 id: "section-matchup",
                 key: "matchupIntel",
               },
@@ -850,7 +850,7 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
                           }
                           className="inline-block mt-2 text-[10px] text-yellow-600 hover:text-yellow-400 underline underline-offset-2"
                         >
-                          View matchup intel
+                          View fight prediction
                         </a>
                       </div>
                     </details>
@@ -1001,7 +1001,7 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
                             }
                             className="inline-block mt-1 text-[10px] text-yellow-600 hover:text-yellow-400 underline underline-offset-2 whitespace-nowrap"
                           >
-                            ↓ matchup intel
+                            ↓ fight prediction
                           </a>
                         </td>
                         <td
@@ -1053,7 +1053,7 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
           )}
         </section>
 
-        {/* ── Matchup Intel ── */}
+        {/* ── Fight Predictions ── */}
         <section id="section-matchup" className="mb-12">
           <div
             className="flex items-center gap-3 mb-4 cursor-pointer group"
@@ -1064,7 +1064,7 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
           >
             <div className="h-px flex-1 bg-yellow-700/30 group-hover:bg-yellow-700/60 transition" />
             <span className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600 group-hover:text-yellow-400 transition">
-              MATCHUP INTEL
+              FIGHT PREDICTIONS
             </span>
             <span className="text-yellow-700 group-hover:text-yellow-400 transition text-xs ml-1">
               {openSections.matchupIntel ? "▲" : "▼"}
@@ -1073,8 +1073,8 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
           </div>
           {!openSections.matchupIntel && (
             <p className="text-stone-500 text-center text-xs mb-2">
-              Strike, wrestling &amp; submission vulnerability breakdown for
-              each fight. Click the header to expand.
+              Comprehensive fight predictions using all stats, records & fight history.
+              Click the header to expand.
             </p>
           )}
           {openSections.matchupIntel && (

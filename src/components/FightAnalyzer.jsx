@@ -4,9 +4,10 @@ import WeighInClips from "./WeighInClips";
 import KeyNotes from "./KeyNotes";
 import FullFightRecord from "./FullFightRecord";
 import { motion, AnimatePresence } from "framer-motion";
-import { _computeAngles, _LEVEL } from "./fightAnalyzerHelpers";
+import { predictFight, CONFIDENCE_LEVELS } from "./fightAnalyzerHelpers";
 import api from "../services/api";
 import FightStatsSection from "./FightStatsSection";
+import MatchupIntel from "./MatchupIntel";
 
 const FightAnalyzer = ({
   eventTitle = "Latest UFC Event",
@@ -1811,114 +1812,97 @@ const FightAnalyzer = ({
           </div>
         ) : null}
 
-        {/* ── Per-fight Matchup Intel ── */}
+        {/* ── Per-fight Fight Prediction ── */}
         {selectedFightData &&
           (() => {
             const fight = selectedFightData;
             if (fight.fighters.length < 2) return null;
             const [f1, f2] = fight.fighters;
-            const directions = _computeAngles(f1, f2);
-            const hasStrong = directions.some((d) =>
-              d.angles.some((a) => a.level === "strong"),
-            );
-            const hasModerate = directions.some((d) =>
-              d.angles.some((a) => a.level === "moderate"),
-            );
-            const cardBorder = hasStrong
-              ? "border-red-700/60"
-              : hasModerate
-                ? "border-orange-700/50"
-                : "border-stone-700/60";
+            const pred = predictFight(f1, f2);
+            const style = CONFIDENCE_LEVELS[pred.confidence];
+            const wBreak = pred.categories[pred.winner.name];
+            const lBreak = pred.categories[pred.loser.name];
 
             return (
               <div className="mb-8">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="h-px flex-1 bg-yellow-700/30" />
                   <span className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600">
-                    ◈ MATCHUP INTEL
+                    ◈ FIGHT PREDICTION
                   </span>
                   <div className="h-px flex-1 bg-yellow-700/30" />
                 </div>
                 <p className="text-stone-400 text-center text-xs mb-4">
-                  Directional exploit analysis.{" "}
-                  <span className="text-red-400">🔴 Exploit</span> = clear edge
-                  over opponent's weakness ·{" "}
-                  <span className="text-orange-400">🟠 Edge</span> = some
-                  advantage · <span className="text-stone-400">⚪ Even</span> =
-                  no clear edge.
+                  Comprehensive 10-category analysis using all available stats, records, physical attributes & fight history.
                 </p>
-                <div
-                  className={`bg-stone-900 rounded-lg border ${cardBorder} p-4`}
-                >
+
+                <div className={`bg-stone-900 rounded-lg border ${style.border} p-4 ${style.glow}`}>
+                  {/* Winner header */}
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-stone-100 font-bold text-sm">
-                      {f1.name}
-                      <span className="text-stone-500 mx-2">vs</span>
-                      {f2.name}
-                    </span>
-                    {hasStrong && (
-                      <span className="text-xs bg-red-800 text-red-100 px-2 py-0.5 rounded font-bold">
-                        ⚠ Exploit Found
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2.5 h-2.5 rounded-full ${style.dot}`} />
+                      <span className="text-stone-100 font-bold text-sm">
+                        {pred.winner.name}
+                        <span className="text-stone-500 mx-2">vs</span>
+                        {pred.loser.name}
                       </span>
-                    )}
+                    </div>
+                    <span className={`text-[10px] px-2 py-0.5 rounded font-bold tracking-wider ${style.badge}`}>
+                      {style.label}
+                    </span>
                   </div>
 
-                  {directions.map((dir, di) => {
-                    const topAngles = dir.angles.filter(
-                      (a) => a.level !== "neutral",
-                    );
-                    if (topAngles.length === 0) return null;
-                    return (
-                      <div key={di} className="mb-3">
-                        <p className="text-xs text-stone-400 mb-1 font-semibold">
-                          {dir.attacker}{" "}
-                          <span className="text-stone-600">exploiting</span>{" "}
-                          {dir.defender}
-                        </p>
-                        <div className="flex flex-col gap-1">
-                          {dir.angles.map((angle, ai) => {
-                            const style = _LEVEL[angle.level];
-                            return (
-                              <div
-                                key={ai}
-                                className={`flex items-center gap-2 rounded px-2 py-1 ${style.bg} border ${style.border}`}
-                              >
-                                <span
-                                  className={`w-2 h-2 rounded-full flex-shrink-0 ${style.dot}`}
-                                />
-                                <span className="text-xs text-stone-300 flex-1">
-                                  <span className="font-semibold text-stone-100">
-                                    {angle.label}
-                                  </span>
-                                  {" — "}
-                                  {angle.tip}
-                                </span>
-                                <span
-                                  className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${style.badge}`}
-                                >
-                                  {style.label}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {/* Win probability bar */}
+                  <div className="mb-3">
+                    <div className="flex justify-between text-xs text-stone-400 mb-1">
+                      <span className="font-semibold text-stone-200">{pred.winner.name} {pred.winner.winProb}%</span>
+                      <span>{pred.loser.name} {pred.loser.winProb}%</span>
+                    </div>
+                    <div className="h-2.5 bg-stone-800 rounded-full overflow-hidden flex">
+                      <div className={`${style.barColor} rounded-l-full transition-all`} style={{ width: `${pred.winner.winProb}%` }} />
+                      <div className="bg-stone-600 flex-1 rounded-r-full" />
+                    </div>
+                  </div>
 
-                  {(() => {
-                    const allStrong = directions.flatMap((d) =>
-                      d.angles
-                        .filter((a) => a.level === "strong")
-                        .map((a) => `${d.attacker}'s ${a.label.toLowerCase()}`),
-                    );
-                    if (allStrong.length === 0) return null;
-                    return (
-                      <p className="text-xs text-yellow-400/80 mt-2 border-t border-stone-700 pt-2">
-                        💡 DFS angle: Target {allStrong.join(" and ")}.
-                      </p>
-                    );
-                  })()}
+                  {/* Narrative */}
+                  <p className="text-xs text-stone-300 leading-relaxed mb-3 border-t border-stone-700/50 pt-3">
+                    {pred.narrative}
+                  </p>
+
+                  {/* Category breakdown */}
+                  <div className="border-t border-stone-700/50 pt-3">
+                    <p className="text-[10px] text-stone-500 uppercase tracking-widest font-bold mb-2">Category Breakdown</p>
+                    <div className="grid gap-1.5">
+                      {Object.entries(pred.catLabels).map(([key, label]) => {
+                        const wScore = wBreak[key]?.score ?? 50;
+                        const lScore = lBreak[key]?.score ?? 50;
+                        const isWinnerCat = pred.catWins.winner.includes(key);
+                        const isLoserCat = pred.catWins.loser.includes(key);
+                        return (
+                          <div key={key} className="flex items-center gap-2">
+                            <span className="text-[10px] text-stone-400 w-28 flex-shrink-0 truncate">{label}</span>
+                            <div className="flex-1 flex items-center gap-1">
+                              <span className={`text-[10px] w-6 text-right font-mono ${isWinnerCat ? "text-emerald-400 font-bold" : "text-stone-400"}`}>{wScore}</span>
+                              <div className="flex-1 h-1.5 bg-stone-800 rounded-full overflow-hidden flex">
+                                <div
+                                  className={`rounded-l-full ${isWinnerCat ? "bg-emerald-500" : isLoserCat ? "bg-stone-600" : "bg-stone-500"}`}
+                                  style={{ width: `${(wScore / (wScore + lScore)) * 100}%` }}
+                                />
+                                <div
+                                  className={`rounded-r-full flex-1 ${isLoserCat ? "bg-red-500/70" : "bg-stone-700"}`}
+                                />
+                              </div>
+                              <span className={`text-[10px] w-6 font-mono ${isLoserCat ? "text-red-400 font-bold" : "text-stone-400"}`}>{lScore}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="flex justify-between mt-2 text-[10px] text-stone-500">
+                      <span>◼ {pred.winner.name.split(" ").pop()} wins {pred.catWins.winner.length} categories</span>
+                      <span>{pred.loser.name.split(" ").pop()} wins {pred.catWins.loser.length} ◼</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             );

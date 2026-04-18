@@ -1,0 +1,347 @@
+COMBAT VAULT — Complete Site Description
+=========================================
+
+OVERVIEW
+--------
+Combat Vault is a UFC betting, DFS (Daily Fantasy Sports), and fight analysis web application. It features a military/classified ops visual theme (dark stone backgrounds, yellow accents, monospace fonts, "CLASSIFIED / LEVEL 5 CLEARANCE" banners). It has a React frontend with a FastAPI backend, integrates with DraftKings salary data, The Odds API for live betting lines, UFCStats/Sherdog for fighter statistics, and Stripe for subscriptions.
+
+Monetization: Free tier + Pro subscription ($19.99/month via Stripe). Affiliate links to DraftKings, FanDuel, bet365, BetMGM, Underdog Fantasy, PrizePicks.
+
+
+NAVIGATION
+----------
+Desktop nav: Home | Fantasy Teams | Smart AI Picks | Fight Analyzer | Live Odds | Predictions & Projections | Parlay Builder | Dashboard (logged in) | Theme toggle | Log In/Register
+Mobile bottom bar: Home | Analyze | Odds | DFS | Parlay
+
+
+=========================================
+PAGE 1: HOME PAGE (/)
+=========================================
+
+Sections:
+- Hero/Header — Event title from current event data, "UFC FIGHT NIGHT" tagline, CTA buttons: "Start with Fight Analyzer", "Build Your Parlay", "View Latest Odds"
+- Latest News — Fight Week Updates:
+  - Weigh-In Videos — 3 placeholder cards (Full Weigh-In Video, Official Highlights, Fighter Clips) marked "Coming Friday morning"
+  - Last-Minute Fight Changes & News — Textual updates about bout changes
+- Quick Tools Grid — 4 cards linking to core tools:
+  - Fight Analyzer — "Deep stats & analysis"
+  - Parlay Builder — "Build winning parlays"
+  - Live Odds — "Real-time betting lines"
+  - DFS Teams — "Optimize fantasy squads"
+- Video background — Looping UFC fight video with camo texture overlay
+
+
+=========================================
+PAGE 2: FIGHT ANALYZER (/fight-analyzer)
+=========================================
+Access: Free (all users)
+
+The flagship analysis page. Select any fight from the current card and get deep stat breakdowns.
+
+Sections:
+
+a) Fight Selector
+   - Dropdown listing all fights from the current card
+   - Auto-sets question to "Who wins? Overall fight prediction." on selection
+
+b) AI Question & Answer Engine
+   - Text input + "Analyze" button
+   - 13+ analysis categories triggered by keyword matching:
+     1. Striking Advantage — SLpM, accuracy, defense, SApM comparison table with winner highlights
+     2. Strikes Per Minute — SLpM + accuracy side-by-side
+     3. Striking Accuracy — % landed with volume context
+     4. Striking Defense — Defense % + SApM (absorption rate)
+     5. Grappling/Wrestling — TD avg, TD accuracy, TD defense, control time, submission wins
+     6. Takedown Offense vs Defense — Directional exploit matrix (Exploit / Edge / Even)
+     7. Takedown Defense — Isolated TD defense comparison
+     8. Submissions — Career sub wins, avg sub attempts, TD defense context
+     9. Record/History — Full career record, win/loss streaks, last 5/10 UFC results, finish breakdowns
+     10. Finish Rate — Finish %, decision %, KO wins, sub wins, avg knockdowns, avg fight duration
+     11. KO Power — KO/TKO wins, finish rate, SLpM, knockdowns/fight, strikes absorbed
+     12. Win Streak/Momentum — Current/longest streak, last fight result, age, career longevity
+     13. Physical/Reach — Height, reach (with gap calculation), stance, age, southpaw detection
+     14. Overall Prediction — Comprehensive multi-stat scoring producing a pick
+
+c) Live Odds Panel
+   - Shows best moneyline for each fighter across all US sportsbooks
+   - Implied probability %, FAV/DOG labels
+
+d) Full Fighter Stats & Comparisons (collapsible panel with 7 stat tabs):
+   1. Basics — Nickname, age, height, reach, stance, weight class, record, DK salary, avg DFS points
+   2. Striking — SLpM, SApM, striking accuracy %, striking defense %
+   3. Strike Distribution — Head/body/leg % of landed strikes; distance/clinch/ground %
+   4. Grappling — TD avg, TD accuracy, TD defense, sub win %, avg sub attempts, avg KD/fight, avg control time, control time %
+   5. Defensive Grappling — TD defense, implied sub defense %, avg opponent control time, reversals/fight, subs conceded, opponent sub attempts
+   6. Record & Awards — UFC win/loss streaks, longest streak, last fight result, last 5/10 records, KO/TKO wins, sub wins, decision wins, finish rate, decision rate, avg fight duration, career longevity
+   7. Advanced — Additional computed stats
+
+   - Weigh-In Clips — Placeholder cards per fighter with "Coming Soon" video areas
+   - Key Notes — Conditional fight context notes (injury concerns, short notice, style advantages) with severity-based color coding
+   - Full Fight Record Modal — Full-screen modal showing a fighter's complete Sherdog fight history with filters by year, method (KO/Sub/Decision), and pro/amateur toggle
+   - Fighter Images — Auto-derived headshots with initials-based colored avatar fallback
+
+e) Matchup Intel (Per-Fight)
+   - Directional exploit analysis for the selected fight
+   - Computes striking, wrestling, and submission angles for Fighter A vs Fighter B and vice versa
+   - Color-coded: Exploit (clear vulnerability), Edge (some advantage), Even
+   - DFS angle tips when exploits are found
+
+f) Last Event Results
+   - Collapsible section showing previous UFC event results
+   - Fight Night Stats — Total fights, KO/TKO count, submissions, finish rate
+   - Biggest Upsets — First-round finishes
+   - Best Value Fighters — Fighters who won by finish
+   - Method Breakdown — KO/TKO, Submission, Decision counts
+   - Key Insights — Finish rate, avg round, total bouts
+   - Full Results Table — Sortable by round/time
+
+
+=========================================
+PAGE 3: FANTASY TEAMS / DFS OPTIMIZER (/team-combinations)
+=========================================
+Access: Pro only ($19.99/month)
+
+Sections:
+
+a) Optimizer Controls Panel
+   - Number of Teams input (1-50)
+   - Salary Targeting toggle with 3 modes:
+     - Aggressive / Max Salary (avg ~$49.2k-$50k)
+     - Higher Salaries (avg ~$48.5k-$49.2k)
+     - Balanced / Default (avg ~$47.5k-$48.5k)
+   - Generate / Regenerate Teams buttons (calls backend optimizer)
+   - Download CSV — Exports DraftKings-format CSV for direct upload
+   - Save Lineup — Saves to user's account
+   - Generation stats (count + avg salary)
+
+b) Fighter Limits Table
+   - Searchable fighter list
+   - Per-fighter columns: Name, Salary, Ownership Tier, Leverage Label, Min exposure, Max exposure
+   - Desktop scrollable table + mobile collapsible card layout
+   - Ownership tiers and leverage labels auto-calculated from salary/avgFPPG
+
+c) Generated Teams Display
+   - Lists each 6-fighter team with salary totals
+   - Ownership tier + leverage labels per fighter
+   - Stacking Validation indicators
+   - Fighter Usage Summary grid (appearances across all generated teams)
+
+Rules: Max 6 fighters per team, $50,000 salary cap, one fighter per fight. Backend optimizer enforces diversity balancing, exposure limits, and stacking validation.
+
+
+=========================================
+PAGE 4: SMART AI PICKS (/smart-picks)
+=========================================
+Access: Free
+
+Strategy-based DFS lineup generation with AI reasoning.
+
+Sections:
+
+a) Strategy Selector — 7 strategies:
+   1. Highest Projection — Picks highest-projected fighter per matchup (best for cash games)
+   2. Best Value — Maximizes projection per salary dollar (find underpriced fighters)
+   3. Contrarian — Low-ownership fighters with viable projections (GPP tournaments)
+   4. Finish Upside — Fighters most likely to win by KO/TKO or submission (max ceiling)
+   5. Balanced — Blends projection strength with salary efficiency
+   6. Wrestling Edge — Dominant grapplers with control time advantage
+   7. Striking Edge — High-volume strikers with knockdown power
+
+b) Generated Lineups
+   - Initial load: 3 lineups per strategy
+   - "Generate More" produces additional fresh, varied lineups (10-20+)
+   - Each lineup shows: fighters, salaries, projected points, total salary
+   - Per-lineup reasoning explaining WHY each was chosen
+
+c) Pre-UFC Background
+   - Collapsible section for fighters with < 3 UFC fights showing pre-UFC career notes
+
+d) Projection Breakdown
+   - Collapsible section showing full projection data for all fighters
+
+e) Actions
+   - Download all lineups as DraftKings CSV
+   - Save lineups to dashboard
+   - Welcome Bonus Selector — Affiliate offer cards for DraftKings, FanDuel, bet365, BetMGM, Underdog Fantasy, PrizePicks
+
+
+=========================================
+PAGE 5: LIVE ODDS (/odds)
+=========================================
+Access: Free
+
+Sections:
+
+a) Header Bar
+   - Refresh button (force new API call)
+   - Clear Cache button (wipes cache, force re-fetch)
+   - Cached/Updated timestamp, API fight count, DK slate match status
+
+b) Debug Info Bar
+   - API event date, API fight count, DK slate size, cache timestamp, staleness detection
+
+c) Odds Alert System
+   - Set an Odds Alert form:
+     - Email, fighter selector, direction (better/worse), target odds
+     - Enable/disable local line polling (every 2 minutes)
+     - Browser push notifications when alerts trigger
+     - Alert event log (last 6 triggered alerts)
+     - Alerts saved to backend + localStorage
+   - Quick-set via bell button next to any fighter
+
+d) Fight Cards
+   - Each fight shows:
+     - Both fighters with best moneyline across US sportsbooks
+     - Implied probability %
+     - Alert button per fighter to set odds alert
+     - Line movement indicator
+     - All bookmaker odds in expandable detail
+
+Data source: The Odds API (v4), 6-hour cache TTL, staleness auto-detection against DK slate
+
+
+=========================================
+PAGE 6: PREDICTIONS & PROJECTIONS (/predictions)
+=========================================
+Access: Free
+
+Sections:
+
+a) Projection Bar Chart
+   - Bar chart showing all fighters' projected DFS points
+   - Custom tooltip with fighter name, projection, salary
+
+b) Projections Table
+   - Sortable columns: Fighter, Salary, Projection (Lo/Mid/Hi), Ownership estimate, Reasoning
+   - Row highlighting: green (high value), red (fade/overowned)
+   - Lock/Exclude toggles per fighter for the optimizer
+   - Narrative reasoning per fighter (AI-generated text explaining the projection)
+
+c) Matchup Intel Grid
+   - Directional exploit analysis for ALL fights on the card
+   - For each fight: Fighter A attacking B + Fighter B attacking A
+   - Angles: Striking, Wrestling, Submissions
+   - Color-coded levels: Exploit, Edge, Even
+   - DFS angle tips
+
+d) Built-in Optimizer
+   - Lock/exclude fighters, set exposure limits (0-100%)
+   - Generate 1 or multiple optimal lineups under $50,000 salary cap
+   - Diversity enforcement (3+ fighter difference between lineups)
+   - Seeded noise for varied outputs across sessions
+
+Projection Engine:
+   - Round estimation — Priority: betting odds O/U, historical avg fight duration, finish-rate style, 2.5R fallback
+   - Win probability — Moneyline implied probability
+   - Ownership estimation — Salary + avgPPG tiers (5% to 40%)
+   - Narrative reasoning — Auto-generated text from avg DFS pts, SLpM, TD avg, KO/sub wins, finish rate, win streaks
+
+
+=========================================
+PAGE 7: PARLAY BUILDER (/parlay-builder)
+=========================================
+Access: Free
+
+Sections:
+
+a) Fight Cards
+   - All fights organized by section (Main Event, Co-Main, Main Card, Prelims, Early Prelims)
+   - Each fight shows:
+     - Moneyline odds chips for both fighters (tap to add to parlay)
+     - Over/Under Rounds chips (e.g., O 2.5 / U 2.5)
+     - Props expandable section for additional bets
+     - Section color-coding (yellow = main event, amber = co-main, etc.)
+
+b) Parlay Slip (sidebar/bottom)
+   - Active legs with description, bet type, odds, remove button
+   - Stake input ($1-$10,000)
+   - Parlay math: Combined decimal odds, American odds, potential payout
+   - Place bet buttons:
+     - DraftKings deep link (with affiliate tracking)
+     - FanDuel deep link (with affiliate tracking)
+     - Copy parlay text to clipboard for manual placement
+   - Save Parlay to dashboard
+
+
+=========================================
+PAGE 8: USER DASHBOARD (/dashboard)
+=========================================
+Access: Pro only
+
+Sections:
+
+a) Overview Stats (4 cards)
+   - Saved Sets — Count of saved lineup sets
+   - Total Lineups — Sum of all lineups across sets
+   - Best Proj FPTS — Highest projected fantasy points
+   - Last Saved — Most recent save date
+
+b) Saved Lineups Grid
+   - Card per saved lineup set showing:
+     - Name, salary mode badge (Aggressive/Higher/Balanced)
+     - Avg salary, projected FPTS, save date
+     - Expandable fighter details
+     - Parlay legs displayed for parlay saves (description + odds)
+     - DFS lineups displayed otherwise (fighter names per team)
+     - Delete button
+
+c) Fight Results
+   - Latest event results
+
+
+=========================================
+PAGE 9: MY SAVED LINEUPS (/my-lineups)
+=========================================
+Access: Requires login
+
+Dedicated page for viewing/managing saved DFS lineups:
+- Lineup list with name, salary mode badge, avg salary, projected FPTS, save date, lineup count
+- Expandable detail per set
+- Delete functionality
+
+
+=========================================
+TOOLS & FEATURES SUMMARY
+=========================================
+
+1. Fight Analyzer — Deep stat comparison and AI-powered analysis for any fight on the card (13+ analysis types)
+2. DFS Optimizer — Generate optimal 6-fighter DraftKings lineups with salary targeting and exposure controls (Pro)
+3. Smart AI Picks — Strategy-based DFS lineup generation (7 strategies) with AI reasoning
+4. Live Odds — Real-time moneylines from all major US sportsbooks with odds alerts
+5. Predictions & Projections — Fighter DFS projections with bar charts, matchup intel, and built-in optimizer
+6. Parlay Builder — Visual parlay construction with moneylines, O/U rounds, props, and payout calculator
+7. User Dashboard — Saved lineups, parlay tracking, and fight results (Pro)
+8. Odds Alerts — Set custom price targets on any fighter and get browser notifications when odds move
+9. Matchup Intel — Directional exploit analysis (striking/wrestling/submissions) across all fights
+10. Full Fight Record — Complete Sherdog fight history per fighter with filters
+11. DraftKings CSV Export — Download optimized lineups for direct upload to DraftKings
+12. Affiliate Sportsbook Links — Quick links to DraftKings, FanDuel, bet365, BetMGM, Underdog Fantasy, PrizePicks
+
+
+=========================================
+DATA SOURCES
+=========================================
+
+- DraftKings: Salaries, avgPPG, fighter names (DKSalaries.csv)
+- UFCStats (scraped): All fighter stats — SLpM, SApM, TD avg, accuracy, defense, etc.
+- Sherdog (scraped): Full career records, height, reach, nickname
+- The Odds API: Live moneylines, totals, props from all US sportsbooks
+- UFC fight results: Previous event results for post-fight analysis
+
+
+=========================================
+SUBSCRIPTION TIERS
+=========================================
+
+FREE:
+- Fight Analyzer (all 13+ analysis types)
+- Smart AI Picks (all 7 strategies)
+- Live Odds with alerts
+- Predictions & Projections
+- Parlay Builder
+
+PRO ($19.99/month):
+- Everything in Free
+- Fantasy Teams DFS Optimizer (generate + download lineups)
+- User Dashboard (saved lineups + parlays)
+- Save lineups to account

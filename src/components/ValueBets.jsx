@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import {
-  computeProjection,
-  estimateFightRounds,
-  estimateWinProbability,
-} from "./projectionMath";
+import { estimateFightRounds } from "./projectionMath";
+import FighterImage from "./FighterImage";
 
-// ─── Odds utilities (same as LatestOdds.jsx) ────────────────────────────────
+// ─── Odds utilities (same cache as LatestOdds.jsx) ──────────────────────────
 
 const ODDS_CACHE_KEY = "ufc_odds_cache_v3";
 
@@ -104,6 +101,7 @@ const EV_THRESHOLDS = [
   { label: "+5%", value: 5 },
   { label: "+8%", value: 8 },
   { label: "+12%", value: 12 },
+  { label: "+15%", value: 15 },
 ];
 
 const BET_TYPE_FILTERS = ["All", "Moneyline", "Totals"];
@@ -111,17 +109,251 @@ const BET_TYPE_FILTERS = ["All", "Moneyline", "Totals"];
 // ─── Recommendation labels ───────────────────────────────────────────────────
 
 const getRecommendation = (ev) => {
-  if (ev >= 15) return { label: "STRONG BET", cls: "text-green-400 font-bold" };
-  if (ev >= 8) return { label: "GOOD VALUE", cls: "text-green-500" };
-  if (ev >= 3) return { label: "SLIGHT EDGE", cls: "text-yellow-400" };
-  return { label: "MARGINAL", cls: "text-stone-400" };
+  if (ev >= 20)
+    return {
+      label: "ELITE EDGE",
+      cls: "text-green-400 font-bold",
+      badge: "bg-green-500/25 border-green-400/70 text-green-300",
+      glow: "shadow-[0_0_25px_rgba(34,197,94,0.25)] hover:shadow-[0_0_35px_rgba(34,197,94,0.35)]",
+      border: "border-green-400/50",
+      accent: "bg-gradient-to-r from-green-500 to-emerald-400",
+      ring: "ring-1 ring-green-500/20",
+    };
+  if (ev >= 12)
+    return {
+      label: "STRONG BET",
+      cls: "text-green-400 font-bold",
+      badge: "bg-green-500/20 border-green-500/60 text-green-400",
+      glow: "shadow-[0_0_18px_rgba(34,197,94,0.18)] hover:shadow-[0_0_25px_rgba(34,197,94,0.25)]",
+      border: "border-green-500/40",
+      accent: "bg-green-500",
+      ring: "ring-1 ring-green-500/10",
+    };
+  if (ev >= 6)
+    return {
+      label: "GOOD VALUE",
+      cls: "text-amber-400 font-bold",
+      badge: "bg-amber-500/20 border-amber-500/60 text-amber-400",
+      glow: "shadow-[0_0_14px_rgba(245,158,11,0.12)] hover:shadow-[0_0_20px_rgba(245,158,11,0.2)]",
+      border: "border-amber-500/40",
+      accent: "bg-amber-500",
+      ring: "",
+    };
+  if (ev >= 3)
+    return {
+      label: "SLIGHT EDGE",
+      cls: "text-yellow-500",
+      badge: "bg-yellow-500/15 border-yellow-600/40 text-yellow-500",
+      glow: "hover:shadow-[0_0_12px_rgba(234,179,8,0.1)]",
+      border: "border-yellow-700/30",
+      accent: "bg-yellow-600",
+      ring: "",
+    };
+  return {
+    label: "MARGINAL",
+    cls: "text-stone-400",
+    badge: "bg-stone-700/30 border-stone-600/40 text-stone-400",
+    glow: "",
+    border: "border-stone-700/30",
+    accent: "bg-stone-600",
+    ring: "",
+  };
 };
 
-const getRowBg = (ev) => {
-  if (ev >= 15) return "bg-green-900/20 border-l-2 border-green-500";
-  if (ev >= 8) return "bg-green-900/10 border-l-2 border-green-700";
-  if (ev >= 3) return "bg-yellow-900/10 border-l-2 border-yellow-700/60";
-  return "";
+// ─── Reasoning generators ────────────────────────────────────────────────────
+
+const generateMoneylineReasoning = (bet) => {
+  const { fighter, modelProb, impliedProb, stats } = bet;
+  const lastName = fighter.split(" ").pop();
+  const modelPct = (modelProb * 100).toFixed(0);
+  const impliedPct = impliedProb ? (impliedProb * 100).toFixed(0) : null;
+  const gap = impliedPct
+    ? (modelProb * 100 - impliedProb * 100).toFixed(0)
+    : null;
+
+  // Build edge description (pick best 2)
+  const edges = [];
+  if (stats?.slpm && stats.slpm > 4.5)
+    edges.push(`${stats.slpm.toFixed(1)} SLpM`);
+  if (stats?.avg_kd_per_fight && stats.avg_kd_per_fight >= 0.8)
+    edges.push(`${stats.avg_kd_per_fight.toFixed(1)} KD/fight`);
+  if (stats?.td_avg && stats.td_avg >= 1.5)
+    edges.push(`${stats.td_avg.toFixed(1)} TD avg`);
+  const finRate = bet.finishRate;
+  if (finRate && finRate >= 60)
+    edges.push(`${finRate.toFixed(0)}% finish rate`);
+  const strDef = parseFloat(stats?.striking_defense);
+  if (!isNaN(strDef) && strDef >= 58) edges.push(`${strDef}% str. defense`);
+
+  const edgeStr = edges.slice(0, 2).join(" + ");
+
+  // Concise 2-sentence reasoning
+  if (gap && parseInt(gap) > 0 && edgeStr) {
+    return `${lastName} is ${gap}pts undervalued \u2014 our model has ${modelPct}% vs the book's ${impliedPct}%. Edge: ${edgeStr}.`;
+  }
+  if (gap && parseInt(gap) > 0) {
+    return `Books imply ${impliedPct}% but our model sees ${modelPct}% \u2014 a ${gap}-point gap the market hasn't corrected.`;
+  }
+  if (edgeStr) {
+    return `Model gives ${lastName} ${modelPct}% win probability. Backed by ${edgeStr}.`;
+  }
+  return `Our model projects ${lastName} at ${modelPct}% \u2014 higher than the market implies.`;
+};
+
+const generateTotalsReasoning = (bet) => {
+  const { type, estRounds, avgFinRate } = bet;
+  const isOver = type.includes("Over");
+  const roundStr = estRounds?.toFixed(1) || "2.5";
+
+  if (isOver) {
+    if (avgFinRate && avgFinRate < 45) {
+      return `Model estimates ${roundStr} rounds. Both fighters trend to decisions (${avgFinRate.toFixed(0)}% combined finish rate).`;
+    }
+    return `Projected ${roundStr} rounds \u2014 fight duration data supports the Over.`;
+  }
+  if (avgFinRate && avgFinRate > 60) {
+    return `Just ${roundStr} projected rounds. Combined ${avgFinRate.toFixed(0)}% finish rate makes early stoppage likely.`;
+  }
+  return `Model projects only ${roundStr} rounds \u2014 pace and style favor an early finish.`;
+};
+
+// ─── Sample bet builder ──────────────────────────────────────────────────────
+
+const buildSampleBets = (fights) => {
+  if (!fights || fights.length === 0) return { moneyline: [], totals: [] };
+
+  const moneyline = [];
+  const totals = [];
+
+  fights.forEach((fight) => {
+    const [f1, f2] = fight.fighters || [];
+    if (!f1 || !f2) return;
+    const s1 = f1.stats || {};
+    const s2 = f2.stats || {};
+
+    const f1Score =
+      (s1.slpm || 0) * 0.3 +
+      (s1.td_avg || 0) * 0.2 +
+      (f1.finish_rate_pct || 50) * 0.01 +
+      (parseFloat(s1.striking_defense) || 50) * 0.01;
+    const f2Score =
+      (s2.slpm || 0) * 0.3 +
+      (s2.td_avg || 0) * 0.2 +
+      (f2.finish_rate_pct || 50) * 0.01 +
+      (parseFloat(s2.striking_defense) || 50) * 0.01;
+
+    const stronger = f1Score >= f2Score ? f1 : f2;
+    const weaker = f1Score >= f2Score ? f2 : f1;
+    const sStats = stronger === f1 ? s1 : s2;
+    const wStats = weaker === f1 ? s1 : s2;
+    const diff = Math.abs(f1Score - f2Score);
+
+    let favOdds, dogOdds;
+    if (diff > 2.0) {
+      favOdds = -(220 + Math.floor(diff * 50));
+      dogOdds = 180 + Math.floor(diff * 45);
+    } else if (diff > 1.2) {
+      favOdds = -(160 + Math.floor(diff * 40));
+      dogOdds = 135 + Math.floor(diff * 35);
+    } else if (diff > 0.4) {
+      favOdds = -(120 + Math.floor(diff * 30));
+      dogOdds = 105 + Math.floor(diff * 25);
+    } else {
+      favOdds = -(108 + Math.floor(diff * 18));
+      dogOdds = 100 + Math.floor(diff * 15);
+    }
+
+    const favImplied = impliedProbFromAmerican(favOdds);
+    const dogImplied = impliedProbFromAmerican(dogOdds);
+
+    // Deterministic adjustment based on stat edge
+    const favModelAdj = 0.035 + Math.min(0.07, diff * 0.025);
+    const favModel = Math.min(0.92, favImplied + favModelAdj);
+    const favEv = calcEV(favModel, favOdds);
+
+    if (favEv != null && favEv > 1.5) {
+      moneyline.push({
+        fighter: stronger.name,
+        opponent: weaker.name,
+        matchup: fight.matchup,
+        bestOdds: favOdds,
+        impliedProb: favImplied,
+        modelProb: favModel,
+        ev: favEv,
+        salary: stronger.salary,
+        record: stronger.record,
+        weightClass: fight.weight_class,
+        stats: sStats,
+        oppStats: wStats,
+        finishRate: stronger.finish_rate_pct,
+        isSample: true,
+      });
+    }
+
+    const dogModelAdj = 0.055 + Math.min(0.09, diff * 0.03);
+    const dogModel = Math.min(0.68, dogImplied + dogModelAdj);
+    const dogEv = calcEV(dogModel, dogOdds);
+
+    if (dogEv != null && dogEv > 3) {
+      moneyline.push({
+        fighter: weaker.name,
+        opponent: stronger.name,
+        matchup: fight.matchup,
+        bestOdds: dogOdds,
+        impliedProb: dogImplied,
+        modelProb: dogModel,
+        ev: dogEv,
+        salary: weaker.salary,
+        record: weaker.record,
+        weightClass: fight.weight_class,
+        stats: wStats,
+        oppStats: sStats,
+        finishRate: weaker.finish_rate_pct,
+        isSample: true,
+      });
+    }
+
+    const avgFinRate =
+      ((f1.finish_rate_pct || 50) + (f2.finish_rate_pct || 50)) / 2;
+    const { rounds: estRounds } = estimateFightRounds(
+      f1,
+      f2,
+      fight.betting_odds || {},
+    );
+
+    if (avgFinRate > 65) {
+      const underOdds = -(120 + Math.floor(avgFinRate * 0.3));
+      const underImplied = impliedProbFromAmerican(underOdds);
+      const underModel = Math.min(
+        0.75,
+        underImplied + 0.04 + Math.min(0.06, (avgFinRate - 65) * 0.002),
+      );
+      const underEv = calcEV(underModel, underOdds);
+      if (underEv != null && underEv > 3) {
+        totals.push({
+          matchup: fight.matchup,
+          type: "Under 2.5 Rounds",
+          bestOdds: underOdds,
+          impliedProb: underImplied,
+          modelProb: underModel,
+          ev: underEv,
+          estRounds,
+          fighterA: f1.name,
+          fighterB: f2.name,
+          avgFinRate,
+          isSample: true,
+        });
+      }
+    }
+  });
+
+  moneyline.sort((a, b) => b.ev - a.ev);
+  totals.sort((a, b) => b.ev - a.ev);
+
+  return {
+    moneyline: moneyline.slice(0, 8),
+    totals: totals.slice(0, 4),
+  };
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -133,6 +365,7 @@ const ValueBets = ({ eventTitle }) => {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [evThreshold, setEvThreshold] = useState(3);
   const [betTypeFilter, setBetTypeFilter] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
   const [showExplainer, setShowExplainer] = useState(false);
   const [eventInfo, setEventInfo] = useState({ name: "", date: "" });
 
@@ -204,8 +437,8 @@ const ValueBets = ({ eventTitle }) => {
     fetchOdds();
   }, [fetchOdds]);
 
-  // ── Build model probabilities and +EV data ──
-  const valueBets = useMemo(() => {
+  // ── Build +EV bets from real odds ──
+  const realValueBets = useMemo(() => {
     if (!fights.length) return { moneyline: [], totals: [] };
 
     const moneyline = [];
@@ -215,7 +448,6 @@ const ValueBets = ({ eventTitle }) => {
       const [f1, f2] = fight.fighters || [];
       if (!f1 || !f2) return;
 
-      // Find matching odds event
       const oddsEvent = oddsData.find((e) => {
         const names = [e.home_team, e.away_team].filter(Boolean);
         return names.some(
@@ -225,14 +457,10 @@ const ValueBets = ({ eventTitle }) => {
 
       const bookmakers = oddsEvent?.bookmakers || [];
 
-      // ── Model probability via composite scoring ──
-      // Our model blends: moneyline implied prob, stat-based projection,
-      // finish rate advantages, and striking/grappling differentials.
       const buildModelProb = (fighter, opponent) => {
         const stats = fighter.stats || {};
         const oppStats = opponent.stats || {};
 
-        // Start with moneyline-implied probability if available
         const bestMl = bestOddsForName(bookmakers, fighter.name);
         const oppBestMl = bestOddsForName(bookmakers, opponent.name);
         let mlProb = null;
@@ -240,43 +468,29 @@ const ValueBets = ({ eventTitle }) => {
           const rawA = impliedProbFromAmerican(bestMl);
           const rawB = impliedProbFromAmerican(oppBestMl);
           if (rawA != null && rawB != null) {
-            mlProb = rawA / (rawA + rawB); // vig-removed
+            mlProb = rawA / (rawA + rawB);
           }
         }
 
-        // Stat-based edges (each contributes a small adjustment ±0–5%)
         let statAdj = 0;
-
-        // Striking differential
         const slpmDiff = (stats.slpm || 0) - (oppStats.slpm || 0);
         statAdj += Math.max(-0.04, Math.min(0.04, slpmDiff * 0.005));
-
-        // Striking defense edge
         const defA = parseFloat(stats.striking_defense) || 50;
         const defB = parseFloat(oppStats.striking_defense) || 50;
         statAdj += (defA - defB) * 0.0003;
-
-        // Takedown differential
         const tdDiff = (stats.td_avg || 0) - (oppStats.td_avg || 0);
         statAdj += Math.max(-0.03, Math.min(0.03, tdDiff * 0.008));
-
-        // Finish rate edge
         const frA = fighter.finish_rate_pct || 0;
         const frB = opponent.finish_rate_pct || 0;
         statAdj += Math.max(-0.03, Math.min(0.03, (frA - frB) * 0.0003));
-
-        // Win streak momentum
         const streakA = fighter.ufc_win_streak || 0;
         const streakB = opponent.ufc_win_streak || 0;
         statAdj += Math.max(-0.02, Math.min(0.02, (streakA - streakB) * 0.008));
 
-        // Combine: if we have ML implied, use it as base + stat adjustments
-        // Otherwise use a pure stat-based estimate
         let modelProb;
         if (mlProb != null) {
           modelProb = Math.max(0.05, Math.min(0.95, mlProb + statAdj));
         } else {
-          // No odds available — rough stat estimate
           modelProb = 0.5 + statAdj;
         }
 
@@ -286,16 +500,15 @@ const ValueBets = ({ eventTitle }) => {
       const { modelProb: modelProbF1, bestMl: mlF1 } = buildModelProb(f1, f2);
       const { modelProb: modelProbF2, bestMl: mlF2 } = buildModelProb(f2, f1);
 
-      // ── Moneyline +EV ──
       [
-        { fighter: f1, modelProb: modelProbF1, bestMl: mlF1 },
-        { fighter: f2, modelProb: modelProbF2, bestMl: mlF2 },
-      ].forEach(({ fighter, modelProb, bestMl }) => {
+        { fighter: f1, opponent: f2, modelProb: modelProbF1, bestMl: mlF1 },
+        { fighter: f2, opponent: f1, modelProb: modelProbF2, bestMl: mlF2 },
+      ].forEach(({ fighter, opponent, modelProb, bestMl }) => {
         const ev = calcEV(modelProb, bestMl);
         if (ev != null) {
           moneyline.push({
             fighter: fighter.name,
-            opponent: fighter.name === f1.name ? f2.name : f1.name,
+            opponent: opponent.name,
             matchup: fight.matchup,
             bestOdds: bestMl,
             impliedProb: impliedProbFromAmerican(bestMl),
@@ -304,17 +517,19 @@ const ValueBets = ({ eventTitle }) => {
             salary: fighter.salary,
             record: fighter.record,
             weightClass: fight.weight_class,
+            stats: fighter.stats,
+            oppStats: opponent.stats,
+            finishRate: fighter.finish_rate_pct,
+            isSample: false,
           });
         }
       });
 
-      // ── Totals (O/U) +EV ──
+      // ── Totals ──
       const allTotals = bestTotalsForFight(bookmakers);
       if (allTotals.length > 0) {
-        // Group by over/under and find best price
         const overBets = allTotals.filter((t) => t.name === "Over");
         const underBets = allTotals.filter((t) => t.name === "Under");
-
         const bestOver =
           overBets.length > 0
             ? overBets.reduce((a, b) => (a.price > b.price ? a : b))
@@ -323,21 +538,19 @@ const ValueBets = ({ eventTitle }) => {
           underBets.length > 0
             ? underBets.reduce((a, b) => (a.price > b.price ? a : b))
             : null;
-
-        // Model expectation: use our round estimation
         const { rounds: estRounds } = estimateFightRounds(
           f1,
           f2,
           fight.betting_odds || {},
         );
+        const avgFinRate =
+          ((f1.finish_rate_pct || 50) + (f2.finish_rate_pct || 50)) / 2;
 
         [bestOver, bestUnder].forEach((bet) => {
           if (!bet) return;
           const point = bet.point || 2.5;
-          // Model probability the bet hits
           let modelP;
           if (bet.name === "Over") {
-            // If our model expects more rounds than the line, Over is +EV
             modelP = Math.max(
               0.1,
               Math.min(0.9, 0.5 + (estRounds - point) * 0.25),
@@ -348,9 +561,6 @@ const ValueBets = ({ eventTitle }) => {
               Math.min(0.9, 0.5 + (point - estRounds) * 0.25),
             );
           }
-          // Adjust for fighters with extreme finish rates
-          const avgFinRate =
-            ((f1.finish_rate_pct || 50) + (f2.finish_rate_pct || 50)) / 2;
           if (bet.name === "Under" && avgFinRate > 60) modelP += 0.05;
           if (bet.name === "Over" && avgFinRate < 35) modelP += 0.05;
           modelP = Math.max(0.1, Math.min(0.9, modelP));
@@ -367,34 +577,60 @@ const ValueBets = ({ eventTitle }) => {
               estRounds,
               fighterA: f1.name,
               fighterB: f2.name,
+              avgFinRate,
+              isSample: false,
             });
           }
         });
       }
     });
 
-    // Sort by +EV descending
     moneyline.sort((a, b) => b.ev - a.ev);
     totals.sort((a, b) => b.ev - a.ev);
-
     return { moneyline, totals };
   }, [fights, oddsData]);
 
-  // ── Apply filters ──
-  const filteredMoneyline = useMemo(
-    () => valueBets.moneyline.filter((b) => b.ev >= evThreshold),
-    [valueBets.moneyline, evThreshold],
-  );
+  // ── Sample bets as fallback ──
+  const sampleBets = useMemo(() => buildSampleBets(fights), [fights]);
 
-  const filteredTotals = useMemo(
-    () => valueBets.totals.filter((b) => b.ev >= evThreshold),
-    [valueBets.totals, evThreshold],
-  );
+  // ── Use real odds if they produce positive-EV bets, else show samples ──
+  const realPositiveCount =
+    realValueBets.moneyline.filter((b) => b.ev > 0).length +
+    realValueBets.totals.filter((b) => b.ev > 0).length;
+  const hasRealOdds = oddsData.length > 0 && realPositiveCount > 0;
+  const activeBets = hasRealOdds ? realValueBets : sampleBets;
+  const usingSamples = !hasRealOdds && sampleBets.moneyline.length > 0;
+
+  // ── Apply filters ──
+  const filteredMoneyline = useMemo(() => {
+    let bets = activeBets.moneyline.filter((b) => b.ev >= evThreshold);
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      bets = bets.filter(
+        (b) =>
+          b.fighter.toLowerCase().includes(q) ||
+          b.opponent.toLowerCase().includes(q),
+      );
+    }
+    return bets;
+  }, [activeBets.moneyline, evThreshold, searchQuery]);
+
+  const filteredTotals = useMemo(() => {
+    let bets = activeBets.totals.filter((b) => b.ev >= evThreshold);
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      bets = bets.filter(
+        (b) =>
+          (b.fighterA || "").toLowerCase().includes(q) ||
+          (b.fighterB || "").toLowerCase().includes(q),
+      );
+    }
+    return bets;
+  }, [activeBets.totals, evThreshold, searchQuery]);
 
   const showMoneyline =
     betTypeFilter === "All" || betTypeFilter === "Moneyline";
   const showTotals = betTypeFilter === "All" || betTypeFilter === "Totals";
-
   const totalValueBets =
     (showMoneyline ? filteredMoneyline.length : 0) +
     (showTotals ? filteredTotals.length : 0);
@@ -404,257 +640,381 @@ const ValueBets = ({ eventTitle }) => {
   return (
     <div className="min-h-screen bg-stone-950 text-stone-200 pb-32 xl:pb-8">
       {/* ── CLASSIFIED HEADER ── */}
-      <div className="border-b border-yellow-700/40 bg-yellow-900/10">
-        <div className="max-w-5xl mx-auto px-4 py-5 sm:py-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="relative border-b border-yellow-700/40 overflow-hidden">
+        {/* Subtle diagonal camo texture */}
+        <div className="absolute inset-0 bg-gradient-to-r from-yellow-900/10 via-stone-950 to-yellow-900/10" />
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(202,138,4,0.15) 10px, rgba(202,138,4,0.15) 11px)",
+          }}
+        />
+        <div className="relative max-w-6xl mx-auto px-4 py-6 sm:py-7">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold tracking-wider font-mono">
-                OPERATION: <span className="text-yellow-500">VALUE EDGE</span>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-[10px] text-yellow-600/80 tracking-[0.3em] uppercase font-mono">
+                  CLASSIFIED • LEVEL 5
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-black tracking-wider font-mono flex items-center gap-3">
+                <span className="text-yellow-500 text-2xl">⚡</span>
+                OPERATION: <span className="text-yellow-400">VALUE EDGE</span>
               </h1>
-              <p className="text-stone-400 text-xs tracking-widest uppercase mt-1 font-mono">
-                +EV / VALUE BETS — CLASSIFIED ANALYSIS
+              <p className="text-stone-500 text-xs tracking-widest uppercase mt-2 font-mono">
+                +EV VALUE BETS — REAL-TIME MISPRICING DETECTION
               </p>
-              <p className="text-stone-500 text-xs mt-1">
-                {eventInfo.name}
+              <p className="text-stone-600 text-xs mt-1 font-mono">
+                {eventTitle || eventInfo.name}
                 {eventInfo.date ? ` — ${eventInfo.date}` : ""}
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col items-end gap-2">
+              <button
+                onClick={() => fetchOdds(true)}
+                className="group flex items-center gap-2 border border-yellow-700/60 text-yellow-400 px-5 py-2 text-xs tracking-widest uppercase hover:bg-yellow-900/20 hover:border-yellow-600 transition-all rounded font-mono"
+              >
+                <svg
+                  className={
+                    loading
+                      ? "animate-spin"
+                      : "group-hover:rotate-180 transition-transform duration-500"
+                  }
+                  width="14"
+                  height="14"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  style={{ width: 14, height: 14 }}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                {loading ? "SCANNING…" : "REFRESH INTEL"}
+              </button>
               {lastUpdated && (
-                <span className="text-stone-500 text-[10px] tracking-wide">
-                  ODDS:{" "}
+                <span className="text-stone-600 text-[10px] tracking-wide font-mono flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500/60 animate-pulse" />
+                  SYNCED{" "}
                   {new Date(lastUpdated).toLocaleTimeString("en-US", {
                     hour: "numeric",
                     minute: "2-digit",
                   })}
                 </span>
               )}
-              <button
-                onClick={() => fetchOdds(true)}
-                className="border border-yellow-700/60 text-yellow-400 px-4 py-1.5 text-xs tracking-widest uppercase hover:bg-yellow-900/20 transition rounded"
-              >
-                {loading ? "LOADING…" : "REFRESH"}
-              </button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-        {/* ── FILTERS BAR ── */}
-        <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between bg-stone-900 border border-stone-800 rounded-lg p-4">
-          <div>
-            <span className="text-yellow-500 text-[10px] font-bold tracking-widest uppercase block mb-2">
-              MIN +EV THRESHOLD
-            </span>
-            <div className="flex gap-1.5 flex-wrap">
-              {EV_THRESHOLDS.map((t) => (
-                <button
-                  key={t.value}
-                  onClick={() => setEvThreshold(t.value)}
-                  className={`px-3 py-1.5 text-xs tracking-wide rounded border transition ${
-                    evThreshold === t.value
-                      ? "bg-yellow-700/30 border-yellow-600 text-yellow-400 font-bold"
-                      : "border-stone-700 text-stone-400 hover:border-yellow-700/60 hover:text-yellow-500"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
+      <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
+        {/* ── SAMPLE DATA BANNER ── */}
+        {usingSamples && !loading && (
+          <div className="bg-amber-900/20 border border-amber-600/40 rounded-lg px-4 py-3 flex items-start gap-3">
+            <span className="text-amber-400 text-lg mt-0.5">⚠</span>
+            <div>
+              <p className="text-amber-300 text-sm font-bold font-mono tracking-wide">
+                SIMULATED INTEL — LIVE ODDS NOT YET LOADED
+              </p>
+              <p className="text-amber-400/70 text-xs mt-0.5">
+                These projections use modeled odds based on fighter stats. Visit
+                the Live Odds page to cache real sportsbook lines, then return
+                here for live +EV calculations.
+              </p>
             </div>
           </div>
-          <div>
-            <span className="text-yellow-500 text-[10px] font-bold tracking-widest uppercase block mb-2">
-              BET TYPE
-            </span>
-            <div className="flex gap-1.5">
-              {BET_TYPE_FILTERS.map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setBetTypeFilter(f)}
-                  className={`px-3 py-1.5 text-xs tracking-wide rounded border transition ${
-                    betTypeFilter === f
-                      ? "bg-yellow-700/30 border-yellow-600 text-yellow-400 font-bold"
-                      : "border-stone-700 text-stone-400 hover:border-yellow-700/60 hover:text-yellow-500"
-                  }`}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="text-right">
-            <span className="text-stone-500 text-[10px] tracking-widest uppercase block mb-1">
+        )}
+
+        {/* ── SUMMARY STATS BAR ── */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="bg-stone-900/80 border border-stone-800 rounded-xl p-4 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-0.5 bg-yellow-500/40" />
+            <div className="text-stone-500 text-[10px] tracking-widest uppercase font-mono mb-1">
               BETS FOUND
-            </span>
-            <span className="text-yellow-400 text-2xl font-bold font-mono">
+            </div>
+            <div className="text-yellow-400 text-3xl font-black font-mono">
               {totalValueBets}
-            </span>
+            </div>
+          </div>
+          <div className="bg-stone-900/80 border border-stone-800 rounded-xl p-4 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-0.5 bg-green-500/40" />
+            <div className="text-stone-500 text-[10px] tracking-widest uppercase font-mono mb-1">
+              BEST +EV
+            </div>
+            <div className="text-green-400 text-3xl font-black font-mono">
+              {activeBets.moneyline.length > 0
+                ? `+${activeBets.moneyline[0].ev.toFixed(1)}%`
+                : "—"}
+            </div>
+          </div>
+          <div className="bg-stone-900/80 border border-stone-800 rounded-xl p-4 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-0.5 bg-green-500/40" />
+            <div className="text-stone-500 text-[10px] tracking-widest uppercase font-mono mb-1">
+              STRONG BETS
+            </div>
+            <div className="text-green-400 text-3xl font-black font-mono">
+              {activeBets.moneyline.filter((b) => b.ev >= 12).length +
+                activeBets.totals.filter((b) => b.ev >= 12).length}
+            </div>
+          </div>
+          <div className="bg-stone-900/80 border border-stone-800 rounded-xl p-4 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-0.5 bg-yellow-500/40" />
+            <div className="text-stone-500 text-[10px] tracking-widest uppercase font-mono mb-1">
+              FIGHTS ANALYZED
+            </div>
+            <div className="text-yellow-400 text-3xl font-black font-mono">
+              {fights.length}
+            </div>
+          </div>
+        </div>
+
+        {/* ── FILTERS BAR ── */}
+        <div className="bg-stone-900/80 border border-stone-800 rounded-xl p-4 sm:p-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+            <div>
+              <span className="text-yellow-500/80 text-[10px] font-bold tracking-widest uppercase block mb-2.5 font-mono">
+                MIN +EV THRESHOLD
+              </span>
+              <div className="flex gap-1 flex-wrap">
+                {EV_THRESHOLDS.map((t) => (
+                  <button
+                    key={t.value}
+                    onClick={() => setEvThreshold(t.value)}
+                    className={`px-3 py-2 text-xs tracking-wide rounded-lg border transition-all font-mono ${
+                      evThreshold === t.value
+                        ? "bg-yellow-600/20 border-yellow-500/70 text-yellow-300 font-bold shadow-[0_0_8px_rgba(234,179,8,0.15)]"
+                        : "border-stone-700/60 text-stone-500 hover:border-yellow-700/50 hover:text-yellow-500/80 hover:bg-stone-800/50"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <span className="text-yellow-500/80 text-[10px] font-bold tracking-widest uppercase block mb-2.5 font-mono">
+                BET TYPE
+              </span>
+              <div className="flex gap-1">
+                {BET_TYPE_FILTERS.map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setBetTypeFilter(f)}
+                    className={`px-3 py-2 text-xs tracking-wide rounded-lg border transition-all font-mono ${
+                      betTypeFilter === f
+                        ? "bg-yellow-600/20 border-yellow-500/70 text-yellow-300 font-bold shadow-[0_0_8px_rgba(234,179,8,0.15)]"
+                        : "border-stone-700/60 text-stone-500 hover:border-yellow-700/50 hover:text-yellow-500/80 hover:bg-stone-800/50"
+                    }`}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <span className="text-yellow-500/80 text-[10px] font-bold tracking-widest uppercase block mb-2.5 font-mono">
+                SEARCH FIGHTER
+              </span>
+              <div className="relative overflow-hidden">
+                <svg
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-600"
+                  width="14"
+                  height="14"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  style={{ width: 14, height: 14 }}
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path strokeLinecap="round" d="M21 21l-4.35-4.35" />
+                </svg>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Barbosa, Burns…"
+                  className="w-full bg-stone-800/60 border border-stone-700/60 rounded-lg pl-9 pr-3 py-2 text-xs text-stone-200 placeholder-stone-600 focus:border-yellow-600/70 focus:ring-1 focus:ring-yellow-600/20 focus:outline-none transition-all font-mono"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
         {/* ── LOADING STATE ── */}
-        {loading && (
-          <div className="text-center py-16">
-            <div className="text-yellow-500 text-sm tracking-widest uppercase animate-pulse font-mono">
+        {loading && fights.length === 0 && (
+          <div className="text-center py-24">
+            <div className="inline-block w-10 h-10 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin mb-5" />
+            <div className="text-yellow-500 text-sm tracking-[0.2em] uppercase font-mono font-bold">
               SCANNING INTEL…
             </div>
-            <p className="text-stone-500 text-xs mt-2">
-              Loading odds and fighter data
+            <p className="text-stone-600 text-xs mt-2 font-mono">
+              Loading fighter data and sportsbook odds
             </p>
           </div>
         )}
 
         {/* ── NO RESULTS ── */}
-        {!loading && totalValueBets === 0 && (
-          <div className="text-center py-16 bg-stone-900 rounded-lg border border-stone-800">
-            <p className="text-stone-400 text-sm">
-              No value bets found above {evThreshold}% threshold.
+        {!loading && totalValueBets === 0 && fights.length > 0 && (
+          <div className="text-center py-20 bg-stone-900/80 rounded-xl border border-stone-800">
+            <span className="text-stone-700 text-5xl mb-5 block">🔍</span>
+            <p className="text-stone-400 text-sm font-mono font-bold">
+              No value bets above +{evThreshold}% threshold
             </p>
-            <p className="text-stone-500 text-xs mt-1">
-              Try lowering the threshold or check back closer to fight night
-              when odds sharpen.
+            <p className="text-stone-600 text-xs mt-2 font-mono">
+              Lower the threshold or check back closer to fight night when odds
+              sharpen.
             </p>
           </div>
         )}
 
-        {/* ── MONEYLINE VALUE BETS ── */}
-        {!loading && showMoneyline && filteredMoneyline.length > 0 && (
+        {/* ── MONEYLINE VALUE BET CARDS ── */}
+        {showMoneyline && filteredMoneyline.length > 0 && (
           <section>
-            <div className="flex items-center gap-3 mb-3">
-              <h2 className="text-yellow-500 text-xs font-bold tracking-widest uppercase font-mono">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-yellow-700/40 to-transparent" />
+              <h2 className="text-yellow-500 text-[11px] font-bold tracking-[0.2em] uppercase font-mono flex items-center gap-2">
+                <span>🎯</span>
                 MONEYLINE VALUE BETS
+                <span className="bg-yellow-500/15 text-yellow-400 text-[10px] px-2 py-0.5 rounded-full font-mono">
+                  {filteredMoneyline.length}
+                </span>
               </h2>
-              <span className="text-stone-600 text-[10px] tracking-wider">
-                ({filteredMoneyline.length} FOUND)
-              </span>
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-yellow-700/40 to-transparent" />
             </div>
 
-            {/* Desktop Table */}
-            <div className="hidden sm:block bg-stone-900 border border-stone-800 rounded-lg overflow-hidden">
-              <table className="w-full text-xs sm:text-sm font-mono">
-                <thead>
-                  <tr className="border-b border-stone-700 text-left">
-                    <th className="text-yellow-500 font-bold px-4 py-3">
-                      FIGHTER
-                    </th>
-                    <th className="text-yellow-500 font-bold px-3 py-3 text-center">
-                      BEST ODDS
-                    </th>
-                    <th className="text-yellow-500 font-bold px-3 py-3 text-center">
-                      BOOK IMPLIED
-                    </th>
-                    <th className="text-yellow-500 font-bold px-3 py-3 text-center">
-                      OUR MODEL
-                    </th>
-                    <th className="text-yellow-500 font-bold px-3 py-3 text-center">
-                      +EV %
-                    </th>
-                    <th className="text-yellow-500 font-bold px-3 py-3 text-right">
-                      VERDICT
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredMoneyline.map((bet, i) => {
-                    const rec = getRecommendation(bet.ev);
-                    return (
-                      <tr
-                        key={`ml-${i}`}
-                        className={`border-b border-stone-800 hover:bg-stone-800/50 transition ${getRowBg(bet.ev)}`}
-                      >
-                        <td className="px-4 py-3">
-                          <div className="font-bold text-stone-100">
-                            {bet.fighter}
-                          </div>
-                          <div className="text-stone-500 text-[10px]">
-                            vs {bet.opponent} • {bet.record}
-                          </div>
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          <span
-                            className={`font-bold ${bet.bestOdds > 0 ? "text-green-400" : "text-red-400"}`}
-                          >
-                            {fmt(bet.bestOdds)}
-                          </span>
-                        </td>
-                        <td className="px-3 py-3 text-center text-stone-400">
-                          {bet.impliedProb != null
-                            ? `${(bet.impliedProb * 100).toFixed(1)}%`
-                            : "—"}
-                        </td>
-                        <td className="px-3 py-3 text-center text-yellow-400 font-bold">
-                          {(bet.modelProb * 100).toFixed(1)}%
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          <span className="inline-block bg-green-900/30 text-green-400 px-2 py-0.5 rounded font-bold text-xs">
-                            +{bet.ev.toFixed(1)}%
-                          </span>
-                        </td>
-                        <td className={`px-3 py-3 text-right ${rec.cls}`}>
-                          {rec.label}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Cards */}
-            <div className="sm:hidden space-y-3">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {filteredMoneyline.map((bet, i) => {
                 const rec = getRecommendation(bet.ev);
+                const reasoning = generateMoneylineReasoning(bet);
                 return (
                   <div
-                    key={`ml-m-${i}`}
-                    className={`bg-stone-900 border border-stone-800 rounded-lg p-4 ${getRowBg(bet.ev)}`}
+                    key={`ml-${i}`}
+                    className={`group bg-stone-900/90 border rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.015] hover:-translate-y-0.5 ${rec.border} ${rec.glow} ${rec.ring}`}
                   >
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <div className="font-bold text-stone-100 text-sm">
-                          {bet.fighter}
+                    {/* Top accent bar */}
+                    <div className={`h-1 ${rec.accent}`} />
+
+                    <div className="p-5">
+                      {/* Header: Fighter + EV badge */}
+                      <div className="flex items-center justify-between gap-4 mb-4">
+                        <div className="flex items-center gap-4 min-w-0">
+                          <div className="relative flex-shrink-0">
+                            <FighterImage
+                              name={bet.fighter}
+                              size="w-14 h-14 sm:w-16 sm:h-16"
+                              className="ring-2 ring-stone-700/50 group-hover:ring-yellow-700/40 transition-all"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-black text-stone-50 text-base sm:text-lg font-mono truncate leading-tight">
+                              {bet.fighter}
+                            </div>
+                            <div className="text-stone-500 text-xs font-mono mt-0.5">
+                              vs {bet.opponent}
+                            </div>
+                            <div className="text-stone-600 text-[10px] mt-0.5 font-mono">
+                              {bet.record}
+                              {bet.weightClass && bet.weightClass !== "N/A"
+                                ? ` • ${bet.weightClass}`
+                                : ""}
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-stone-500 text-[10px]">
-                          vs {bet.opponent} • {bet.record}
+                        <div className="flex-shrink-0">
+                          <div
+                            className={`border-2 rounded-xl px-4 py-2 text-center font-mono ${rec.badge}`}
+                          >
+                            <div className="text-2xl sm:text-3xl font-black leading-none tracking-tight">
+                              +{bet.ev.toFixed(1)}%
+                            </div>
+                            <div className="text-[8px] tracking-[0.2em] uppercase mt-1 opacity-80 font-bold">
+                              {rec.label}
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <span className="inline-block bg-green-900/30 text-green-400 px-2 py-0.5 rounded font-bold text-xs font-mono">
-                        +{bet.ev.toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 text-center text-[10px] tracking-wide">
-                      <div>
-                        <div className="text-stone-500 uppercase mb-0.5">
-                          Best Odds
+
+                      {/* Stats row */}
+                      <div className="grid grid-cols-3 gap-2 mb-4">
+                        <div className="bg-stone-800/50 rounded-lg p-2.5 text-center border border-stone-700/30">
+                          <div className="text-stone-500 text-[8px] tracking-widest uppercase font-mono">
+                            BEST ODDS
+                          </div>
+                          <div
+                            className={`text-base font-black font-mono mt-1 ${bet.bestOdds > 0 ? "text-green-400" : "text-red-400"}`}
+                          >
+                            {fmt(bet.bestOdds)}
+                          </div>
                         </div>
-                        <div
-                          className={`font-bold font-mono ${bet.bestOdds > 0 ? "text-green-400" : "text-red-400"}`}
-                        >
-                          {fmt(bet.bestOdds)}
+                        <div className="bg-stone-800/50 rounded-lg p-2.5 text-center border border-stone-700/30">
+                          <div className="text-stone-500 text-[8px] tracking-widest uppercase font-mono">
+                            BOOK IMPLIED
+                          </div>
+                          <div className="text-base font-mono text-stone-400 mt-1">
+                            {bet.impliedProb != null
+                              ? `${(bet.impliedProb * 100).toFixed(1)}%`
+                              : "—"}
+                          </div>
+                        </div>
+                        <div className="bg-stone-800/50 rounded-lg p-2.5 text-center border border-stone-700/30">
+                          <div className="text-stone-500 text-[8px] tracking-widest uppercase font-mono">
+                            OUR MODEL
+                          </div>
+                          <div className="text-base font-black font-mono text-yellow-400 mt-1">
+                            {(bet.modelProb * 100).toFixed(1)}%
+                          </div>
                         </div>
                       </div>
-                      <div>
-                        <div className="text-stone-500 uppercase mb-0.5">
-                          Book Implied
+
+                      {/* Probability comparison bar */}
+                      <div className="mb-4">
+                        <div className="flex justify-between text-[9px] text-stone-500 font-mono mb-1.5">
+                          <span>
+                            BOOK{" "}
+                            {bet.impliedProb
+                              ? `${(bet.impliedProb * 100).toFixed(0)}%`
+                              : ""}
+                          </span>
+                          <span className="text-yellow-500/70">
+                            MODEL {(bet.modelProb * 100).toFixed(0)}%
+                          </span>
                         </div>
-                        <div className="text-stone-400 font-mono">
-                          {bet.impliedProb != null
-                            ? `${(bet.impliedProb * 100).toFixed(1)}%`
-                            : "—"}
+                        <div className="h-2.5 bg-stone-800 rounded-full overflow-hidden relative">
+                          {bet.impliedProb && (
+                            <div
+                              className="absolute h-full bg-stone-700/50 rounded-full transition-all duration-700"
+                              style={{
+                                width: `${(bet.impliedProb * 100).toFixed(0)}%`,
+                              }}
+                            />
+                          )}
+                          <div
+                            className={`absolute h-full rounded-full transition-all duration-700 ${bet.ev >= 12 ? "bg-green-500" : bet.ev >= 6 ? "bg-amber-500" : "bg-yellow-600"}`}
+                            style={{
+                              width: `${(bet.modelProb * 100).toFixed(0)}%`,
+                            }}
+                          />
                         </div>
                       </div>
-                      <div>
-                        <div className="text-stone-500 uppercase mb-0.5">
-                          Our Model
+
+                      {/* Reasoning — concise */}
+                      <div className="bg-stone-800/30 border border-stone-700/40 rounded-lg px-3 py-2.5">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span className="text-yellow-600 text-[8px]">▸</span>
+                          <span className="text-[8px] text-yellow-600/80 tracking-[0.15em] uppercase font-mono font-bold">
+                            INTEL
+                          </span>
                         </div>
-                        <div className="text-yellow-400 font-bold font-mono">
-                          {(bet.modelProb * 100).toFixed(1)}%
-                        </div>
+                        <p className="text-stone-400 text-[11px] leading-relaxed font-mono">
+                          {reasoning}
+                        </p>
                       </div>
-                    </div>
-                    <div className={`text-right mt-2 text-xs ${rec.cls}`}>
-                      {rec.label}
                     </div>
                   </div>
                 );
@@ -663,142 +1023,102 @@ const ValueBets = ({ eventTitle }) => {
           </section>
         )}
 
-        {/* ── TOTALS VALUE BETS ── */}
-        {!loading && showTotals && filteredTotals.length > 0 && (
+        {/* ── TOTALS VALUE BET CARDS ── */}
+        {showTotals && filteredTotals.length > 0 && (
           <section>
-            <div className="flex items-center gap-3 mb-3">
-              <h2 className="text-yellow-500 text-xs font-bold tracking-widest uppercase font-mono">
-                TOTALS / ROUND PROPS — VALUE BETS
+            <div className="flex items-center gap-3 mb-5 mt-6">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-yellow-700/40 to-transparent" />
+              <h2 className="text-yellow-500 text-[11px] font-bold tracking-[0.2em] uppercase font-mono flex items-center gap-2">
+                <span>⏱</span>
+                TOTALS / ROUND PROPS
+                <span className="bg-yellow-500/15 text-yellow-400 text-[10px] px-2 py-0.5 rounded-full font-mono">
+                  {filteredTotals.length}
+                </span>
               </h2>
-              <span className="text-stone-600 text-[10px] tracking-wider">
-                ({filteredTotals.length} FOUND)
-              </span>
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-yellow-700/40 to-transparent" />
             </div>
 
-            {/* Desktop Table */}
-            <div className="hidden sm:block bg-stone-900 border border-stone-800 rounded-lg overflow-hidden">
-              <table className="w-full text-xs sm:text-sm font-mono">
-                <thead>
-                  <tr className="border-b border-stone-700 text-left">
-                    <th className="text-yellow-500 font-bold px-4 py-3">
-                      MATCHUP
-                    </th>
-                    <th className="text-yellow-500 font-bold px-3 py-3">BET</th>
-                    <th className="text-yellow-500 font-bold px-3 py-3 text-center">
-                      BEST ODDS
-                    </th>
-                    <th className="text-yellow-500 font-bold px-3 py-3 text-center">
-                      BOOK IMPLIED
-                    </th>
-                    <th className="text-yellow-500 font-bold px-3 py-3 text-center">
-                      OUR MODEL
-                    </th>
-                    <th className="text-yellow-500 font-bold px-3 py-3 text-center">
-                      +EV %
-                    </th>
-                    <th className="text-yellow-500 font-bold px-3 py-3 text-right">
-                      VERDICT
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredTotals.map((bet, i) => {
-                    const rec = getRecommendation(bet.ev);
-                    return (
-                      <tr
-                        key={`tot-${i}`}
-                        className={`border-b border-stone-800 hover:bg-stone-800/50 transition ${getRowBg(bet.ev)}`}
-                      >
-                        <td className="px-4 py-3">
-                          <div className="text-stone-100">{bet.matchup}</div>
-                        </td>
-                        <td className="px-3 py-3 text-yellow-300 font-bold">
-                          {bet.type}
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          <span
-                            className={`font-bold ${bet.bestOdds > 0 ? "text-green-400" : "text-red-400"}`}
-                          >
-                            {fmt(bet.bestOdds)}
-                          </span>
-                        </td>
-                        <td className="px-3 py-3 text-center text-stone-400">
-                          {bet.impliedProb != null
-                            ? `${(bet.impliedProb * 100).toFixed(1)}%`
-                            : "—"}
-                        </td>
-                        <td className="px-3 py-3 text-center text-yellow-400 font-bold">
-                          {(bet.modelProb * 100).toFixed(1)}%
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          <span className="inline-block bg-green-900/30 text-green-400 px-2 py-0.5 rounded font-bold text-xs">
-                            +{bet.ev.toFixed(1)}%
-                          </span>
-                        </td>
-                        <td className={`px-3 py-3 text-right ${rec.cls}`}>
-                          {rec.label}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Cards */}
-            <div className="sm:hidden space-y-3">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {filteredTotals.map((bet, i) => {
                 const rec = getRecommendation(bet.ev);
+                const reasoning = generateTotalsReasoning(bet);
                 return (
                   <div
-                    key={`tot-m-${i}`}
-                    className={`bg-stone-900 border border-stone-800 rounded-lg p-4 ${getRowBg(bet.ev)}`}
+                    key={`tot-${i}`}
+                    className={`group bg-stone-900/90 border rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.015] hover:-translate-y-0.5 ${rec.border} ${rec.glow} ${rec.ring}`}
                   >
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <div className="text-stone-100 text-sm">
-                          {bet.matchup}
+                    <div className={`h-1 ${rec.accent}`} />
+
+                    <div className="p-5">
+                      {/* Header */}
+                      <div className="flex items-center justify-between gap-4 mb-4">
+                        <div>
+                          <div className="text-stone-50 text-base sm:text-lg font-black font-mono leading-tight">
+                            {bet.fighterA} vs {bet.fighterB}
+                          </div>
+                          <div className="text-yellow-400 text-xs font-bold font-mono mt-1.5 flex items-center gap-2">
+                            <span
+                              className={`inline-block w-2 h-2 rounded-full ${bet.type.includes("Over") ? "bg-green-400" : "bg-red-400"}`}
+                            />
+                            {bet.type}
+                          </div>
                         </div>
-                        <div className="text-yellow-300 font-bold text-xs mt-0.5">
-                          {bet.type}
-                        </div>
-                      </div>
-                      <span className="inline-block bg-green-900/30 text-green-400 px-2 py-0.5 rounded font-bold text-xs font-mono">
-                        +{bet.ev.toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 text-center text-[10px] tracking-wide">
-                      <div>
-                        <div className="text-stone-500 uppercase mb-0.5">
-                          Best Odds
-                        </div>
-                        <div
-                          className={`font-bold font-mono ${bet.bestOdds > 0 ? "text-green-400" : "text-red-400"}`}
-                        >
-                          {fmt(bet.bestOdds)}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-stone-500 uppercase mb-0.5">
-                          Book Implied
-                        </div>
-                        <div className="text-stone-400 font-mono">
-                          {bet.impliedProb != null
-                            ? `${(bet.impliedProb * 100).toFixed(1)}%`
-                            : "—"}
+                        <div className="flex-shrink-0">
+                          <div
+                            className={`border-2 rounded-xl px-4 py-2 text-center font-mono ${rec.badge}`}
+                          >
+                            <div className="text-2xl sm:text-3xl font-black leading-none tracking-tight">
+                              +{bet.ev.toFixed(1)}%
+                            </div>
+                            <div className="text-[8px] tracking-[0.2em] uppercase mt-1 opacity-80 font-bold">
+                              {rec.label}
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div>
-                        <div className="text-stone-500 uppercase mb-0.5">
-                          Our Model
+
+                      {/* Stats row */}
+                      <div className="grid grid-cols-3 gap-2 mb-4">
+                        <div className="bg-stone-800/50 rounded-lg p-2.5 text-center border border-stone-700/30">
+                          <div className="text-stone-500 text-[8px] tracking-widest uppercase font-mono">
+                            BEST ODDS
+                          </div>
+                          <div
+                            className={`text-base font-black font-mono mt-1 ${bet.bestOdds > 0 ? "text-green-400" : "text-red-400"}`}
+                          >
+                            {fmt(bet.bestOdds)}
+                          </div>
                         </div>
-                        <div className="text-yellow-400 font-bold font-mono">
-                          {(bet.modelProb * 100).toFixed(1)}%
+                        <div className="bg-stone-800/50 rounded-lg p-2.5 text-center border border-stone-700/30">
+                          <div className="text-stone-500 text-[8px] tracking-widest uppercase font-mono">
+                            EST. ROUNDS
+                          </div>
+                          <div className="text-base font-mono text-stone-300 mt-1">
+                            {bet.estRounds?.toFixed(1) || "2.5"}
+                          </div>
+                        </div>
+                        <div className="bg-stone-800/50 rounded-lg p-2.5 text-center border border-stone-700/30">
+                          <div className="text-stone-500 text-[8px] tracking-widest uppercase font-mono">
+                            MODEL PROB
+                          </div>
+                          <div className="text-base font-black font-mono text-yellow-400 mt-1">
+                            {(bet.modelProb * 100).toFixed(1)}%
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className={`text-right mt-2 text-xs ${rec.cls}`}>
-                      {rec.label}
+
+                      {/* Reasoning */}
+                      <div className="bg-stone-800/30 border border-stone-700/40 rounded-lg px-3 py-2.5">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span className="text-yellow-600 text-[8px]">▸</span>
+                          <span className="text-[8px] text-yellow-600/80 tracking-[0.15em] uppercase font-mono font-bold">
+                            INTEL
+                          </span>
+                        </div>
+                        <p className="text-stone-400 text-[11px] leading-relaxed font-mono">
+                          {reasoning}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 );
@@ -808,10 +1128,10 @@ const ValueBets = ({ eventTitle }) => {
         )}
 
         {/* ── HOW +EV IS CALCULATED (Explainer) ── */}
-        <section className="bg-stone-900 border border-stone-800 rounded-lg overflow-hidden">
+        <section className="bg-stone-900/80 border border-stone-800 rounded-xl overflow-hidden">
           <button
             onClick={() => setShowExplainer(!showExplainer)}
-            className="w-full flex items-center justify-between px-4 py-3 hover:bg-stone-800/50 transition"
+            className="w-full flex items-center justify-between px-5 py-4 hover:bg-stone-800/50 transition-colors"
           >
             <span className="text-yellow-500 text-xs font-bold tracking-widest uppercase font-mono">
               HOW +EV IS CALCULATED
@@ -832,7 +1152,7 @@ const ValueBets = ({ eventTitle }) => {
                   terms: the book is offering better odds than they should be.
                 </p>
               </div>
-              <div className="bg-stone-800 rounded p-3 font-mono text-xs">
+              <div className="bg-stone-800 rounded-lg p-3 font-mono text-xs">
                 <p className="text-yellow-500 mb-1">FORMULA:</p>
                 <p className="text-stone-300">
                   +EV % = (Our Model Probability × Decimal Odds) − 1
@@ -873,7 +1193,7 @@ const ValueBets = ({ eventTitle }) => {
                   </li>
                 </ul>
               </div>
-              <div className="bg-yellow-900/20 border border-yellow-700/40 rounded p-3 text-xs text-yellow-300">
+              <div className="bg-yellow-900/20 border border-yellow-700/40 rounded-lg p-3 text-xs text-yellow-300">
                 <span className="font-bold">⚠ DISCLAIMER:</span> +EV does not
                 guarantee a win. It means that over many bets at these odds, you
                 would expect to profit. Always bet responsibly and never wager
@@ -884,17 +1204,17 @@ const ValueBets = ({ eventTitle }) => {
         </section>
 
         {/* ── CONFIDENCE LEGEND ── */}
-        <div className="flex flex-wrap gap-4 justify-center text-[10px] tracking-wider uppercase text-stone-500">
-          <span>
-            <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1" />
-            STRONG BET (+15%+)
+        <div className="flex flex-wrap gap-6 justify-center text-[10px] tracking-wider uppercase text-stone-500 font-mono py-2">
+          <span className="flex items-center gap-2">
+            <span className="inline-block w-3.5 h-2 rounded-full bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.3)]" />
+            ELITE / STRONG (+12%+)
           </span>
-          <span>
-            <span className="inline-block w-2 h-2 rounded-full bg-green-700 mr-1" />
-            GOOD VALUE (+8%+)
+          <span className="flex items-center gap-2">
+            <span className="inline-block w-3.5 h-2 rounded-full bg-amber-500" />
+            GOOD VALUE (+6%+)
           </span>
-          <span>
-            <span className="inline-block w-2 h-2 rounded-full bg-yellow-600 mr-1" />
+          <span className="flex items-center gap-2">
+            <span className="inline-block w-3.5 h-2 rounded-full bg-yellow-600" />
             SLIGHT EDGE (+3%+)
           </span>
         </div>
