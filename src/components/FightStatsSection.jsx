@@ -26,6 +26,7 @@
 import { memo } from "react";
 import WeighInClips from "./WeighInClips";
 import KeyNotes from "./KeyNotes";
+import FighterHighlights from "./FighterHighlights";
 
 /* ── FightStatsSection ────────────────────────────────────────────────────── */
 
@@ -364,7 +365,9 @@ const FightStatsSection = memo(
                     <div className="flex items-center gap-1.5 mt-1 ml-8 text-[11px] flex-wrap">
                       <span className="text-stone-400">{fh.method}</span>
                       {fh.round && (
-                        <span className="text-stone-500">·&nbsp;R{fh.round}</span>
+                        <span className="text-stone-500">
+                          ·&nbsp;R{fh.round}
+                        </span>
                       )}
                       {fh.time && (
                         <span className="text-stone-600">·&nbsp;{fh.time}</span>
@@ -420,6 +423,12 @@ const FightStatsSection = memo(
           </summary>
 
           <div className="border-t border-yellow-700/30 p-4 sm:p-6">
+            {/* ── Fighter highlight video thumbnails (comparison view only) ── */}
+            <FighterHighlights
+              fighter1={fight.fighters[0]}
+              fighter2={fight.fighters[1]}
+            />
+
             {/* Desktop tab bar */}
             <div className="hidden md:flex flex-wrap gap-2 mb-6 border-b border-gray-600 pb-4">
               {tabList.map((tab) => (

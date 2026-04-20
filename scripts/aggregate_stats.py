@@ -1104,6 +1104,9 @@ def csv_to_json(
             "fights": fights
         }
 
+        # ── Merge YouTube highlight video IDs from public/highlight_videos.json ─
+        merge_highlight_videos(data)
+
         save_to_json(data, output_path)
         print(f"Processed {len(fights)} fights! Check public/this_weeks_stats.json")
 
@@ -1163,6 +1166,56 @@ def download_ufcstats_csvs():
             
         except Exception as e:
             print(f"✗ Failed to download {csv_file}: {e}")
+
+def merge_highlight_videos(data, highlights_path="public/highlight_videos.json"):
+    """Merge YouTube highlight video IDs from highlight_videos.json into fighter objects.
+
+    Reads public/highlight_videos.json (name → 11-char YouTube video ID).
+    Matches each fighter in *data* by normalized name and injects two fields:
+      - highlightVideoId     (e.g. "dQw4w9WgXcQ")
+      - youtubeHighlightUrl  (e.g. "https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+
+    Fighters with no match are left unchanged (fields stay absent / null).
+    Call this right before save_to_json() so every weekly run auto-merges.
+    """
+    if not os.path.exists(highlights_path):
+        print(f"ℹ️  No highlight_videos.json found at {highlights_path} — skipping video merge")
+        return
+
+    try:
+        with open(highlights_path, "r") as f:
+            raw = json.load(f)
+    except Exception as e:
+        print(f"⚠️  Could not load {highlights_path}: {e} — skipping video merge")
+        return
+
+    # Build a normalized-name → video-id lookup, skipping the _instructions key
+    lookup = {
+        normalize_name(name): video_id
+        for name, video_id in raw.items()
+        if not name.startswith("_") and isinstance(video_id, str) and video_id.strip()
+    }
+
+    if not lookup:
+        print("ℹ️  highlight_videos.json has no valid entries — skipping video merge")
+        return
+
+    matched = 0
+    for fight in data.get("fights", []):
+        for fighter in fight.get("fighters", []):
+            norm = normalize_name(fighter.get("name", ""))
+            video_id = lookup.get(norm)
+            if video_id:
+                fighter["highlightVideoId"] = video_id
+                fighter["youtubeHighlightUrl"] = f"https://www.youtube.com/watch?v={video_id}"
+                matched += 1
+            else:
+                # Ensure the fields exist so the React component never gets KeyError
+                fighter.setdefault("highlightVideoId", None)
+                fighter.setdefault("youtubeHighlightUrl", None)
+
+    print(f"🎥 Highlight videos merged: {matched} fighter(s) matched from {highlights_path}")
+
 
 def merge_ufcstats_results():
     """Optionally merge recent fight results into this_weeks_stats.json for context"""

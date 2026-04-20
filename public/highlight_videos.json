@@ -1,0 +1,15 @@
+{
+  "_instructions": [
+    "Every Monday: replace last week's entries with this week's fighters.",
+    "Key = fighter name exactly as it appears in DKSalaries.csv (case-insensitive match).",
+    "Value = the 11-character YouTube video ID (the part after ?v= in any YouTube URL).",
+    "Leave a fighter out entirely if you have no video — they just show a placeholder.",
+    "URL is auto-generated: https://www.youtube.com/watch?v=VIDEO_ID"
+  ],
+  "Marcio Barbosa": "L13AyI827Ig",
+  "Dennis Buzukja": "4WyMQPiL0EU",
+  "Mandel Nallo": "7v9f9z5z5zA",
+  "Jai Herbert": "kJqK8z8z8z8",
+  "Mike Malott": "AMW-1rWg1t0",
+  "Gilbert Burns": "-mQ-iQ34axE"
+}
