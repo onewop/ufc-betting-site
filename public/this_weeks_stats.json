@@ -313,8 +313,8 @@
               "fight_type": "amateur"
             }
           ],
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "L13AyI827Ig",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=L13AyI827Ig"
         },
         {
           "name": "Raoni Barcelos",
@@ -663,11 +663,25 @@
               "fight_type": "pro"
             }
           ],
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "AMW-1rWg1t0",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=AMW-1rWg1t0"
         }
       ],
-      "betting_odds": {}
+      "betting_odds": {
+        "fighter1_name": "Montel Jackson",
+        "fighter2_name": "Raoni Barcelos",
+        "fighter1_moneyline": "N/A",
+        "fighter2_moneyline": "N/A",
+        "over_under_rounds": "N/A",
+        "over_odds": "N/A",
+        "under_odds": "N/A",
+        "fighter1_ko_odds": "N/A",
+        "fighter2_ko_odds": "N/A",
+        "fighter1_sub_odds": "N/A",
+        "fighter2_sub_odds": "N/A",
+        "fighter1_decision_odds": "N/A",
+        "fighter2_decision_odds": "N/A"
+      }
     },
     {
       "fight_id": 1,
@@ -885,8 +899,8 @@
               "fight_type": "amateur"
             }
           ],
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "ylcMUrfYS8w",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=ylcMUrfYS8w"
         },
         {
           "name": "Sedriques Dumas",
@@ -1213,11 +1227,25 @@
               "fight_type": "amateur"
             }
           ],
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "TWSVfAWcbq8",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=TWSVfAWcbq8"
         }
       ],
-      "betting_odds": {}
+      "betting_odds": {
+        "fighter1_name": "Jackson McVey",
+        "fighter2_name": "Sedriques Dumas",
+        "fighter1_moneyline": "N/A",
+        "fighter2_moneyline": "N/A",
+        "over_under_rounds": "N/A",
+        "over_odds": "N/A",
+        "under_odds": "N/A",
+        "fighter1_ko_odds": "N/A",
+        "fighter2_ko_odds": "N/A",
+        "fighter1_sub_odds": "N/A",
+        "fighter2_sub_odds": "N/A",
+        "fighter1_decision_odds": "N/A",
+        "fighter2_decision_odds": "N/A"
+      }
     },
     {
       "fight_id": 2,
@@ -1450,8 +1478,8 @@
               "fight_type": "pro"
             }
           ],
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "d6G_jRpRS7E",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=d6G_jRpRS7E"
         },
         {
           "name": "Joselyne Edwards",
@@ -1778,11 +1806,25 @@
               "fight_type": "amateur"
             }
           ],
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "98S_e_rmstA",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=98S_e_rmstA"
         }
       ],
-      "betting_odds": {}
+      "betting_odds": {
+        "fighter1_name": "Norma Dumont",
+        "fighter2_name": "Joselyne Edwards",
+        "fighter1_moneyline": "N/A",
+        "fighter2_moneyline": "N/A",
+        "over_under_rounds": "N/A",
+        "over_odds": "N/A",
+        "under_odds": "N/A",
+        "fighter1_ko_odds": "N/A",
+        "fighter2_ko_odds": "N/A",
+        "fighter1_sub_odds": "N/A",
+        "fighter2_sub_odds": "N/A",
+        "fighter1_decision_odds": "N/A",
+        "fighter2_decision_odds": "N/A"
+      }
     },
     {
       "fight_id": 3,
@@ -2169,8 +2211,8 @@
               "fight_type": "amateur"
             }
           ],
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "NJoD9yqCVwQ",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=NJoD9yqCVwQ"
         },
         {
           "name": "Rafa Garcia",
@@ -2475,11 +2517,25 @@
               "fight_type": "pro"
             }
           ],
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "eaRnc-Mg0eA",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=eaRnc-Mg0eA"
         }
       ],
-      "betting_odds": {}
+      "betting_odds": {
+        "fighter1_name": "Alexander Hernandez",
+        "fighter2_name": "Rafa Garcia",
+        "fighter1_moneyline": "N/A",
+        "fighter2_moneyline": "N/A",
+        "over_under_rounds": "N/A",
+        "over_odds": "N/A",
+        "under_odds": "N/A",
+        "fighter1_ko_odds": "N/A",
+        "fighter2_ko_odds": "N/A",
+        "fighter1_sub_odds": "N/A",
+        "fighter2_sub_odds": "N/A",
+        "fighter1_decision_odds": "N/A",
+        "fighter2_decision_odds": "N/A"
+      }
     },
     {
       "fight_id": 4,
@@ -2730,8 +2786,8 @@
               "fight_type": "pro"
             }
           ],
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "QKhcwJcyIAM",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=QKhcwJcyIAM"
         },
         {
           "name": "Davey Grant",
@@ -3113,11 +3169,25 @@
               "fight_type": "amateur"
             }
           ],
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "aN_eurjsr10",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=aN_eurjsr10"
         }
       ],
-      "betting_odds": {}
+      "betting_odds": {
+        "fighter1_name": "Juan Adrian Martinetti",
+        "fighter2_name": "Davey Grant",
+        "fighter1_moneyline": "N/A",
+        "fighter2_moneyline": "N/A",
+        "over_under_rounds": "N/A",
+        "over_odds": "N/A",
+        "under_odds": "N/A",
+        "fighter1_ko_odds": "N/A",
+        "fighter2_ko_odds": "N/A",
+        "fighter1_sub_odds": "N/A",
+        "fighter2_sub_odds": "N/A",
+        "fighter1_decision_odds": "N/A",
+        "fighter2_decision_odds": "N/A"
+      }
     },
     {
       "fight_id": 5,
@@ -3350,8 +3420,8 @@
               "fight_type": "pro"
             }
           ],
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "9-Jdcod6e-o",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=9-Jdcod6e-o"
         },
         {
           "name": "Eric McConico",
@@ -3619,11 +3689,25 @@
               "fight_type": "amateur"
             }
           ],
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "wlxuT02oBrM",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=wlxuT02oBrM"
         }
       ],
-      "betting_odds": {}
+      "betting_odds": {
+        "fighter1_name": "Rodolfo Vieira",
+        "fighter2_name": "Eric McConico",
+        "fighter1_moneyline": "N/A",
+        "fighter2_moneyline": "N/A",
+        "over_under_rounds": "N/A",
+        "over_odds": "N/A",
+        "under_odds": "N/A",
+        "fighter1_ko_odds": "N/A",
+        "fighter2_ko_odds": "N/A",
+        "fighter1_sub_odds": "N/A",
+        "fighter2_sub_odds": "N/A",
+        "fighter1_decision_odds": "N/A",
+        "fighter2_decision_odds": "N/A"
+      }
     },
     {
       "fight_id": 6,
@@ -3874,8 +3958,8 @@
               "fight_type": "amateur"
             }
           ],
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "w8pz3g-PFEU",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=w8pz3g-PFEU"
         },
         {
           "name": "Mayra Bueno Silva",
@@ -4123,11 +4207,25 @@
               "fight_type": "pro"
             }
           ],
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "2wNDtkXrjeI",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=2wNDtkXrjeI"
         }
       ],
-      "betting_odds": {}
+      "betting_odds": {
+        "fighter1_name": "Michelle Montague",
+        "fighter2_name": "Mayra Bueno Silva",
+        "fighter1_moneyline": "N/A",
+        "fighter2_moneyline": "N/A",
+        "over_under_rounds": "N/A",
+        "over_odds": "N/A",
+        "under_odds": "N/A",
+        "fighter1_ko_odds": "N/A",
+        "fighter2_ko_odds": "N/A",
+        "fighter1_sub_odds": "N/A",
+        "fighter2_sub_odds": "N/A",
+        "fighter1_decision_odds": "N/A",
+        "fighter2_decision_odds": "N/A"
+      }
     },
     {
       "fight_id": 7,
@@ -4404,8 +4502,8 @@
               "fight_type": "pro"
             }
           ],
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "LRTOir9ymyk",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=LRTOir9ymyk"
         },
         {
           "name": "Talita Alencar",
@@ -4567,11 +4665,25 @@
               "fight_type": "pro"
             }
           ],
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "lJEtXZ_nLEA",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=lJEtXZ_nLEA"
         }
       ],
-      "betting_odds": {}
+      "betting_odds": {
+        "fighter1_name": "Julia Polastri",
+        "fighter2_name": "Talita Alencar",
+        "fighter1_moneyline": "N/A",
+        "fighter2_moneyline": "N/A",
+        "over_under_rounds": "N/A",
+        "over_odds": "N/A",
+        "under_odds": "N/A",
+        "fighter1_ko_odds": "N/A",
+        "fighter2_ko_odds": "N/A",
+        "fighter1_sub_odds": "N/A",
+        "fighter2_sub_odds": "N/A",
+        "fighter1_decision_odds": "N/A",
+        "fighter2_decision_odds": "N/A"
+      }
     },
     {
       "fight_id": 8,
@@ -4612,8 +4724,8 @@
           },
           "avg_sub_attempts": 0.0,
           "age": 36,
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "SRu4EjW3DJ0",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=SRu4EjW3DJ0"
         },
         {
           "name": "Ryan Spann",
@@ -5094,11 +5206,25 @@
               "fight_type": "amateur"
             }
           ],
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "mGi8rO5L3Ms",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=mGi8rO5L3Ms"
         }
       ],
-      "betting_odds": {}
+      "betting_odds": {
+        "fighter1_name": "Marcus Buchecha",
+        "fighter2_name": "Ryan Spann",
+        "fighter1_moneyline": "N/A",
+        "fighter2_moneyline": "N/A",
+        "over_under_rounds": "N/A",
+        "over_odds": "N/A",
+        "under_odds": "N/A",
+        "fighter1_ko_odds": "N/A",
+        "fighter2_ko_odds": "N/A",
+        "fighter1_sub_odds": "N/A",
+        "fighter2_sub_odds": "N/A",
+        "fighter1_decision_odds": "N/A",
+        "fighter2_decision_odds": "N/A"
+      }
     },
     {
       "fight_id": 9,
@@ -5485,8 +5611,8 @@
               "fight_type": "amateur"
             }
           ],
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "hxO7AkYBaF4",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=hxO7AkYBaF4"
         },
         {
           "name": "Aljamain Sterling",
@@ -5912,11 +6038,25 @@
               "fight_type": "amateur"
             }
           ],
-          "highlightVideoId": null,
-          "youtubeHighlightUrl": null
+          "highlightVideoId": "yi54Ii8PBMk",
+          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=yi54Ii8PBMk"
         }
       ],
-      "betting_odds": {}
+      "betting_odds": {
+        "fighter1_name": "Youssef Zalal",
+        "fighter2_name": "Aljamain Sterling",
+        "fighter1_moneyline": "N/A",
+        "fighter2_moneyline": "N/A",
+        "over_under_rounds": "N/A",
+        "over_odds": "N/A",
+        "under_odds": "N/A",
+        "fighter1_ko_odds": "N/A",
+        "fighter2_ko_odds": "N/A",
+        "fighter1_sub_odds": "N/A",
+        "fighter2_sub_odds": "N/A",
+        "fighter1_decision_odds": "N/A",
+        "fighter2_decision_odds": "N/A"
+      }
     }
   ]
 }

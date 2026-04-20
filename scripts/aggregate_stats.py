@@ -1190,11 +1190,18 @@ def merge_highlight_videos(data, highlights_path="public/highlight_videos.json")
         return
 
     # Build a normalized-name → video-id lookup, skipping the _instructions key
-    lookup = {
-        normalize_name(name): video_id
-        for name, video_id in raw.items()
-        if not name.startswith("_") and isinstance(video_id, str) and video_id.strip()
-    }
+    # YouTube video IDs are exactly 11 characters: [A-Za-z0-9_-]
+    _yt_id_re = re.compile(r'^[A-Za-z0-9_-]{11}$')
+    lookup = {}
+    for name, video_id in raw.items():
+        if name.startswith("_"):
+            continue
+        if not isinstance(video_id, str) or not video_id.strip():
+            continue
+        if not _yt_id_re.match(video_id.strip()):
+            print(f"⚠️  Skipping invalid YouTube ID for '{name}': {video_id!r} (must be 11 chars [A-Za-z0-9_-])")
+            continue
+        lookup[normalize_name(name)] = video_id.strip()
 
     if not lookup:
         print("ℹ️  highlight_videos.json has no valid entries — skipping video merge")
