@@ -665,11 +665,12 @@ _MANUAL_PRE_UFC_NOTES: dict[str, list[str]] = {
 # Update each week before generating lineups. Keep the old entries as comments
 # so there's a history of which week each configuration was used.
 #
-# Week of UFC 327 - Prochazka vs. Ulberg (Apr 11 2026):
+# Week of UFC Fight Night - April 25, 2026:
+# Previous week (UFC 327 - Apr 11 2026): Tatiana Suarez, Mateusz Gamrot, Josh Hokit
 WRESTLING_CORE_OVERRIDE: list[str] = [
-    "Tatiana Suarez",   # Elite grappler, fight 2
-    "Mateusz Gamrot",   # Elite grappler, fight 9
-    "Josh Hokit",       # Strong wrestling upside, DWCS 5-6 TDs vs Uriel
+    "Michelle Montague",   # Elite grappler: 5.0 TD/15min, 10.7 min ctrl avg
+    "Norma Dumont",        # Dominant control game: 332s avg ctrl, wrestling-heavy style
+    "Rafa Garcia",         # Active wrestler: 3.4 TD/15min, 187s ctrl
 ]
 
 
@@ -873,6 +874,10 @@ def project_full_card(stats: dict[str, Any] | None = None) -> list[dict[str, Any
             _td_avg = float(_stats_f.get("td_avg", 0) or 0)
             _avg_ctrl_secs = float(_stats_f.get("avg_ctrl_secs", 0) or 0)
             _opp_td_def = _parse_pct(_stats_o.get("td_defense"))
+            # Striking fields for Striking Edge strategy per-fighter reasoning
+            _slpm = float(_stats_f.get("slpm", 0) or 0)
+            _kd_avg_proj = float(_stats_f.get("avg_kd_per_fight", 0) or 0)
+            _opp_str_def = _parse_pct(_stats_o.get("striking_defense"))
             _ufc_fight_count = _count_ufc_fights(fighter)
             _pre_ufc_notes = (
                 _build_pre_ufc_notes(fighter, _ufc_fight_count)
@@ -895,6 +900,9 @@ def project_full_card(stats: dict[str, Any] | None = None) -> list[dict[str, Any
                 "td_avg": _td_avg,
                 "avg_ctrl_secs": _avg_ctrl_secs,
                 "opp_td_def": _opp_td_def,
+                "slpm": _slpm,
+                "kd_avg": _kd_avg_proj,
+                "opp_str_def": _opp_str_def,
                 **proj,
             })
 
@@ -1001,6 +1009,23 @@ def generate_smart_lineups(
     for p in projections:
         p["value"] = p["proj_fppg"] / (p["salary"] / 1000) if p["salary"] > 0 else 0
 
+    # Resolve wrestling override for the current card.
+    # If WRESTLING_CORE_OVERRIDE contains names not on this week's roster (i.e. it
+    # was set for a previous event and not updated), strip the stale names so the
+    # strategy falls back to pure wrestling-score mode rather than silently
+    # degrading to an all-filler striking lineup.
+    _all_fighter_names_lower = {p["name"].lower() for p in projections}
+    _wrestling_override = [
+        n for n in WRESTLING_CORE_OVERRIDE
+        if n.lower() in _all_fighter_names_lower
+    ]
+    if WRESTLING_CORE_OVERRIDE and not _wrestling_override:
+        logger.warning(
+            "WRESTLING_CORE_OVERRIDE contains no current-card fighters "
+            "(%s). Falling back to pure wrestling-score mode.",
+            WRESTLING_CORE_OVERRIDE,
+        )
+
     # Track already-seen lineups (client exclusions + within this call)
     seen: set[frozenset[str]] = set()
     if exclude_fingerprints:
@@ -1090,19 +1115,18 @@ def generate_smart_lineups(
         fighters = by_fight.get(fid, [])
         if not fighters:
             return None
-        if WRESTLING_CORE_OVERRIDE:
-            _core_keys = {n.lower() for n in WRESTLING_CORE_OVERRIDE}
+        if _wrestling_override:
+            _core_keys = {n.lower() for n in _wrestling_override}
             # If a designated core wrestler is in this fight, always pick them.
             # No noise applied — cores are locked regardless of variation pass.
             for f in fighters:
                 if f.get("name", "").lower() in _core_keys:
                     return f["id"]
-            # Filler fight: pick purely by value + striking edge (no wrestling bias).
+            # Non-core fight: pick by wrestling score — stay on-theme.
             return max(
                 fighters,
                 key=lambda f: (
-                    f.get("value", 0)
-                    + f.get("striking_score", 0) * 0.5
+                    f.get("wrestling_score", 0)
                     + random.uniform(-noise, noise)
                 ),
             )["id"]
@@ -1134,21 +1158,22 @@ def generate_smart_lineups(
         elif strat_key == "finish_upside":
             return sum(f["finish_prob"] * f["proj_fppg"] for f in fighters_list)
         elif strat_key == "wrestling_advantage":
-            if WRESTLING_CORE_OVERRIDE:
+            if _wrestling_override:
                 # Core fighters get a large fixed bonus each (ensures all 3 are
-                # selected before any filler consideration).
-                # Fillers are scored by value + striking — no wrestling score used.
-                _core_keys = {n.lower() for n in WRESTLING_CORE_OVERRIDE}
+                # selected before any non-core consideration).
+                # Non-core fights are ALSO scored by wrestling_score — keeps the
+                # entire lineup on-theme and prevents striking-bias contamination.
+                _core_keys = {n.lower() for n in _wrestling_override}
                 core_bonus = sum(
                     50.0 for f in fighters_list
                     if f.get("name", "").lower() in _core_keys
                 )
-                filler_score = sum(
-                    f.get("value", 0) + f.get("striking_score", 0) * 0.5
+                non_core_score = sum(
+                    f.get("wrestling_score", 0)
                     for f in fighters_list
                     if f.get("name", "").lower() not in _core_keys
                 )
-                return core_bonus + filler_score
+                return core_bonus + non_core_score
             else:
                 # Pure wrestling score mode with threshold bonus.
                 CORE_THRESHOLD = 4.5
@@ -1230,10 +1255,10 @@ def generate_smart_lineups(
                 elif strat_key == "wrestling_advantage":
                     # ── Core + Fillers model ──────────────────────────────────────
                     # Determine who counts as "Core" for this lineup.
-                    # WRESTLING_CORE_OVERRIDE (module-level list) takes precedence;
-                    # if empty, fall back to score >= CORE_THRESHOLD.
-                    if WRESTLING_CORE_OVERRIDE:
-                        _override_keys = {n.lower() for n in WRESTLING_CORE_OVERRIDE}
+                    # _wrestling_override (card-filtered from WRESTLING_CORE_OVERRIDE)
+                    # takes precedence; if empty, fall back to score >= CORE_THRESHOLD.
+                    if _wrestling_override:
+                        _override_keys = {n.lower() for n in _wrestling_override}
                         core_ids   = {f["id"] for f in fighters_list if f.get("name","").lower() in _override_keys}
                         filler_ids = {f["id"] for f in fighters_list if f["id"] not in core_ids}
                         _core_names = [f["name"] for f in fighters_list if f["id"] in core_ids]
@@ -1242,7 +1267,7 @@ def generate_smart_lineups(
                             _names_str = ", ".join(_core_names)
                             reason = (
                                 f"Wrestling Edge — {n_core} core wrestler{'s' if n_core != 1 else ''} "
-                                f"({_names_str}) + {len(filler_ids)} best-value / striking filler{'s' if len(filler_ids) != 1 else ''}."
+                                f"({_names_str}) + {len(filler_ids)} best wrestling-edge pick{'s' if len(filler_ids) != 1 else ''} from remaining fights."
                             )
                         else:
                             reason = "Wrestling Edge — designated core wrestlers not available; best-value fillers used."
@@ -1295,19 +1320,37 @@ def generate_smart_lineups(
                             wres_overrides[_f["id"]] = f"{_label}{_stat_str}."
 
                         else:
-                            # Filler — explain WHY this non-wrestler is here
-                            _proj   = _f.get("proj_fppg", 0.0)
-                            _value  = _f.get("value", 0.0)
-                            _stk    = _f.get("striking_score", 0.0)
-                            _salary = _f.get("salary", 0)
+                            # Non-core fighter — show wrestling-relevant reasoning
+                            # (never reference striking on a wrestling lineup).
+                            _proj    = _f.get("proj_fppg", 0.0)
+                            _td_nc   = _f.get("td_avg", 0.0)
+                            _ctrl_nc = _f.get("avg_ctrl_secs", 0.0) / 60.0
+                            _wscore_nc = _f.get("wrestling_score", 0.0)
+                            _opp_nc  = _f.get("opponent", "opponent")
+                            _opp_def_nc = _f.get("opp_td_def", 0.0)
 
-                            if _value >= 10.0:
-                                _filler_reason = f"Filler — top value pick (${_salary:,}, {_proj:.1f} proj pts)"
-                            elif _stk >= 5.0:
-                                _filler_reason = f"Filler — striking mismatch ({_proj:.1f} proj pts)"
+                            _nc_details: list[str] = []
+                            if _td_nc >= 0.5:
+                                _nc_details.append(f"{_td_nc:.1f} TD/15min")
+                            if _ctrl_nc >= 0.5:
+                                _nc_details.append(f"{_ctrl_nc:.1f} min ctrl/fight")
+                            if _td_nc >= 0.5 and _opp_def_nc < 70:
+                                _nc_details.append(f"vs {_opp_nc}'s {_opp_def_nc:.0f}% TD def")
+                            elif _td_nc >= 0.5 and _opp_def_nc >= 70:
+                                _nc_details.append(f"vs {_opp_nc}'s solid {_opp_def_nc:.0f}% TD def")
+
+                            if _wscore_nc >= 4.0 or _td_nc >= 3.0:
+                                _nc_label = "Strong wrestling edge"
+                            elif _wscore_nc >= 2.0 or _td_nc >= 1.5 or _ctrl_nc >= 1.5:
+                                _nc_label = "Grappling upside"
+                            elif _wscore_nc >= 0.5 or _td_nc >= 0.5 or _ctrl_nc >= 0.5:
+                                _nc_label = "Wrestling lean"
                             else:
-                                _filler_reason = f"Filler — highest projection available ({_proj:.1f} pts)"
-                            wres_overrides[_f["id"]] = _filler_reason
+                                _nc_label = "Best available"
+                                _nc_details = [f"{_proj:.1f} proj pts"]
+
+                            _nc_stat_str = f" ({', '.join(_nc_details)})" if _nc_details else ""
+                            wres_overrides[_f["id"]] = f"{_nc_label}{_nc_stat_str}."
 
                     lineup = _build_lineup(picks, strat_key, reason, wres_overrides)
                     if lineup:
@@ -1316,6 +1359,45 @@ def generate_smart_lineups(
                 elif strat_key == "striking_advantage":
                     best_striker = max(fighters_list, key=lambda f: f.get("striking_score", 0))
                     reason = f"Striking anchor: {best_striker['name']} (volume + power edge). High-ceiling striking lineup."
+
+                    # ── Per-fighter reasoning (striking-specific) ─────────────────
+                    # Use the median striking_score of fighters on this card as
+                    # the "core striker" threshold — top half = core, bottom = filler.
+                    all_stk_scores = [p.get("striking_score", 0.0) for p in projections]
+                    _stk_median = sorted(all_stk_scores)[len(all_stk_scores) // 2]
+                    stk_overrides: dict[str, str] = {}
+                    for _f in fighters_list:
+                        _stk_score   = _f.get("striking_score", 0.0)
+                        _slpm_f      = _f.get("slpm", 0.0)
+                        _kd_avg_f    = _f.get("kd_avg", 0.0)
+                        _opp_str_def_f = _f.get("opp_str_def", 50.0)
+                        _opp_name_f  = _f.get("opponent", "opponent")
+                        _proj_f      = _f.get("proj_fppg", 0.0)
+                        _salary_f    = _f.get("salary", 0)
+                        _value_f     = _f.get("value", 0.0)
+
+                        if _stk_score >= _stk_median:
+                            _parts: list[str] = []
+                            if _slpm_f >= 3.0:
+                                _parts.append(f"{_slpm_f:.1f} SLpM")
+                            if _opp_str_def_f < 55:
+                                _parts.append(f"vs {_opp_name_f}'s {_opp_str_def_f:.0f}% str def")
+                            if _kd_avg_f >= 0.25:
+                                _parts.append(f"{_kd_avg_f:.2f} KD/fight")
+                            _stat_str = f" ({', '.join(_parts)})" if _parts else ""
+                            stk_overrides[_f["id"]] = f"★ Striking Edge{_stat_str}."
+                        else:
+                            if _value_f >= 10.0:
+                                stk_overrides[_f["id"]] = f"Value filler — top salary efficiency (${_salary_f:,}, {_proj_f:.1f} proj pts)."
+                            elif _proj_f >= 65.0:
+                                stk_overrides[_f["id"]] = f"High-floor filler — {_proj_f:.1f} proj pts at ${_salary_f:,}."
+                            else:
+                                stk_overrides[_f["id"]] = f"Salary filler — {_proj_f:.1f} proj pts."
+
+                    lineup = _build_lineup(picks, strat_key, reason, stk_overrides)
+                    if lineup:
+                        results.append(lineup)
+                    continue
                 else:
                     reason = f"Balanced build — {proj_total:.1f} projected pts at ${total_sal:,} salary."
 

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { estimateFightRounds } from "./projectionMath";
 import FighterImage from "./FighterImage";
+import PaywallGate from "./PaywallGate";
+import { isPro } from "../utils/devAccess";
 
 // ─── Odds utilities (same cache as LatestOdds.jsx) ──────────────────────────
 
@@ -358,7 +360,9 @@ const buildSampleBets = (fights) => {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-const ValueBets = ({ eventTitle }) => {
+const ValueBets = ({ eventTitle, currentUser }) => {
+  if (!isPro(currentUser)) return <PaywallGate currentUser={currentUser} featureName="+EV Value Bets" />;
+
   const [fights, setFights] = useState([]);
   const [oddsData, setOddsData] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -18,13 +18,14 @@
 
 import React from "react";
 import useOptimizer from "../hooks/useOptimizer";
+import { isPro as checkIsPro } from "../utils/devAccess";
 import OptimizerControls from "./OptimizerControls";
 import LineupTable from "./LineupTable";
 import OptimizerStats from "./OptimizerStats";
 
 const TeamCombinations = ({ eventTitle = "Latest UFC Event", currentUser }) => {
   const opt = useOptimizer();
-  const isPro = currentUser?.subscription_status === "pro";
+  const isPro = checkIsPro(currentUser);
 
   if (!isPro) {
     return (

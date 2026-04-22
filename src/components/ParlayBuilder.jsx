@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import api from "../services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import WelcomeBonusSelector from "./WelcomeBonusSelector";
+import { isPro as checkIsPro } from "../utils/devAccess";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const ODDS_CACHE_KEY = "ufc_odds_cache_v3"; // same key as LatestOdds
@@ -64,105 +65,88 @@ const legsToCopyText = (legs, stake, payout) => {
 };
 
 // ─── Placeholder fight data ───────────────────────────────────────────────────
-// Shown only when the odds API cache hasn't loaded yet. These are real lines
-// for the current card (UFC Fight Night — April 11–12, 2026) so the page
-// is immediately useful even before the API fetch completes.
+// Shown only when the odds API cache hasn't loaded yet. These are the current
+// card (UFC Fight Night — April 25, 2026) with estimated lines.
 // Update this block each week if you want an accurate offline fallback.
 const PLACEHOLDER_FIGHTS = [
   {
     id: "f1",
     section: "Main Event",
-    home: { name: "Jiri Prochazka", ml: -108 },
-    away: { name: "Carlos Ulberg", ml: -112 },
-    total: { point: 2.5, overOdds: -115, underOdds: -115 },
+    home: { name: "Youssef Zalal", ml: -140 },
+    away: { name: "Aljamain Sterling", ml: +118 },
+    total: { point: 2.5, overOdds: -120, underOdds: -110 },
     props: [],
   },
   {
     id: "f2",
     section: "Co-Main Event",
-    home: { name: "Azamat Murzakanov", ml: -205 },
-    away: { name: "Paulo Costa", ml: +170 },
-    total: { point: 1.5, overOdds: -245, underOdds: +185 },
+    home: { name: "Norma Dumont", ml: -200 },
+    away: { name: "Joselyne Edwards", ml: +165 },
+    total: { point: 2.5, overOdds: -155, underOdds: +125 },
     props: [],
   },
   {
     id: "f3",
     section: "Main Card",
-    home: { name: "Curtis Blaydes", ml: -118 },
-    away: { name: "Josh Hokit", ml: -102 },
-    total: { point: 1.5, overOdds: -195, underOdds: +150 },
+    home: { name: "Alexander Hernandez", ml: -160 },
+    away: { name: "Rafa Garcia", ml: +132 },
+    total: { point: 1.5, overOdds: -195, underOdds: +155 },
     props: [],
   },
   {
     id: "f4",
     section: "Main Card",
-    home: { name: "Patricio Freire", ml: -278 },
-    away: { name: "Aaron Pico", ml: +225 },
-    total: { point: 1.5, overOdds: -188, underOdds: +145 },
+    home: { name: "Montel Jackson", ml: -185 },
+    away: { name: "Raoni Barcelos", ml: +150 },
+    total: { point: 2.5, overOdds: -145, underOdds: +115 },
     props: [],
   },
   {
     id: "f5",
     section: "Main Card",
-    home: { name: "Dominick Reyes", ml: -148 },
-    away: { name: "Johnny Walker", ml: +124 },
-    total: { point: 1.5, overOdds: +145, underOdds: -188 },
+    home: { name: "Marcus Buchecha", ml: -150 },
+    away: { name: "Ryan Spann", ml: +126 },
+    total: { point: 1.5, overOdds: -300, underOdds: +230 },
     props: [],
   },
   {
     id: "f6",
     section: "Main Card",
-    home: { name: "Kevin Holland", ml: -110 },
-    away: { name: "Randy Brown", ml: -110 },
-    total: { point: 2.5, overOdds: -145, underOdds: +114 },
+    home: { name: "Juan Adrian Martinetti", ml: -130 },
+    away: { name: "Davey Grant", ml: +108 },
+    total: { point: 2.5, overOdds: -200, underOdds: +160 },
     props: [],
   },
   {
     id: "f7",
     section: "Prelims",
-    home: { name: "Mateusz Gamrot", ml: +160 },
-    away: { name: "Esteban Ribovics", ml: -192 },
-    total: { point: 2.5, overOdds: -260, underOdds: +195 },
+    home: { name: "Jackson McVey", ml: -190 },
+    away: { name: "Sedriques Dumas", ml: +155 },
+    total: { point: 1.5, overOdds: -220, underOdds: +170 },
     props: [],
   },
   {
     id: "f8",
     section: "Prelims",
-    home: { name: "Tatiana Suarez", ml: +124 },
-    away: { name: "Loopy Godinez", ml: -148 },
-    total: { point: 2.5, overOdds: -500, underOdds: +340 },
+    home: { name: "Rodolfo Vieira", ml: -280 },
+    away: { name: "Eric McConico", ml: +225 },
+    total: { point: 1.5, overOdds: -320, underOdds: +245 },
     props: [],
   },
   {
     id: "f9",
     section: "Prelims",
-    home: { name: "Kelvin Gastelum", ml: -278 },
-    away: { name: "Vicente Luque", ml: +225 },
-    total: { point: 2.5, overOdds: -154, underOdds: +120 },
+    home: { name: "Julia Polastri", ml: -250 },
+    away: { name: "Talita Alencar", ml: +200 },
+    total: { point: 1.5, overOdds: -280, underOdds: +215 },
     props: [],
   },
   {
     id: "f10",
     section: "Prelims",
-    home: { name: "Cub Swanson", ml: +100 },
-    away: { name: "Nate Landwehr", ml: -120 },
-    total: { point: 2.5, overOdds: -120, underOdds: -110 },
-    props: [],
-  },
-  {
-    id: "f11",
-    section: "Early Prelims",
-    home: { name: "Chris Padilla", ml: -170 },
-    away: { name: "MarQuel Mederos", ml: +142 },
-    total: { point: 2.5, overOdds: -280, underOdds: +210 },
-    props: [],
-  },
-  {
-    id: "f12",
-    section: "Early Prelims",
-    home: { name: "Francisco Prado", ml: -180 },
-    away: { name: "Charles Radtke", ml: +150 },
-    total: { point: 1.5, overOdds: -215, underOdds: +165 },
+    home: { name: "Michelle Montague", ml: -180 },
+    away: { name: "Mayra Bueno Silva", ml: +148 },
+    total: { point: 2.5, overOdds: -200, underOdds: +160 },
     props: [],
   },
 ];
@@ -552,9 +536,9 @@ const ParlaySlip = ({
                   ? "✓ Saved!"
                   : saveStatus === "error"
                     ? "Save failed — try again"
-                    : currentUser
+                    : currentUser && checkIsPro(currentUser)
                       ? "💾 Save Parlay to Account"
-                      : "💾 Save Parlay (local)"}
+                      : "🔒 Pro — Save Parlay"}
             </button>
           </div>
         )}
@@ -749,8 +733,230 @@ const SaveNameModal = ({ onConfirm, onClose }) => {
   );
 };
 
+// ─── Recommended Parlays — generated dynamically from the loaded fights ───────
+// Built from whatever fights are currently in state (live or placeholder).
+// Returns up to 5 parlay ideas using fighters actually on this week's card.
+const buildRecommendedParlays = (fights) => {
+  const withOdds = fights.filter(
+    (f) =>
+      f.home?.ml && f.away?.ml &&
+      Number.isFinite(f.home.ml) && Number.isFinite(f.away.ml) &&
+      f.home.ml !== 0 && f.away.ml !== 0,
+  );
+  if (withOdds.length < 2) return [];
+
+  // American odds → decimal multiplier
+  const toDecimal = (n) =>
+    n >= 100 ? n / 100 + 1 : 100 / Math.abs(n) + 1;
+
+  // Returns the favorite (lowest decimal odds = best implied probability)
+  const favoriteOf = (f) =>
+    toDecimal(f.home.ml) <= toDecimal(f.away.ml)
+      ? { name: f.home.name, odds: f.home.ml }
+      : { name: f.away.name, odds: f.away.ml };
+
+  // Returns the underdog
+  const underdogOf = (f) =>
+    toDecimal(f.home.ml) > toDecimal(f.away.ml)
+      ? { name: f.home.name, odds: f.home.ml }
+      : { name: f.away.name, odds: f.away.ml };
+
+  const mainCard = withOdds.filter((f) =>
+    ["Main Event", "Co-Main Event", "Main Card"].includes(f.section),
+  );
+  const allSorted = [...mainCard, ...withOdds.filter((f) => !mainCard.includes(f))];
+
+  const parlays = [];
+
+  // 1. Top 3 card favorites
+  if (allSorted.length >= 3) {
+    parlays.push({
+      id: "rp-1",
+      name: "Card Favorites",
+      badge: "🔥 Top Pick",
+      badgeColor: "bg-yellow-600 text-yellow-100",
+      description: "Stack the top three favorites from this week's card.",
+      legs: allSorted.slice(0, 3).map((f) => ({
+        description: `${favoriteOf(f).name} ML`,
+        odds: favoriteOf(f).odds,
+      })),
+    });
+  }
+
+  // 2. Two heaviest favorites (sorted by most negative / lowest decimal odds)
+  const byFavStrength = [...allSorted].sort(
+    (a, b) => toDecimal(favoriteOf(a).odds) - toDecimal(favoriteOf(b).odds),
+  );
+  if (byFavStrength.length >= 2) {
+    parlays.push({
+      id: "rp-2",
+      name: "Heavy Favorites",
+      badge: "💰 Safer Play",
+      badgeColor: "bg-blue-700 text-blue-100",
+      description: "Two of the card's biggest favorites for a lower-risk return.",
+      legs: byFavStrength.slice(0, 2).map((f) => ({
+        description: `${favoriteOf(f).name} ML`,
+        odds: favoriteOf(f).odds,
+      })),
+    });
+  }
+
+  // 3. Two best-value underdogs (highest positive ML first)
+  const byUnderdogValue = [...allSorted].sort(
+    (a, b) => underdogOf(b).odds - underdogOf(a).odds,
+  );
+  if (byUnderdogValue.length >= 2) {
+    parlays.push({
+      id: "rp-3",
+      name: "Underdog Value Play",
+      badge: "💎 High Upside",
+      badgeColor: "bg-emerald-700 text-emerald-100",
+      description: "Two underdogs with realistic paths to victory.",
+      legs: byUnderdogValue.slice(0, 2).map((f) => ({
+        description: `${underdogOf(f).name} ML`,
+        odds: underdogOf(f).odds,
+      })),
+    });
+  }
+
+  // 4. Main event + co-main favorites (or top-2 fights)
+  const mainEvent = withOdds.find((f) => f.section === "Main Event");
+  const coMain = withOdds.find((f) => f.section === "Co-Main Event");
+  const headliners = [mainEvent, coMain].filter(Boolean);
+  if (headliners.length >= 2) {
+    parlays.push({
+      id: "rp-4",
+      name: "Headline Parlay",
+      badge: "⚡ Staff Pick",
+      badgeColor: "bg-purple-700 text-purpleged-100",
+      description: "Favorites from the main and co-main events.",
+      legs: headliners.map((f) => ({
+        description: `${favoriteOf(f).name} ML`,
+        odds: favoriteOf(f).odds,
+      })),
+    });
+  } else if (allSorted.length >= 2) {
+    parlays.push({
+      id: "rp-4",
+      name: "2-Leg Special",
+      badge: "⚡ Staff Pick",
+      badgeColor: "bg-purple-700 text-purple-100",
+      description: "Two solid picks from this week's card.",
+      legs: allSorted.slice(0, 2).map((f) => ({
+        description: `${favoriteOf(f).name} ML`,
+        odds: favoriteOf(f).odds,
+      })),
+    });
+  }
+
+  // 5. Mixed: main card favorite + prelim underdog
+  const mainFav = mainCard[0] ? favoriteOf(mainCard[0]) : null;
+  const prelimDog =
+    withOdds.find((f) => f.section === "Prelims" && underdogOf(f).odds > 0);
+  if (mainFav && prelimDog) {
+    parlays.push({
+      id: "rp-5",
+      name: "Fav + Dog Combo",
+      badge: "🎯 Value Mix",
+      badgeColor: "bg-orange-700 text-orange-100",
+      description: "A top main card pick paired with a prelim value underdog.",
+      legs: [
+        { description: `${mainFav.name} ML`, odds: mainFav.odds },
+        {
+          description: `${underdogOf(prelimDog).name} ML`,
+          odds: underdogOf(prelimDog).odds,
+        },
+      ],
+    });
+  }
+
+  return parlays.filter((p) => p.legs.length > 0);
+};
+
+const RecommendedParlays = ({ fights, onAddAll }) => {
+  const [expanded, setExpanded] = useState(null);
+  const parlays = buildRecommendedParlays(fights);
+
+  if (parlays.length === 0) return null;
+
+  return (
+    <div className="mb-6">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-xs font-bold uppercase tracking-widest text-yellow-500">
+          ⭐ Recommended Parlays
+        </span>
+        <div className="flex-1 h-px bg-stone-700" />
+        <span className="text-[10px] text-stone-500 italic">This week's card</span>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+        {parlays.map((p) => {
+          const combined = p.legs.reduce(
+            (acc, l) => acc * americanToDecimal(l.odds),
+            1,
+          );
+          const american = decimalToAmerican(combined);
+          const isOpen = expanded === p.id;
+          return (
+            <div
+              key={p.id}
+              className="bg-stone-900 border border-stone-700 rounded-xl overflow-hidden hover:border-yellow-700/60 transition-colors"
+            >
+              <button
+                className="w-full text-left px-4 py-3"
+                onClick={() => setExpanded(isOpen ? null : p.id)}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className="font-bold text-stone-100 text-sm">{p.name}</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${p.badgeColor}`}>
+                        {p.badge}
+                      </span>
+                    </div>
+                    <p className="text-stone-500 text-xs leading-snug">{p.description}</p>
+                  </div>
+                  <div className="text-right shrink-0 ml-2">
+                    <div className={`text-lg font-black ${american > 0 ? "text-green-400" : "text-red-400"}`}>
+                      {american > 0 ? `+${american}` : american}
+                    </div>
+                    <div className="text-[10px] text-stone-500">{p.legs.length} legs</div>
+                  </div>
+                </div>
+              </button>
+              {isOpen && (
+                <div className="px-4 pb-3 border-t border-stone-800">
+                  <div className="space-y-1.5 my-2">
+                    {p.legs.map((leg, i) => (
+                      <div key={i} className="flex justify-between items-center text-xs">
+                        <span className="text-stone-300 truncate pr-2">
+                          <span className="text-stone-500 mr-1">{i + 1}.</span>
+                          {leg.description}
+                        </span>
+                        <span className={`font-bold shrink-0 ${leg.odds > 0 ? "text-green-400" : "text-red-400"}`}>
+                          {leg.odds > 0 ? `+${leg.odds}` : leg.odds}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => onAddAll(p.legs)}
+                    className="w-full mt-2 py-2 rounded-lg bg-yellow-600 hover:bg-yellow-500 text-stone-900 font-bold text-xs transition active:scale-95"
+                  >
+                    Add All Legs to Slip
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 // ─── ParlayBuilder (main) ─────────────────────────────────────────────────────
 export default function ParlayBuilder({ currentUser }) {
+  const isPro = checkIsPro(currentUser);
   const [fights, setFights] = useState(PLACEHOLDER_FIGHTS);
   const [loadingOdds, setLoadingOdds] = useState(true);
   const [usingLive, setUsingLive] = useState(false);
@@ -1050,6 +1256,19 @@ export default function ParlayBuilder({ currentUser }) {
             <div
               className={`flex-1 min-w-0 ${activeTab === "slip" ? "hidden lg:block" : ""}`}
             >
+              {/* Recommended parlays — built from this week's loaded fights */}
+              <RecommendedParlays
+                fights={fights}
+                onAddAll={(legs) => {
+                  legs.forEach((leg) => {
+                    const id = `rec-${leg.description.replace(/\s/g, "-")}`;
+                    setLegs((prev) => {
+                      if (prev.find((l) => l.id === id)) return prev;
+                      return [...prev, { id, fightId: "rec", description: leg.description, team: leg.description, betType: "Moneyline", odds: leg.odds }];
+                    });
+                  });
+                }}
+              />
               <div className="flex flex-col gap-3">
                 {sectionOrder
                   .filter((s) => sections[s])
@@ -1091,7 +1310,10 @@ export default function ParlayBuilder({ currentUser }) {
                   onRemoveLeg={removeLeg}
                   onPlaceDk={() => setPlacingTarget("dk")}
                   onPlaceFd={() => setPlacingTarget("fd")}
-                  onSave={() => hasLegs && setShowSaveModal(true)}
+                  onSave={() => {
+                    if (!isPro) { window.location.href = "/dashboard?upgrade=1"; return; }
+                    if (hasLegs) setShowSaveModal(true);
+                  }}
                   saveStatus={saveStatus}
                   currentUser={currentUser}
                 />

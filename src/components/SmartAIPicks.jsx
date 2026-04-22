@@ -12,6 +12,8 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import WelcomeBonusSelector from "./WelcomeBonusSelector";
 import api from "../services/api";
+import PaywallGate from "./PaywallGate";
+import { isPro } from "../utils/devAccess";
 
 // ─── Strategy metadata (mirrors backend STRATEGIES dict) ────────────────
 const STRATEGIES = [
@@ -230,6 +232,8 @@ const PreUFCBackground = ({ notes, ufcFightCount }) => {
 
 // ─── Component ──────────────────────────────────────────────────────────
 const SmartAIPicks = ({ currentUser }) => {
+  if (!isPro(currentUser)) return <PaywallGate currentUser={currentUser} featureName="Smart AI Picks" />;
+
   const [activeStrategy, setActiveStrategy] = useState(null);
   const [lineups, setLineups] = useState([]);
   const [projections, setProjections] = useState([]);

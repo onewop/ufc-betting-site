@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { isPro as checkIsPro, isDevUser } from "./utils/devAccess";
 import {
   BrowserRouter as Router,
   Routes,
@@ -23,6 +24,7 @@ import ParlayBuilder from "./components/ParlayBuilder";
 import ValueBets from "./components/ValueBets";
 // PRIVATE OWNER TOOL — not linked in any public navigation
 import DebugStatsPage from "./pages/DebugStatsPage";
+import ManagerPage from "./pages/ManagerPage";
 import api from "./services/api";
 
 // Auth keys for localStorage
@@ -177,7 +179,7 @@ const AppShell = () => {
       setCurrentUser(user);
       console.log("✅ Full user loaded from /auth/me:", user);
 
-      if (user.subscription_status === "pro") {
+      if (user.subscription_status === "pro" || isDevUser(user.email)) {
         setShowUpgradeSuccess(true);
         setTimeout(() => setShowUpgradeSuccess(false), 6000);
         console.log("🎉 User is now Pro!");
@@ -200,7 +202,10 @@ const AppShell = () => {
   };
 
   const handleUpgrade = async () => {
-    if (!authToken) return;
+    if (!authToken) {
+      openAuth("login");
+      return;
+    }
     try {
       const data = await api.post(
         "/api/create-checkout-session",
@@ -212,8 +217,16 @@ const AppShell = () => {
       }
     } catch (err) {
       console.error("Upgrade error:", err);
+      alert("Could not start checkout. Please try again or contact support.");
     }
   };
+
+  // Listen for PaywallGate (and other components) requesting the auth modal
+  useEffect(() => {
+    const handler = (e) => openAuth(e.detail?.tab || "login");
+    window.addEventListener("cagevault:openAuthModal", handler);
+    return () => window.removeEventListener("cagevault:openAuthModal", handler);
+  }, []); // eslint-disable-line
 
   return (
     <div
@@ -251,7 +264,7 @@ const AppShell = () => {
                 {theme === "dark" ? "Light" : "Dark"}
               </button>
             </li>
-            {currentUser && currentUser.subscription_status !== "pro" && (
+            {currentUser && !checkIsPro(currentUser) && (
               <li>
                 <button
                   onClick={handleUpgrade}
@@ -369,7 +382,7 @@ const AppShell = () => {
                   <span className="text-yellow-400 text-sm font-medium truncate">
                     {currentUser.username || currentUser.email}
                   </span>
-                  {currentUser.subscription_status === "pro" && (
+                  {checkIsPro(currentUser) && (
                     <span className="text-[10px] uppercase tracking-widest bg-yellow-600/30 text-yellow-400 px-1.5 py-0.5 rounded font-bold">
                       Pro
                     </span>
@@ -398,7 +411,7 @@ const AppShell = () => {
                   </Link>
                 </li>
               )}
-              {currentUser && currentUser.subscription_status !== "pro" && (
+              {currentUser && !checkIsPro(currentUser) && (
                 <li>
                   <button
                     onClick={() => {
@@ -488,7 +501,7 @@ const AppShell = () => {
         <Route path="/odds" element={<LatestOdds />} />
         <Route
           path="/predictions"
-          element={<DFSPicksProjections eventTitle={eventTitle} />}
+          element={<DFSPicksProjections eventTitle={eventTitle} currentUser={currentUser} />}
         />
         <Route path="/my-lineups" element={<MySavedLineups />} />
         <Route
@@ -501,7 +514,7 @@ const AppShell = () => {
         />
         <Route
           path="/value-bets"
-          element={<ValueBets eventTitle={eventTitle} />}
+          element={<ValueBets eventTitle={eventTitle} currentUser={currentUser} />}
         />
         {/* PRIVATE OWNER TOOL — /debug-stats — not in nav, not linked publicly */}
         <Route
@@ -517,6 +530,11 @@ const AppShell = () => {
               </div>
             )
           }
+        />
+        {/* PRIVATE — Manager/Admin dashboard at /manager */}
+        <Route
+          path="/manager"
+          element={<ManagerPage currentUser={currentUser} />}
         />
       </Routes>
       <Footer />

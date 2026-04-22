@@ -18,7 +18,9 @@
  */
 
 import React, { useState, useEffect, useMemo } from "react";
+import PaywallGate from "./PaywallGate";
 import api from "../services/api";
+import { isPro } from "../utils/devAccess";
 import {
   BarChart,
   Bar,
@@ -74,7 +76,9 @@ const CustomTooltip = ({ active, payload }) => {
 };
 
 // ────────────────────────────────────────────────────────────────────────────
-const DFSPicksProjections = ({ eventTitle = "" }) => {
+const DFSPicksProjections = ({ eventTitle = "", currentUser }) => {
+  if (!isPro(currentUser)) return <PaywallGate currentUser={currentUser} featureName="DFS Projections" />;
+
   const [picks, setPicks] = useState([]);
   const [fights, setFights] = useState([]);
   const [eventName, setEventName] = useState("This Week's Card");
@@ -455,7 +459,7 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
           const winProb = estimateWinProbability(f, f._bettingOdds);
           const pointsPerThousand =
             f.salary > 0
-              ? parseFloat(((f.projMid / f.salary) * 1000).toFixed(2))
+              ? parseFloat(((projMid / f.salary) * 1000).toFixed(2))
               : 0;
 
           return {
@@ -948,7 +952,7 @@ const DFSPicksProjections = ({ eventTitle = "" }) => {
                           {pick.projection}
                         </td>
                         <td className="p-2 border border-stone-700 font-mono text-green-400">
-                          {pick.pointsPerThousand.toFixed(2)}
+                          {isNaN(pick.pointsPerThousand) || !pick.pointsPerThousand ? "—" : pick.pointsPerThousand.toFixed(2)}
                         </td>
                         <td className="p-2 border border-stone-700 whitespace-nowrap w-[108px] min-w-[108px]">
                           <span

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import api from "../services/api";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { isPro } from "../utils/devAccess";
 
 const UserDashboard = ({ currentUser }) => {
   const [lineups, setLineups] = useState([]);
@@ -11,10 +12,10 @@ const UserDashboard = ({ currentUser }) => {
   const [resultsLoading, setResultsLoading] = useState(true);
 
   // Paywall check — driven by prop from App.jsx
-  const isPro = currentUser?.subscription_status === "pro";
+  const userIsPro = isPro(currentUser);
 
   useEffect(() => {
-    if (!isPro) return;
+    if (!userIsPro) return;
     const token = localStorage.getItem("authToken");
     if (!token) {
       setError("Please log in to view your dashboard");
@@ -64,22 +65,47 @@ const UserDashboard = ({ currentUser }) => {
         console.error("Failed to load fight results:", err);
         setResultsLoading(false);
       });
-  }, [isPro]);
+  }, [userIsPro]);
+
+  const [upgradeError, setUpgradeError] = useState("");
 
   const handleUpgrade = async () => {
     const token = localStorage.getItem("authToken");
-    if (!token) return;
+    if (!token) {
+      // Request login modal from App shell
+      window.dispatchEvent(
+        new CustomEvent("cagevault:openAuthModal", { detail: { tab: "login" } })
+      );
+      return;
+    }
+    setUpgradeError("");
     try {
       const data = await api.post("/api/create-checkout-session", {}, token);
       if (data.url) {
         window.location.href = data.url;
+      } else {
+        setUpgradeError(
+          data.detail === "Failed to create checkout session"
+            ? "Payment setup is not yet complete. Please contact support at cagevault.com."
+            : data.detail || "Checkout failed — please try again."
+        );
       }
     } catch (err) {
       console.error("Upgrade error:", err);
+      setUpgradeError("Could not start checkout. Please try again.");
     }
   };
 
-  if (!isPro) {
+  // Auto-trigger checkout when arriving from ?upgrade=1 link
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upgrade") === "1" && !userIsPro) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+      handleUpgrade();
+    }
+  }, []); // eslint-disable-line
+
+  if (!userIsPro) {
     return (
       <div
         className="min-h-screen bg-gradient-to-br from-background via-stone-900 to-background"
@@ -115,8 +141,15 @@ const UserDashboard = ({ currentUser }) => {
             transition={{ delay: 0.4 }}
             className="text-stone-400 mb-6 text-lg"
           >
-            Access your saved lineups and advanced analytics.
+            {currentUser
+              ? "Upgrade to CageVault Pro to unlock your dashboard, saved lineups, and advanced analytics."
+              : "Log in or create a free account, then upgrade to Pro."}
           </motion.p>
+          {upgradeError && (
+            <p className="text-red-400 text-sm mb-4 bg-red-950/40 border border-red-800/50 rounded-lg px-4 py-2 inline-block">
+              {upgradeError}
+            </p>
+          )}
           <motion.button
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -129,7 +162,7 @@ const UserDashboard = ({ currentUser }) => {
             onClick={handleUpgrade}
             className="bg-gradient-to-r from-secondary to-primary hover:from-secondary/80 hover:to-primary/80 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 shadow-neon"
           >
-            Upgrade to Pro - $19.99/month
+            {currentUser ? "Upgrade to Pro — $19.99/month" : "Log In to Upgrade"}
           </motion.button>
         </div>
       </div>
