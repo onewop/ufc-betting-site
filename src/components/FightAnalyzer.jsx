@@ -15,6 +15,7 @@ const FightAnalyzer = ({
 }) => {
   const [fighters, setFighters] = useState([]);
   const [fights, setFights] = useState([]);
+  const [highlightVideos, setHighlightVideos] = useState({});
   const [selectedFight, setSelectedFight] = useState("");
   const [fightDropdownOpen, setFightDropdownOpen] = useState(false);
   const fightDropdownRef = useRef(null);
@@ -94,9 +95,37 @@ const FightAnalyzer = ({
   useEffect(() => {
     setError(null);
 
-    api
-      .get("/api/this-weeks-stats")
-      .then((data) => {
+    // Load highlight videos from JSON first, then hydrate fighters
+    const loadData = async () => {
+      let videos = {};
+      let weighInVideos = {};
+      try {
+        const hvRes = await fetch("/highlight_videos.json");
+        if (hvRes.ok) {
+          const hvData = await hvRes.json();
+          // Remove the _instructions key, keep only fighter→videoId mappings
+          const { _instructions, ...fighterVideos } = hvData;
+          // Build a lowercase-keyed lookup for case-insensitive matching
+          Object.entries(fighterVideos).forEach(([name, id]) => {
+            videos[name.toLowerCase()] = id;
+          });
+          setHighlightVideos(videos);
+        }
+      } catch (_) {}
+
+      try {
+        const wvRes = await fetch("/weigh_in_videos.json");
+        if (wvRes.ok) {
+          const wvData = await wvRes.json();
+          const { _instructions: _wi, ...wiFighters } = wvData;
+          Object.entries(wiFighters).forEach(([name, id]) => {
+            weighInVideos[name.toLowerCase()] = id;
+          });
+        }
+      } catch (_) {}
+
+      try {
+        const data = await api.get("/api/this-weeks-stats");
         const rawFights = data.fights || [];
 
         // Add fight_id to each fight and map fighter data
@@ -104,51 +133,69 @@ const FightAnalyzer = ({
           fight_id: index,
           matchup: fight.matchup,
           weight_class: fight.weight_class,
-          fighters: (fight.fighters || []).map((f) => ({
-            // Spread all fields from JSON first so nothing is lost
-            ...f,
-            // Normalise the id field used for display/lookup
-            id: f.dk_id || f.id || index,
-            salary: f.salary,
-            avgPointsPerGame: f.avgPointsPerGame || 0,
-            // Record — use real values from JSON, never override with 0
-            wins: f.wins ?? 0,
-            losses: f.losses ?? 0,
-            draws: f.draws ?? 0,
-            record:
-              f.record ||
-              (f.wins != null ? `${f.wins}-${f.losses}-${f.draws}` : "N/A"),
-            // Physical
-            nickname: f.nickname || null,
-            height: f.height || "N/A",
-            reach: f.reach || "N/A",
-            stance: f.stance || "N/A",
-            // Career milestones — populated by ufc-master.csv enrichment
-            current_win_streak: f.current_win_streak ?? "N/A",
-            current_loss_streak: f.current_loss_streak ?? "N/A",
-            wins_ko_tko: f.wins_ko_tko ?? "N/A",
-            wins_submission: f.wins_submission ?? "N/A",
-            wins_decision: f.wins_decision ?? "N/A",
-            finish_rate_pct: f.finish_rate_pct ?? "N/A",
-            decision_rate_pct: f.decision_rate_pct ?? "N/A",
-            // Stats object — keep nested for getValue("stats.slpm") dot-path
-            // Spread ALL fields from JSON first so avg_kd_per_fight,
-            // avg_ctrl_secs, grappling_control_pct, avg_opp_ctrl_secs,
-            // avg_reversals_per_fight, implied_sub_def_pct, etc. are preserved.
-            stats: {
-              ...f.stats,
-              slpm: f.stats?.slpm ?? 0,
-              sapm: f.stats?.sapm ?? 0,
+          fighters: (fight.fighters || []).map((f) => {
+            // Prefer local JSON lookup; fall back to backend-embedded value
+            const videoId =
+              videos[f.name?.toLowerCase()] ||
+              f.highlightVideoId ||
+              null;
+            const weighInId =
+              weighInVideos[f.name?.toLowerCase()] ||
+              f.weighInVideoId ||
+              null;
+            return {
+              // Spread all fields from JSON first so nothing is lost
+              ...f,
+              // Normalise the id field used for display/lookup
+              id: f.dk_id || f.id || index,
+              salary: f.salary,
+              avgPointsPerGame: f.avgPointsPerGame || 0,
+              // Record — use real values from JSON, never override with 0
+              wins: f.wins ?? 0,
+              losses: f.losses ?? 0,
+              draws: f.draws ?? 0,
+              record:
+                f.record ||
+                (f.wins != null ? `${f.wins}-${f.losses}-${f.draws}` : "N/A"),
+              // Physical
+              nickname: f.nickname || null,
+              height: f.height || "N/A",
+              reach: f.reach || "N/A",
+              stance: f.stance || "N/A",
+              // Career milestones — populated by ufc-master.csv enrichment
+              current_win_streak: f.current_win_streak ?? "N/A",
+              current_loss_streak: f.current_loss_streak ?? "N/A",
+              wins_ko_tko: f.wins_ko_tko ?? "N/A",
+              wins_submission: f.wins_submission ?? "N/A",
+              wins_decision: f.wins_decision ?? "N/A",
+              finish_rate_pct: f.finish_rate_pct ?? "N/A",
+              decision_rate_pct: f.decision_rate_pct ?? "N/A",
+              // Stats object — keep nested for getValue("stats.slpm") dot-path
+              // Spread ALL fields from JSON first so avg_kd_per_fight,
+              // avg_ctrl_secs, grappling_control_pct, avg_opp_ctrl_secs,
+              // avg_reversals_per_fight, implied_sub_def_pct, etc. are preserved.
+              stats: {
+                ...f.stats,
+                slpm: f.stats?.slpm ?? 0,
+                sapm: f.stats?.sapm ?? 0,
+                striking_accuracy: f.stats?.striking_accuracy ?? 0,
+                striking_defense: f.stats?.striking_defense ?? "N/A",
+                td_avg: f.stats?.td_avg ?? 0,
+                td_accuracy: f.stats?.td_accuracy ?? 0,
+                td_defense: f.stats?.td_defense ?? "N/A",
+              },
+              // Flat aliases used by processQuestion helpers
               striking_accuracy: f.stats?.striking_accuracy ?? 0,
-              striking_defense: f.stats?.striking_defense ?? "N/A",
-              td_avg: f.stats?.td_avg ?? 0,
-              td_accuracy: f.stats?.td_accuracy ?? 0,
-              td_defense: f.stats?.td_defense ?? "N/A",
-            },
-            // Flat aliases used by processQuestion helpers
-            striking_accuracy: f.stats?.striking_accuracy ?? 0,
-            takedown_accuracy: f.stats?.td_accuracy ?? 0,
-          })),
+              takedown_accuracy: f.stats?.td_accuracy ?? 0,
+              // Highlight video fields for FighterHighlights component
+              highlightVideoId: videoId,
+              youtubeHighlightUrl: videoId
+                ? `https://www.youtube.com/watch?v=${videoId}`
+                : null,
+              // Weigh-in video for WeighInClips component
+              weighInVideoId: weighInId,
+            };
+          }),
         }));
 
         setFights(processedFights);
@@ -158,12 +205,14 @@ const FightAnalyzer = ({
         );
         setFighters(allFighters);
         setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Failed to load fighters:", err.message);
         setError("Failed to load fighters: " + err.message);
         setLoading(false);
-      });
+      }
+    };
+
+    loadData();
 
     // Load fight results from ufcstats_raw
     fetch("/ufcstats_raw/ufc_fight_results.csv")
@@ -1536,7 +1585,7 @@ const FightAnalyzer = ({
           <div className="w-32 h-px bg-gradient-to-r from-transparent via-yellow-700 to-transparent mx-auto mt-3" />
         </div>
 
-        {/* Custom fight dropdown — replaces native <select> to fix invisible options on Android WebView */}}
+        {/* Custom fight dropdown — replaces native <select> to fix invisible options on Android WebView */}
         <div
           ref={fightDropdownRef}
           className="relative w-full md:w-1/3 mb-4"
@@ -1638,13 +1687,6 @@ const FightAnalyzer = ({
             </ul>
           )}
         </div>
-
-        <button
-          onClick={() => processQuestion()}
-          className="neon-button mb-8 w-full sm:w-auto"
-        >
-          Analyze
-        </button>
 
         <div className="text-stone-300 mb-6">{answer}</div>
 
@@ -1871,7 +1913,14 @@ const FightAnalyzer = ({
 
                   {/* Category breakdown */}
                   <div className="border-t border-stone-700/50 pt-3">
-                    <p className="text-[10px] text-stone-500 uppercase tracking-widest font-bold mb-2">Category Breakdown</p>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-[10px] text-stone-500 uppercase tracking-widest font-bold w-28 flex-shrink-0">Category</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-emerald-400 font-bold w-6 text-right truncate">{pred.winner.name.split(" ").pop()}</span>
+                        <div className="w-20" />
+                        <span className="text-[10px] text-stone-400 w-6 text-left truncate">{pred.loser.name.split(" ").pop()}</span>
+                      </div>
+                    </div>
                     <div className="grid gap-1.5">
                       {Object.entries(pred.catLabels).map(([key, label]) => {
                         const wScore = wBreak[key]?.score ?? 50;
@@ -1881,9 +1930,9 @@ const FightAnalyzer = ({
                         return (
                           <div key={key} className="flex items-center gap-2">
                             <span className="text-[10px] text-stone-400 w-28 flex-shrink-0 truncate">{label}</span>
-                            <div className="flex-1 flex items-center gap-1">
+                            <div className="flex items-center gap-1">
                               <span className={`text-[10px] w-6 text-right font-mono ${isWinnerCat ? "text-emerald-400 font-bold" : "text-stone-400"}`}>{wScore}</span>
-                              <div className="flex-1 h-1.5 bg-stone-800 rounded-full overflow-hidden flex">
+                              <div className="w-20 h-1.5 bg-stone-800 rounded-full overflow-hidden flex flex-shrink-0">
                                 <div
                                   className={`rounded-l-full ${isWinnerCat ? "bg-emerald-500" : isLoserCat ? "bg-stone-600" : "bg-stone-500"}`}
                                   style={{ width: `${(wScore / (wScore + lScore)) * 100}%` }}
@@ -1908,26 +1957,25 @@ const FightAnalyzer = ({
             );
           })()}
 
-        {/* Last Event Results Section */}
-        {fightResults.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="h-px flex-1 bg-yellow-700/30" />
-              <h2 className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600">
-                ◈ LAST EVENT RESULTS
-              </h2>
-              <div className="h-px flex-1 bg-yellow-700/30" />
-            </div>
+        {/* Last Event Results Section — always visible */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-px flex-1 bg-yellow-700/30" />
+            <h2 className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600">
+              ◈ LAST EVENT RESULTS
+            </h2>
+            <div className="h-px flex-1 bg-yellow-700/30" />
+          </div>
 
-            <details className="group/events border border-yellow-700/50 rounded-lg bg-stone-900">
-              <summary
-                className="w-full bg-stone-900 hover:bg-stone-800 text-yellow-500 font-bold py-3 px-4 flex justify-between items-center transition cursor-pointer"
-                aria-label="Toggle last event results"
-              >
-                <span className="text-base sm:text-xl">
-                  📊 View Last Event Results{" "}
-                  {fightResults.length > 0 ? `(${fightResults[0]?.EVENT})` : ""}
-                </span>
+          <details className="group/events border border-yellow-700/50 rounded-lg bg-stone-900">
+            <summary
+              className="w-full bg-stone-900 hover:bg-stone-800 text-yellow-500 font-bold py-3 px-4 flex justify-between items-center transition cursor-pointer"
+              aria-label="Toggle last event results"
+            >
+              <span className="text-base sm:text-xl">
+                📊 Stats from Last Week's Fights{" "}
+                {fightResults.length > 0 ? `(${fightResults[0]?.EVENT?.trim()})` : ""}
+              </span>
                 <span className="text-lg group-open/events:hidden">▶</span>
                 <span className="text-lg hidden group-open/events:inline">
                   ▼
@@ -1935,6 +1983,11 @@ const FightAnalyzer = ({
               </summary>
 
               <div className="border-t border-yellow-700/30 p-4 sm:p-6">
+                {fightResults.length === 0 && (
+                  <p className="text-stone-500 text-sm text-center py-4 italic">
+                    Results from the most recent UFC event will appear here after the card.
+                  </p>
+                )}
                 {/* Fight Night Stats */}
                 {analysis && (
                   <>
@@ -2157,7 +2210,6 @@ const FightAnalyzer = ({
               </div>
             </details>
           </div>
-        )}
       </div>
 
       {/* === FULL FIGHT RECORD MODAL — POLISHED === */}

@@ -232,7 +232,10 @@ const PreUFCBackground = ({ notes, ufcFightCount }) => {
 
 // ─── Component ──────────────────────────────────────────────────────────
 const SmartAIPicks = ({ currentUser }) => {
-  if (!isPro(currentUser)) return <PaywallGate currentUser={currentUser} featureName="Smart AI Picks" />;
+  if (!isPro(currentUser))
+    return (
+      <PaywallGate currentUser={currentUser} featureName="Smart AI Picks" />
+    );
 
   const [activeStrategy, setActiveStrategy] = useState(null);
   const [lineups, setLineups] = useState([]);
@@ -394,13 +397,17 @@ const SmartAIPicks = ({ currentUser }) => {
     }
     setSaveStatus(`saving-${index}`);
     try {
-      await api.post("/api/lineups", {
-        name: `AI: ${lineup.strategy} #${index + 1} – ${new Date().toLocaleDateString()}`,
-        lineup_data: [lineup.fighters],
-        total_salary: lineup.total_salary,
-        projected_fpts: lineup.projected_fpts,
-        salary_mode: "ai_pick",
-      }, token);
+      await api.post(
+        "/api/lineups",
+        {
+          name: `AI: ${lineup.strategy} #${index + 1} – ${new Date().toLocaleDateString()}`,
+          lineup_data: [lineup.fighters],
+          total_salary: lineup.total_salary,
+          projected_fpts: lineup.projected_fpts,
+          salary_mode: "ai_pick",
+        },
+        token,
+      );
       setSaveStatus(`saved-${index}`);
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (err) {

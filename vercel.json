@@ -5,6 +5,10 @@
       "destination": "https://ufc-betting-site-production.up.railway.app/api/:path*"
     },
     {
+      "source": "/auth/:path*",
+      "destination": "https://ufc-betting-site-production.up.railway.app/auth/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
