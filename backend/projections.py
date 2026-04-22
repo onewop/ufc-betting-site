@@ -1241,17 +1241,103 @@ def generate_smart_lineups(
                 total_sal = sum(f["salary"] for f in fighters_list)
                 proj_total = sum(f["proj_fppg"] for f in fighters_list)
 
+                # Per-fighter reasoning overrides (reset for each lineup)
+                strat_overrides: dict[str, str] = {}
+
                 if strat_key == "highest_projection":
                     reason = f"Led by {top_pick['name']} ({top_pick['proj_fppg']:.1f} pts). Total projection: {proj_total:.1f}."
+                    _sorted_by_proj = sorted(fighters_list, key=lambda f: -f["proj_fppg"])
+                    _proj_rank = {f["id"]: i + 1 for i, f in enumerate(_sorted_by_proj)}
+                    for _f in fighters_list:
+                        _rank   = _proj_rank[_f["id"]]
+                        _p      = _f.get("proj_fppg", 0.0)
+                        _wp     = _f.get("win_prob", 0.5)
+                        _fp     = _f.get("finish_prob", 0.0)
+                        _sl     = _f.get("slpm", 0.0)
+                        _td_hp  = _f.get("td_avg", 0.0)
+                        _dk     = _f.get("dk_avg_fppg", 0.0)
+                        _sal    = _f.get("salary", 0)
+                        _pts: list[str] = []
+                        if _wp >= 0.60:
+                            _pts.append(f"{_wp:.0%} win prob")
+                        if _sl >= 4.0:
+                            _pts.append(f"{_sl:.1f} SLpM")
+                        elif _td_hp >= 2.5:
+                            _pts.append(f"{_td_hp:.1f} TD/15min")
+                        if _fp >= 0.60:
+                            _pts.append(f"{_fp:.0%} finish prob")
+                        if _dk > 0:
+                            _pts.append(f"DK avg {_dk:.0f} pts")
+                        _detail = f" — {', '.join(_pts)}" if _pts else ""
+                        strat_overrides[_f["id"]] = f"#{_rank} projection ({_p:.1f} pts, ${_sal:,}){_detail}."
+
                 elif strat_key == "best_value":
                     cheapest = min(fighters_list, key=lambda f: f["salary"])
                     reason = f"Value anchored by {cheapest['name']} (${cheapest['salary']:,} / {cheapest['proj_fppg']:.1f} pts). Salary: ${total_sal:,}."
+                    _sorted_by_val = sorted(fighters_list, key=lambda f: -f.get("value", 0))
+                    for _rank, _f in enumerate(_sorted_by_val, 1):
+                        _p      = _f.get("proj_fppg", 0.0)
+                        _sal    = _f.get("salary", 0)
+                        _val    = _f.get("value", 0.0)
+                        _dk     = _f.get("dk_avg_fppg", 0.0)
+                        _wp     = _f.get("win_prob", 0.5)
+                        _pts: list[str] = []
+                        if _wp >= 0.60:
+                            _pts.append(f"{_wp:.0%} win prob")
+                        if _dk > 0:
+                            _pts.append(f"DK avg {_dk:.0f} pts")
+                        _detail = f" — {', '.join(_pts)}" if _pts else ""
+                        _star = "\u2605 " if _rank <= 2 else ""
+                        strat_overrides[_f["id"]] = f"{_star}{_val:.1f} pts/$K — {_p:.1f} pts at ${_sal:,}{_detail}."
+
                 elif strat_key == "contrarian":
                     lowest_own = min(fighters_list, key=lambda f: f["ownership_num"])
                     reason = f"Low-owned pivot: {lowest_own['name']} ({lowest_own['ownership_label']} ownership). Differentiated lineup."
+                    for _f in fighters_list:
+                        _own_label = _f.get("ownership_label", "unknown")
+                        _own_num   = _f.get("ownership_num", 20)
+                        _p         = _f.get("proj_fppg", 0.0)
+                        _sal       = _f.get("salary", 0)
+                        _wp        = _f.get("win_prob", 0.5)
+                        if _own_num <= 10:
+                            _pts: list[str] = [f"{_p:.1f} proj pts"]
+                            if _wp >= 0.55:
+                                _pts.append(f"{_wp:.0%} win prob")
+                            strat_overrides[_f["id"]] = f"\u2605 Low-owned ({_own_label}) — {', '.join(_pts)}."
+                        else:
+                            strat_overrides[_f["id"]] = f"Chalk anchor ({_own_label} own, {_p:.1f} pts at ${_sal:,})."
+
                 elif strat_key == "finish_upside":
                     best_fin = max(fighters_list, key=lambda f: f["finish_prob"])
-                    reason = f"Finish threat: {best_fin['name']} ({best_fin['finish_prob']:.0%} finish rate). High bonus ceiling."
+                    reason = f"Finish threat: {best_fin['name']} ({best_fin['finish_prob']:.0%} finish prob). High bonus ceiling."
+                    for _f in fighters_list:
+                        _fp    = _f.get("finish_prob", 0.0)
+                        _wp    = _f.get("win_prob", 0.5)
+                        _p     = _f.get("proj_fppg", 0.0)
+                        _sal   = _f.get("salary", 0)
+                        _kd_f  = _f.get("kd_avg", 0.0)
+                        _td_fu = _f.get("td_avg", 0.0)
+                        _comps = _f.get("proj_components", {})
+                        _kd_c  = _comps.get("knockdowns", 0.0)
+                        _grap  = _comps.get("grappling", 0.0)
+                        _stk   = _comps.get("striking", 0.0)
+                        if _fp >= 0.55:
+                            if _kd_c >= 3.0 or _kd_f >= 0.30:
+                                _style = " (KO threat)"
+                            elif _grap > _stk and _td_fu >= 1.5:
+                                _style = " (submission threat)"
+                            elif _grap > _stk:
+                                _style = " (grappling finisher)"
+                            else:
+                                _style = ""
+                            strat_overrides[_f["id"]] = f"\u2605 Finish threat — {_fp:.0%} finish prob{_style}, {_p:.1f} proj pts."
+                        elif _fp >= 0.35:
+                            strat_overrides[_f["id"]] = f"Finish upside — {_fp:.0%} finish prob, {_p:.1f} proj pts at ${_sal:,}."
+                        else:
+                            if _wp >= 0.60:
+                                strat_overrides[_f["id"]] = f"Safe floor — {_wp:.0%} win prob, {_p:.1f} proj pts."
+                            else:
+                                strat_overrides[_f["id"]] = f"Value floor — {_p:.1f} proj pts at ${_sal:,}."
                 elif strat_key == "wrestling_advantage":
                     # ── Core + Fillers model ──────────────────────────────────────
                     # Determine who counts as "Core" for this lineup.
@@ -1399,9 +1485,18 @@ def generate_smart_lineups(
                         results.append(lineup)
                     continue
                 else:
-                    reason = f"Balanced build — {proj_total:.1f} projected pts at ${total_sal:,} salary."
+                    reason = f"Balanced — {proj_total:.1f} pts, ${total_sal:,} salary, {proj_total / (total_sal / 1000):.2f} pts/$K avg."
+                    for _f in fighters_list:
+                        _p   = _f.get("proj_fppg", 0.0)
+                        _val = _f.get("value", 0.0)
+                        _sal = _f.get("salary", 0)
+                        _wp  = _f.get("win_prob", 0.5)
+                        _pts: list[str] = [f"{_p:.1f} pts", f"{_val:.1f} pts/$K"]
+                        if _wp >= 0.60:
+                            _pts.append(f"{_wp:.0%} win prob")
+                        strat_overrides[_f["id"]] = f"Balanced — {', '.join(_pts)} at ${_sal:,}."
 
-                lineup = _build_lineup(picks, strat_key, reason)
+                lineup = _build_lineup(picks, strat_key, reason, strat_overrides or None)
                 if lineup:
                     results.append(lineup)
 
