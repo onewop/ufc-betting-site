@@ -27,6 +27,8 @@ const FightAnalyzer = ({
   const [cachedOdds, setCachedOdds] = useState([]);
   const [activeTab, setActiveTab] = useState("basics");
   const [fightResults, setFightResults] = useState([]);
+  const [resultsLoading, setResultsLoading] = useState(true);
+  const [resultsError, setResultsError] = useState(null);
   const [resultsSort, setResultsSort] = useState({
     key: "EVENT",
     order: "desc",
@@ -214,40 +216,16 @@ const FightAnalyzer = ({
 
     loadData();
 
-    // Load fight results from ufcstats_raw
-    fetch("/ufcstats_raw/ufc_fight_results.csv")
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.text();
-      })
-      .then((csvText) => {
-        const lines = csvText.split("\n").filter((line) => line.trim());
-        if (lines.length < 2) return; // No data
-
-        const headers = lines[0].split(",");
-        const allData = lines.slice(1).map((line) => {
-          const values = line.split(",");
-          const obj = {};
-          headers.forEach((h, i) => {
-            obj[h.trim()] = values[i]?.trim() || "";
-          });
-          return obj;
-        });
-
-        // Filter to only show fights from the most recent event
-        if (allData.length > 0) {
-          const mostRecentEvent = allData[0].EVENT; // First event in CSV is most recent
-          const filteredData = allData.filter(
-            (result) => result.EVENT === mostRecentEvent,
-          );
-          setFightResults(filteredData);
-        } else {
-          setFightResults([]);
-        }
+    // Load fight results via backend API (avoids Vercel SPA catch-all swallowing the raw CSV)
+    api.get("/api/last-event-results")
+      .then((data) => {
+        setFightResults(data.fights || []);
+        setResultsLoading(false);
       })
       .catch((err) => {
         console.log("Fight results fetch failed:", err.message);
-        // Don't set error - this is optional
+        setResultsError("Could not load last event data.");
+        setResultsLoading(false);
       });
 
     // Load live odds from localStorage cache (populated by LatestOdds page)
@@ -1967,14 +1945,14 @@ const FightAnalyzer = ({
             <div className="h-px flex-1 bg-yellow-700/30" />
           </div>
 
-          <details className="group/events border border-yellow-700/50 rounded-lg bg-stone-900">
+          <details open className="group/events border border-yellow-700/50 rounded-lg bg-stone-900">
             <summary
               className="w-full bg-stone-900 hover:bg-stone-800 text-yellow-500 font-bold py-3 px-4 flex justify-between items-center transition cursor-pointer"
               aria-label="Toggle last event results"
             >
               <span className="text-base sm:text-xl">
                 📊 Stats from Last Week's Fights{" "}
-                {fightResults.length > 0 ? `(${fightResults[0]?.EVENT?.trim()})` : ""}
+                {fightResults.length > 0 ? `(${fightResults[0]?.EVENT?.trim()})` : resultsLoading ? "" : ""}
               </span>
                 <span className="text-lg group-open/events:hidden">▶</span>
                 <span className="text-lg hidden group-open/events:inline">
@@ -1983,9 +1961,19 @@ const FightAnalyzer = ({
               </summary>
 
               <div className="border-t border-yellow-700/30 p-4 sm:p-6">
-                {fightResults.length === 0 && (
+                {resultsLoading && (
+                  <p className="text-stone-500 text-sm text-center py-4 italic animate-pulse">
+                    Loading last event results…
+                  </p>
+                )}
+                {!resultsLoading && resultsError && (
                   <p className="text-stone-500 text-sm text-center py-4 italic">
-                    Results from the most recent UFC event will appear here after the card.
+                    No previous event data available.
+                  </p>
+                )}
+                {!resultsLoading && !resultsError && fightResults.length === 0 && (
+                  <p className="text-stone-500 text-sm text-center py-4 italic">
+                    No previous event data available.
                   </p>
                 )}
                 {/* Fight Night Stats */}

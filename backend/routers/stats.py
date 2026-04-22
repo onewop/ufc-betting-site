@@ -1,13 +1,19 @@
 """
-backend/routers/stats.py — Serves this_weeks_stats.json over the API.
+backend/routers/stats.py — Serves this_weeks_stats.json and fight results over the API.
 
 Exposes GET /api/this-weeks-stats so the frontend reads fight/fighter
 data through the same Railway URL used for all other endpoints, rather
 than fetching the static file directly (which fails from Capacitor/Android
 because the file origin doesn't match the API origin).
+
+Also exposes GET /api/last-event-results which parses ufc_fight_results.csv
+and returns the most recent event's bouts as JSON.  This is preferred over
+fetching the raw CSV from the frontend because Vercel's SPA catch-all rewrite
+can silently return index.html for unknown file extensions.
 """
 from __future__ import annotations
 
+import csv
 import json
 import logging
 import os
@@ -76,3 +82,47 @@ def get_this_weeks_stats() -> dict:
         )
     with _STATS_PATH.open("r", encoding="utf-8") as f:
         return json.load(f)
+
+
+# ── Last event fight results ─────────────────────────────────────────────────
+
+def _locate_fight_results_csv() -> Path | None:
+    """Find ufc_fight_results.csv at runtime — mirrors _locate_stats_file logic."""
+    candidates = [
+        Path("/app/public/ufcstats_raw/ufc_fight_results.csv"),
+        Path(__file__).resolve().parent.parent.parent / "public" / "ufcstats_raw" / "ufc_fight_results.csv",
+        Path(__file__).resolve().parent.parent / "public" / "ufcstats_raw" / "ufc_fight_results.csv",
+    ]
+    for p in candidates:
+        if p.exists():
+            logger.info("stats: found ufc_fight_results.csv at %s", p)
+            return p
+    logger.warning("stats: ufc_fight_results.csv not found. Tried: %s", [str(p) for p in candidates])
+    return None
+
+
+@router.get("/last-event-results")
+def get_last_event_results() -> dict:
+    """Return the most recent UFC event's fight results as JSON.
+
+    Reads ufc_fight_results.csv (newest-event-first) and returns all bouts
+    from the first event in the file.
+    """
+    csv_path = _locate_fight_results_csv()
+    if csv_path is None:
+        raise HTTPException(status_code=404, detail="Fight results data not available")
+
+    try:
+        with open(csv_path, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            all_rows = [{k.strip(): (v.strip() if v else "") for k, v in row.items()} for row in reader]
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to parse fight results: {exc}")
+
+    if not all_rows:
+        return {"event": None, "fights": []}
+
+    most_recent_event = all_rows[0].get("EVENT", "").strip()
+    recent_fights = [row for row in all_rows if row.get("EVENT", "").strip() == most_recent_event]
+
+    return {"event": most_recent_event, "fights": recent_fights}
