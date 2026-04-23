@@ -39,7 +39,7 @@ const navLinks = [
     label: "Fantasy Teams",
   },
   { to: "/smart-picks", label: "Smart AI Picks" },
-  { to: "/fight-analyzer", label: "Fight Analyzer - Latest Card" },
+  { to: "/fight-analyzer", label: "Fight Analyzer" },
   { to: "/odds", label: "Live Odds" },
   { to: "/predictions", label: "Predictions & Projections" },
   { to: "/parlay-builder", label: "Parlay Builder" },
@@ -47,10 +47,10 @@ const navLinks = [
 ];
 
 const mobileNavLinks = [
-  { to: "/", label: "Home", icon: "⌂" },
-  { to: "/fight-analyzer", label: "Analyze", icon: "◈" },
-  { to: "/odds", label: "Odds", icon: "$" },
-  { to: "/predictions", label: "DFS", icon: "▦" },
+  { to: "/", label: "Home", icon: "🏠" },
+  { to: "/fight-analyzer", label: "Analyze", icon: "📊" },
+  { to: "/odds", label: "Odds", icon: "💰" },
+  { to: "/team-combinations", label: "DFS", icon: "🏆" },
   { to: "/parlay-builder", label: "Parlay", icon: "🎯" },
 ];
 
@@ -498,10 +498,18 @@ const AppShell = () => {
             <FightAnalyzer eventTitle={eventTitle} currentUser={currentUser} />
           }
         />
-        <Route path="/odds" element={<LatestOdds />} />
+        <Route
+          path="/odds"
+          element={<LatestOdds currentUser={currentUser} />}
+        />
         <Route
           path="/predictions"
-          element={<DFSPicksProjections eventTitle={eventTitle} currentUser={currentUser} />}
+          element={
+            <DFSPicksProjections
+              eventTitle={eventTitle}
+              currentUser={currentUser}
+            />
+          }
         />
         <Route path="/my-lineups" element={<MySavedLineups />} />
         <Route
@@ -514,7 +522,9 @@ const AppShell = () => {
         />
         <Route
           path="/value-bets"
-          element={<ValueBets eventTitle={eventTitle} currentUser={currentUser} />}
+          element={
+            <ValueBets eventTitle={eventTitle} currentUser={currentUser} />
+          }
         />
         {/* PRIVATE OWNER TOOL — /debug-stats — not in nav, not linked publicly */}
         <Route

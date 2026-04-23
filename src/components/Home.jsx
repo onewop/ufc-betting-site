@@ -3,14 +3,29 @@ import { Link } from "react-router-dom";
 
 export default function Home() {
   const [eventTitle, setEventTitle] = useState("UFC Fight Night");
+  const [videoCount, setVideoCount] = useState(null);
+  const [newsNotes, setNewsNotes] = useState(null);
 
   useEffect(() => {
     fetch("/current_event.json")
       .then((r) => r.json())
       .then((d) => {
         if (d.title) setEventTitle(d.title);
+        setNewsNotes(Array.isArray(d.news_notes) ? d.news_notes : []);
       })
-      .catch(() => {});
+      .catch(() => setNewsNotes([]));
+  }, []);
+
+  useEffect(() => {
+    fetch("/highlight_videos.json")
+      .then((r) => r.json())
+      .then((d) => {
+        const count = Object.keys(d).filter(
+          (k) => k !== "_instructions",
+        ).length;
+        setVideoCount(count);
+      })
+      .catch(() => setVideoCount(0));
   }, []);
 
   return (
@@ -110,69 +125,64 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Latest News Section */}
-        <div className="w-full max-w-5xl mb-8">
-          <div className="border border-yellow-700/50 rounded-lg bg-stone-900 p-6">
-            <h2 className="text-xl font-bold text-yellow-500 mb-4 uppercase tracking-wide">
-              Latest News – Fight Week Updates
-            </h2>
+        {/* Latest News Section — only renders when there is real content */}
+        {(videoCount > 0 || (newsNotes && newsNotes.length > 0)) && (
+          <div className="w-full max-w-5xl mb-8">
+            <div className="border border-yellow-700/50 rounded-lg bg-stone-900 p-6">
+              <h2 className="text-xl font-bold text-yellow-500 mb-4 uppercase tracking-wide">
+                Latest News – Fight Week Updates
+              </h2>
 
-            {/* Weigh-In Videos */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-stone-200 mb-3">
-                This Week's Weigh-In Videos
-              </h3>
-              <p className="text-stone-400 text-sm leading-relaxed mb-4">
-                Weigh-In Videos will be available Friday morning after the
-                official weigh-ins.
-                <br />
-                <span className="text-stone-500">
-                  Full Weigh-In Video (~2 hours) • Official Highlights (~5–6
-                  minutes) • Individual 5–10 second fighter clips
-                </span>
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="border border-stone-700 rounded-lg p-4 bg-stone-950 text-center">
-                  <div className="text-yellow-500 text-2xl mb-2">🎥</div>
-                  <h4 className="text-stone-200 font-semibold mb-1">
-                    Full Weigh-In Video
-                  </h4>
-                  <p className="text-stone-500 text-xs">
-                    Coming Friday morning
-                  </p>
+              {/* Weigh-In Clips — only shown when videos are loaded */}
+              {videoCount > 0 && (
+                <div
+                  className={newsNotes && newsNotes.length > 0 ? "mb-5" : ""}
+                >
+                  <h3 className="text-lg font-semibold text-stone-200 mb-3">
+                    This Week's Weigh-In Clips
+                  </h3>
+                  <div className="flex items-center gap-3 bg-stone-950 border border-stone-700 rounded-lg px-4 py-3">
+                    <span className="text-yellow-500 text-xl shrink-0">🎥</span>
+                    <p className="text-stone-300 text-sm">
+                      <span className="font-semibold text-yellow-400">
+                        {videoCount} fighter clip{videoCount !== 1 ? "s" : ""}
+                      </span>{" "}
+                      available for this card.{" "}
+                      <Link
+                        to="/fight-analyzer"
+                        className="text-yellow-500 underline hover:text-yellow-400 transition-colors"
+                      >
+                        View in Fight Analyzer →
+                      </Link>
+                    </p>
+                  </div>
                 </div>
-                <div className="border border-stone-700 rounded-lg p-4 bg-stone-950 text-center">
-                  <div className="text-yellow-500 text-2xl mb-2">✂️</div>
-                  <h4 className="text-stone-200 font-semibold mb-1">
-                    Official Highlights
-                  </h4>
-                  <p className="text-stone-500 text-xs">
-                    Coming Friday morning
-                  </p>
-                </div>
-                <div className="border border-stone-700 rounded-lg p-4 bg-stone-950 text-center">
-                  <div className="text-yellow-500 text-2xl mb-2">👤</div>
-                  <h4 className="text-stone-200 font-semibold mb-1">
-                    Fighter Clips
-                  </h4>
-                  <p className="text-stone-500 text-xs">
-                    Coming Friday morning
-                  </p>
-                </div>
-              </div>
-            </div>
+              )}
 
-            {/* Last-Minute Changes */}
-            <div>
-              <h3 className="text-lg font-semibold text-stone-200 mb-3">
-                Last-Minute Fight Changes & News
-              </h3>
-              <p className="text-stone-400 text-sm leading-relaxed">
-                No last-minute changes reported yet.
-              </p>
+              {/* Last-Minute Changes — only shown when news_notes exist in current_event.json */}
+              {newsNotes && newsNotes.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-stone-200 mb-3">
+                    Last-Minute Fight Changes & News
+                  </h3>
+                  <ul className="space-y-2">
+                    {newsNotes.map((note, i) => (
+                      <li
+                        key={i}
+                        className="text-stone-400 text-sm leading-relaxed flex gap-2"
+                      >
+                        <span className="text-yellow-500 mt-0.5 shrink-0">
+                          ▸
+                        </span>
+                        <span>{note}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        )}
 
         {/* Quick Tools Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-5xl">

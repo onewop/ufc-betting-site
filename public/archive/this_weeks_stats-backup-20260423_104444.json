@@ -1,6 +1,6 @@
 {
   "event": {
-    "name": "UFC Fight Night 274 - Sterling vs. Zalal",
+    "name": "UFC Fight Night",
     "date": "April 25, 2026",
     "location": "Las Vegas, Nevada, USA"
   },
@@ -925,8 +925,8 @@
               "fight_type": "amateur"
             }
           ],
-          "highlightVideoId": "XCkozRphCGw",
-          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=XCkozRphCGw"
+          "highlightVideoId": null,
+          "youtubeHighlightUrl": null
         },
         {
           "name": "Lucas Brennan",
@@ -1147,8 +1147,8 @@
               "fight_type": "amateur"
             }
           ],
-          "highlightVideoId": "vjR2NJCFn6M",
-          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=vjR2NJCFn6M"
+          "highlightVideoId": null,
+          "youtubeHighlightUrl": null
         }
       ],
       "betting_odds": {
@@ -2028,8 +2028,8 @@
               "fight_type": "pro"
             }
           ],
-          "highlightVideoId": "o7HFaWeUUGk",
-          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=o7HFaWeUUGk"
+          "highlightVideoId": null,
+          "youtubeHighlightUrl": null
         },
         {
           "name": "Cody Durden",
@@ -2411,8 +2411,8 @@
               "fight_type": "amateur"
             }
           ],
-          "highlightVideoId": "w6D78U07o0o",
-          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=w6D78U07o0o"
+          "highlightVideoId": null,
+          "youtubeHighlightUrl": null
         }
       ],
       "betting_odds": {
@@ -2662,8 +2662,8 @@
               "fight_type": "pro"
             }
           ],
-          "highlightVideoId": "scWpQXm6IGk",
-          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=scWpQXm6IGk"
+          "highlightVideoId": null,
+          "youtubeHighlightUrl": null
         },
         {
           "name": "Joselyne Edwards",
@@ -3970,8 +3970,8 @@
               "fight_type": "pro"
             }
           ],
-          "highlightVideoId": "QKhcwJcyIAM",
-          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=QKhcwJcyIAM"
+          "highlightVideoId": null,
+          "youtubeHighlightUrl": null
         },
         {
           "name": "Davey Grant",
@@ -6647,8 +6647,8 @@
               "fight_type": "pro"
             }
           ],
-          "highlightVideoId": "kcJDMbQl7rQ",
-          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=kcJDMbQl7rQ"
+          "highlightVideoId": null,
+          "youtubeHighlightUrl": null
         },
         {
           "name": "Max Griffin",
@@ -7085,8 +7085,8 @@
               "fight_type": "amateur"
             }
           ],
-          "highlightVideoId": "bMlDL4suy9M",
-          "youtubeHighlightUrl": "https://www.youtube.com/watch?v=bMlDL4suy9M"
+          "highlightVideoId": null,
+          "youtubeHighlightUrl": null
         }
       ],
       "betting_odds": {

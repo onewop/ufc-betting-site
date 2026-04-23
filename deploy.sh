@@ -1,32 +1,40 @@
 #!/bin/bash
 # =============================================
-# Safe & Reliable Deploy Script for cagevault
+# Build + Deploy to cagevault (Vercel)
+# =============================================
+# Usage:
+#   ./deploy.sh          — full build then deploy
+#   ./deploy.sh --no-build  — skip build, just deploy current build/
 # =============================================
 
-echo "🚀 Starting safe deployment to cagevault..."
+set -e
+cd "$(dirname "$0")"
 
-# Go to project root
-cd "$(dirname "$0")" || exit 1
+SKIP_BUILD=false
+[[ "${1:-}" == "--no-build" ]] && SKIP_BUILD=true
 
-# Clean any previous bad link (this prevents creating "build" project)
-echo "🧹 Cleaning old Vercel link..."
-rm -rf .vercel
-
-# Check build folder
-if [ ! -d "build" ]; then
-  echo "❌ Error: 'build' folder not found!"
-  echo "   Please run 'npm run build' first."
-  exit 1
+# ── Step 1: Build ──────────────────────────────────────────────────────────────
+if [[ "$SKIP_BUILD" == "false" ]]; then
+    echo "🔨 Building..."
+    npm run build
 fi
 
+# ── Step 2: Restore the cagevault Vercel project config ────────────────────────
+# npm run build wipes build/, so we keep the config here and restore it each time.
+if [[ ! -f ".vercel-build/project.json" ]]; then
+    echo "❌ .vercel-build/project.json not found — run: vercel link --project cagevault inside build/ once to regenerate it"
+    exit 1
+fi
+mkdir -p build/.vercel
+cp .vercel-build/project.json build/.vercel/project.json
+
+# ── Step 3: Deploy ─────────────────────────────────────────────────────────────
+echo "🚀 Deploying to cagevault.com..."
 cd build
-
-echo "🔗 Linking to cagevault project..."
-# Force link to the correct project (this is the key fix)
-vercel link --yes --project cagevault
-
-echo "📦 Deploying static files to production..."
 vercel deploy --prod --yes
+
+echo ""
+echo "✅ Done — cagevault.com updated."
 
 echo ""
 echo "✅ Deployment completed successfully!"

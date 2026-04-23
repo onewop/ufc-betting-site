@@ -739,15 +739,17 @@ const SaveNameModal = ({ onConfirm, onClose }) => {
 const buildRecommendedParlays = (fights) => {
   const withOdds = fights.filter(
     (f) =>
-      f.home?.ml && f.away?.ml &&
-      Number.isFinite(f.home.ml) && Number.isFinite(f.away.ml) &&
-      f.home.ml !== 0 && f.away.ml !== 0,
+      f.home?.ml &&
+      f.away?.ml &&
+      Number.isFinite(f.home.ml) &&
+      Number.isFinite(f.away.ml) &&
+      f.home.ml !== 0 &&
+      f.away.ml !== 0,
   );
   if (withOdds.length < 2) return [];
 
   // American odds → decimal multiplier
-  const toDecimal = (n) =>
-    n >= 100 ? n / 100 + 1 : 100 / Math.abs(n) + 1;
+  const toDecimal = (n) => (n >= 100 ? n / 100 + 1 : 100 / Math.abs(n) + 1);
 
   // Returns the favorite (lowest decimal odds = best implied probability)
   const favoriteOf = (f) =>
@@ -764,7 +766,10 @@ const buildRecommendedParlays = (fights) => {
   const mainCard = withOdds.filter((f) =>
     ["Main Event", "Co-Main Event", "Main Card"].includes(f.section),
   );
-  const allSorted = [...mainCard, ...withOdds.filter((f) => !mainCard.includes(f))];
+  const allSorted = [
+    ...mainCard,
+    ...withOdds.filter((f) => !mainCard.includes(f)),
+  ];
 
   const parlays = [];
 
@@ -793,7 +798,8 @@ const buildRecommendedParlays = (fights) => {
       name: "Heavy Favorites",
       badge: "💰 Safer Play",
       badgeColor: "bg-blue-700 text-blue-100",
-      description: "Two of the card's biggest favorites for a lower-risk return.",
+      description:
+        "Two of the card's biggest favorites for a lower-risk return.",
       legs: byFavStrength.slice(0, 2).map((f) => ({
         description: `${favoriteOf(f).name} ML`,
         odds: favoriteOf(f).odds,
@@ -851,8 +857,9 @@ const buildRecommendedParlays = (fights) => {
 
   // 5. Mixed: main card favorite + prelim underdog
   const mainFav = mainCard[0] ? favoriteOf(mainCard[0]) : null;
-  const prelimDog =
-    withOdds.find((f) => f.section === "Prelims" && underdogOf(f).odds > 0);
+  const prelimDog = withOdds.find(
+    (f) => f.section === "Prelims" && underdogOf(f).odds > 0,
+  );
   if (mainFav && prelimDog) {
     parlays.push({
       id: "rp-5",
@@ -886,7 +893,9 @@ const RecommendedParlays = ({ fights, onAddAll }) => {
           ⭐ Recommended Parlays
         </span>
         <div className="flex-1 h-px bg-stone-700" />
-        <span className="text-[10px] text-stone-500 italic">This week's card</span>
+        <span className="text-[10px] text-stone-500 italic">
+          This week's card
+        </span>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
         {parlays.map((p) => {
@@ -908,18 +917,28 @@ const RecommendedParlays = ({ fights, onAddAll }) => {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="font-bold text-stone-100 text-sm">{p.name}</span>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${p.badgeColor}`}>
+                      <span className="font-bold text-stone-100 text-sm">
+                        {p.name}
+                      </span>
+                      <span
+                        className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${p.badgeColor}`}
+                      >
                         {p.badge}
                       </span>
                     </div>
-                    <p className="text-stone-500 text-xs leading-snug">{p.description}</p>
+                    <p className="text-stone-500 text-xs leading-snug">
+                      {p.description}
+                    </p>
                   </div>
                   <div className="text-right shrink-0 ml-2">
-                    <div className={`text-lg font-black ${american > 0 ? "text-green-400" : "text-red-400"}`}>
+                    <div
+                      className={`text-lg font-black ${american > 0 ? "text-green-400" : "text-red-400"}`}
+                    >
                       {american > 0 ? `+${american}` : american}
                     </div>
-                    <div className="text-[10px] text-stone-500">{p.legs.length} legs</div>
+                    <div className="text-[10px] text-stone-500">
+                      {p.legs.length} legs
+                    </div>
                   </div>
                 </div>
               </button>
@@ -927,12 +946,17 @@ const RecommendedParlays = ({ fights, onAddAll }) => {
                 <div className="px-4 pb-3 border-t border-stone-800">
                   <div className="space-y-1.5 my-2">
                     {p.legs.map((leg, i) => (
-                      <div key={i} className="flex justify-between items-center text-xs">
+                      <div
+                        key={i}
+                        className="flex justify-between items-center text-xs"
+                      >
                         <span className="text-stone-300 truncate pr-2">
                           <span className="text-stone-500 mr-1">{i + 1}.</span>
                           {leg.description}
                         </span>
-                        <span className={`font-bold shrink-0 ${leg.odds > 0 ? "text-green-400" : "text-red-400"}`}>
+                        <span
+                          className={`font-bold shrink-0 ${leg.odds > 0 ? "text-green-400" : "text-red-400"}`}
+                        >
                           {leg.odds > 0 ? `+${leg.odds}` : leg.odds}
                         </span>
                       </div>
@@ -1264,7 +1288,17 @@ export default function ParlayBuilder({ currentUser }) {
                     const id = `rec-${leg.description.replace(/\s/g, "-")}`;
                     setLegs((prev) => {
                       if (prev.find((l) => l.id === id)) return prev;
-                      return [...prev, { id, fightId: "rec", description: leg.description, team: leg.description, betType: "Moneyline", odds: leg.odds }];
+                      return [
+                        ...prev,
+                        {
+                          id,
+                          fightId: "rec",
+                          description: leg.description,
+                          team: leg.description,
+                          betType: "Moneyline",
+                          odds: leg.odds,
+                        },
+                      ];
                     });
                   });
                 }}
@@ -1311,7 +1345,10 @@ export default function ParlayBuilder({ currentUser }) {
                   onPlaceDk={() => setPlacingTarget("dk")}
                   onPlaceFd={() => setPlacingTarget("fd")}
                   onSave={() => {
-                    if (!isPro) { window.location.href = "/dashboard?upgrade=1"; return; }
+                    if (!isPro) {
+                      window.location.href = "/dashboard?upgrade=1";
+                      return;
+                    }
                     if (hasLegs) setShowSaveModal(true);
                   }}
                   saveStatus={saveStatus}

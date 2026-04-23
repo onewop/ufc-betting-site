@@ -1,32 +1,14 @@
 /**
  * KeyNotes.jsx
  *
- * Component for displaying conditional key notes.
- * Only renders if there is content to show, with prominent red styling and animation.
+ * Displays key fight notes. Hidden entirely when no fightContext prop is provided.
+ * To show notes, pass a fightContext array to this component.
  */
 
 const KeyNotes = ({ fightContext }) => {
-  // Placeholder data for testing - replace with real data source
-  const placeholderContext = [
-    {
-      type: "major",
-      text: "Fighter A dealing with recent injury concerns from training camp",
-    },
-    {
-      type: "moderate",
-      text: "Short notice fight - less than 2 weeks preparation time",
-    },
-    { type: "minor", text: "Fighter B on personal event schedule conflict" },
-    {
-      type: "moderate",
-      text: "Style advantage: Fighter A's wrestling vs Fighter B's stand-up",
-    },
-  ];
-
-  const contextToShow = fightContext || placeholderContext;
-
-  if (!contextToShow || contextToShow.length === 0) {
-    return null; // Don't render if no content
+  // Don't render if no real notes are provided
+  if (!fightContext || fightContext.length === 0) {
+    return null;
   }
 
   const getColorClasses = (type) => {
@@ -52,7 +34,7 @@ const KeyNotes = ({ fightContext }) => {
         </span>
       </h3>
       <div className="space-y-3">
-        {contextToShow.map((note, index) => (
+        {fightContext.map((note, index) => (
           <div
             key={index}
             className={`border-l-4 pl-4 py-2 rounded-r ${getColorClasses(note.type)}`}

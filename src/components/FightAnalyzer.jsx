@@ -138,13 +138,9 @@ const FightAnalyzer = ({
           fighters: (fight.fighters || []).map((f) => {
             // Prefer local JSON lookup; fall back to backend-embedded value
             const videoId =
-              videos[f.name?.toLowerCase()] ||
-              f.highlightVideoId ||
-              null;
+              videos[f.name?.toLowerCase()] || f.highlightVideoId || null;
             const weighInId =
-              weighInVideos[f.name?.toLowerCase()] ||
-              f.weighInVideoId ||
-              null;
+              weighInVideos[f.name?.toLowerCase()] || f.weighInVideoId || null;
             return {
               // Spread all fields from JSON first so nothing is lost
               ...f,
@@ -217,7 +213,8 @@ const FightAnalyzer = ({
     loadData();
 
     // Load fight results via backend API (avoids Vercel SPA catch-all swallowing the raw CSV)
-    api.get("/api/last-event-results")
+    api
+      .get("/api/last-event-results")
       .then((data) => {
         setFightResults(data.fights || []);
         setResultsLoading(false);
@@ -1853,33 +1850,54 @@ const FightAnalyzer = ({
                   <div className="h-px flex-1 bg-yellow-700/30" />
                 </div>
                 <p className="text-stone-400 text-center text-xs mb-4">
-                  Comprehensive 10-category analysis using all available stats, records, physical attributes & fight history.
+                  Comprehensive 10-category analysis using all available stats,
+                  records, physical attributes & fight history.
                 </p>
 
-                <div className={`bg-stone-900 rounded-lg border ${style.border} p-4 ${style.glow}`}>
+                <div
+                  className={`bg-stone-900 rounded-lg border ${style.border} p-4 ${style.glow}`}
+                >
                   {/* Winner header */}
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className={`w-2.5 h-2.5 rounded-full ${style.dot}`} />
-                      <span className="text-stone-100 font-bold text-sm">
-                        {pred.winner.name}
-                        <span className="text-stone-500 mx-2">vs</span>
-                        {pred.loser.name}
-                      </span>
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span
+                        className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${style.dot}`}
+                      />
+                      <div className="min-w-0">
+                        <div className="text-stone-100 font-bold text-sm truncate">
+                          {pred.winner.name}
+                        </div>
+                        <div className="text-stone-500 text-xs truncate">
+                          vs {pred.loser.name}
+                        </div>
+                      </div>
                     </div>
-                    <span className={`text-[10px] px-2 py-0.5 rounded font-bold tracking-wider ${style.badge}`}>
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded font-bold tracking-wider flex-shrink-0 ${style.badge}`}
+                    >
                       {style.label}
                     </span>
                   </div>
 
                   {/* Win probability bar */}
                   <div className="mb-3">
-                    <div className="flex justify-between text-xs text-stone-400 mb-1">
-                      <span className="font-semibold text-stone-200">{pred.winner.name} {pred.winner.winProb}%</span>
-                      <span>{pred.loser.name} {pred.loser.winProb}%</span>
+                    <div className="flex justify-between text-xs mb-1 gap-2">
+                      <span className="font-bold text-stone-100 truncate min-w-0 flex-1">
+                        {pred.winner.name}
+                        <span className="text-stone-400 font-normal ml-1.5">
+                          {pred.winner.winProb}%
+                        </span>
+                      </span>
+                      <span className="text-stone-400 truncate min-w-0 flex-1 text-right">
+                        {pred.loser.name}
+                        <span className="ml-1.5">{pred.loser.winProb}%</span>
+                      </span>
                     </div>
                     <div className="h-2.5 bg-stone-800 rounded-full overflow-hidden flex">
-                      <div className={`${style.barColor} rounded-l-full transition-all`} style={{ width: `${pred.winner.winProb}%` }} />
+                      <div
+                        className={`${style.barColor} rounded-l-full transition-all`}
+                        style={{ width: `${pred.winner.winProb}%` }}
+                      />
                       <div className="bg-stone-600 flex-1 rounded-r-full" />
                     </div>
                   </div>
@@ -1891,43 +1909,100 @@ const FightAnalyzer = ({
 
                   {/* Category breakdown */}
                   <div className="border-t border-stone-700/50 pt-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-[10px] text-stone-500 uppercase tracking-widest font-bold w-28 flex-shrink-0">Category</span>
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-emerald-400 font-bold w-6 text-right truncate">{pred.winner.name.split(" ").pop()}</span>
-                        <div className="w-20" />
-                        <span className="text-[10px] text-stone-400 w-6 text-left truncate">{pred.loser.name.split(" ").pop()}</span>
-                      </div>
+                    {/* Full fighter name column headers */}
+                    <div className="flex items-center gap-2 mb-3">
+                      <span
+                        className="text-[11px] font-bold text-emerald-400 flex-1 truncate"
+                        title={pred.winner.name}
+                      >
+                        {pred.winner.name}
+                      </span>
+                      <span className="text-[9px] text-stone-600 uppercase tracking-widest flex-shrink-0 w-6 text-center">
+                        vs
+                      </span>
+                      <span
+                        className="text-[11px] font-semibold text-stone-300 flex-1 truncate text-right"
+                        title={pred.loser.name}
+                      >
+                        {pred.loser.name}
+                      </span>
                     </div>
-                    <div className="grid gap-1.5">
+
+                    {/* Category rows — label above bar */}
+                    <div className="space-y-3">
                       {Object.entries(pred.catLabels).map(([key, label]) => {
                         const wScore = wBreak[key]?.score ?? 50;
                         const lScore = lBreak[key]?.score ?? 50;
                         const isWinnerCat = pred.catWins.winner.includes(key);
                         const isLoserCat = pred.catWins.loser.includes(key);
+                        const total = wScore + lScore || 100;
                         return (
-                          <div key={key} className="flex items-center gap-2">
-                            <span className="text-[10px] text-stone-400 w-28 flex-shrink-0 truncate">{label}</span>
-                            <div className="flex items-center gap-1">
-                              <span className={`text-[10px] w-6 text-right font-mono ${isWinnerCat ? "text-emerald-400 font-bold" : "text-stone-400"}`}>{wScore}</span>
-                              <div className="w-20 h-1.5 bg-stone-800 rounded-full overflow-hidden flex flex-shrink-0">
+                          <div key={key}>
+                            <div className="text-[9px] text-stone-500 uppercase tracking-widest font-bold mb-1">
+                              {label}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`text-[11px] font-mono font-bold w-8 text-right flex-shrink-0 ${isWinnerCat ? "text-emerald-400" : "text-stone-500"}`}
+                              >
+                                {wScore}
+                              </span>
+                              <div className="h-2 flex-1 bg-stone-800 rounded-full overflow-hidden flex">
                                 <div
-                                  className={`rounded-l-full ${isWinnerCat ? "bg-emerald-500" : isLoserCat ? "bg-stone-600" : "bg-stone-500"}`}
-                                  style={{ width: `${(wScore / (wScore + lScore)) * 100}%` }}
+                                  className={`rounded-l-full transition-all ${isWinnerCat ? "bg-emerald-500" : isLoserCat ? "bg-stone-600" : "bg-stone-500"}`}
+                                  style={{
+                                    width: `${(wScore / total) * 100}%`,
+                                  }}
                                 />
                                 <div
-                                  className={`rounded-r-full flex-1 ${isLoserCat ? "bg-red-500/70" : "bg-stone-700"}`}
+                                  className={`rounded-r-full flex-1 ${isLoserCat ? "bg-red-500/60" : "bg-stone-700"}`}
                                 />
                               </div>
-                              <span className={`text-[10px] w-6 font-mono ${isLoserCat ? "text-red-400 font-bold" : "text-stone-400"}`}>{lScore}</span>
+                              <span
+                                className={`text-[11px] font-mono font-bold w-8 flex-shrink-0 ${isLoserCat ? "text-red-400" : "text-stone-500"}`}
+                              >
+                                {lScore}
+                              </span>
                             </div>
                           </div>
                         );
                       })}
                     </div>
-                    <div className="flex justify-between mt-2 text-[10px] text-stone-500">
-                      <span>◼ {pred.winner.name.split(" ").pop()} wins {pred.catWins.winner.length} categories</span>
-                      <span>{pred.loser.name.split(" ").pop()} wins {pred.catWins.loser.length} ◼</span>
+
+                    {/* Category wins summary — pill cards */}
+                    <div className="flex items-stretch gap-2 mt-4 pt-3 border-t border-stone-700/30">
+                      <div className="flex-1 bg-emerald-500/10 border border-emerald-500/25 rounded-lg px-3 py-2 flex items-center gap-2.5 min-w-0">
+                        <span className="text-2xl font-black text-emerald-400 flex-shrink-0 leading-none">
+                          {pred.catWins.winner.length}
+                        </span>
+                        <div className="min-w-0">
+                          <div className="text-[9px] text-stone-500 uppercase tracking-widest leading-none mb-0.5">
+                            categories
+                          </div>
+                          <div
+                            className="text-[11px] font-bold text-emerald-400 truncate"
+                            title={pred.winner.name}
+                          >
+                            {pred.winner.name}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex-1 bg-stone-800/50 border border-stone-700/50 rounded-lg px-3 py-2 flex items-center gap-2.5 min-w-0 flex-row-reverse">
+                        <span className="text-2xl font-black text-stone-300 flex-shrink-0 leading-none">
+                          {pred.catWins.loser.length}
+                        </span>
+                        <div className="min-w-0">
+                          <div className="text-[9px] text-stone-500 uppercase tracking-widest leading-none mb-0.5 text-right">
+                            categories
+                          </div>
+                          <div
+                            className="text-[11px] font-semibold text-stone-300 truncate text-right"
+                            title={pred.loser.name}
+                          >
+                            {pred.loser.name}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1945,259 +2020,334 @@ const FightAnalyzer = ({
             <div className="h-px flex-1 bg-yellow-700/30" />
           </div>
 
-          <details open className="group/events border border-yellow-700/50 rounded-lg bg-stone-900">
+          <details
+            open
+            className="group/events border border-yellow-700/50 rounded-lg bg-stone-900"
+          >
             <summary
               className="w-full bg-stone-900 hover:bg-stone-800 text-yellow-500 font-bold py-3 px-4 flex justify-between items-center transition cursor-pointer"
               aria-label="Toggle last event results"
             >
               <span className="text-base sm:text-xl">
                 📊 Stats from Last Week's Fights{" "}
-                {fightResults.length > 0 ? `(${fightResults[0]?.EVENT?.trim()})` : resultsLoading ? "" : ""}
+                {fightResults.length > 0
+                  ? `(${fightResults[0]?.EVENT?.trim()})`
+                  : resultsLoading
+                    ? ""
+                    : ""}
               </span>
-                <span className="text-lg group-open/events:hidden">▶</span>
-                <span className="text-lg hidden group-open/events:inline">
-                  ▼
-                </span>
-              </summary>
+              <span className="text-lg group-open/events:hidden">▶</span>
+              <span className="text-lg hidden group-open/events:inline">▼</span>
+            </summary>
 
-              <div className="border-t border-yellow-700/30 p-4 sm:p-6">
-                {resultsLoading && (
-                  <p className="text-stone-500 text-sm text-center py-4 italic animate-pulse">
-                    Loading last event results…
-                  </p>
-                )}
-                {!resultsLoading && resultsError && (
-                  <p className="text-stone-500 text-sm text-center py-4 italic">
-                    No previous event data available.
-                  </p>
-                )}
-                {!resultsLoading && !resultsError && fightResults.length === 0 && (
-                  <p className="text-stone-500 text-sm text-center py-4 italic">
-                    No previous event data available.
-                  </p>
-                )}
-                {/* Fight Night Stats */}
-                {analysis && (
-                  <>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-                      {[
-                        { label: "Total Fights", value: analysis.totalFights, color: "text-yellow-400" },
-                        { label: "KO / TKO", value: analysis.cardAnalysis.koCount, color: "text-red-400" },
-                        { label: "Submissions", value: analysis.cardAnalysis.subCount, color: "text-blue-400" },
-                        { label: "Finish Rate", value: `${analysis.cardAnalysis.finishRate}%`, color: "text-green-400" },
-                      ].map(({ label, value, color }) => (
-                        <div key={label} className="bg-stone-800/60 border border-yellow-700/20 rounded-xl p-4 text-center">
-                          <div className={`text-2xl font-black ${color}`}>{value}</div>
-                          <div className="text-stone-500 text-[10px] uppercase tracking-widest mt-1">{label}</div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
-                      {/* Biggest Upsets */}
-                      <div className="bg-stone-800/50 border border-red-900/40 rounded-xl p-4">
-                        <h2 className="text-xs font-bold tracking-[0.3em] uppercase text-red-400 mb-3">💥 Biggest Upsets</h2>
-                        {analysis.upsets.length > 0 ? (
-                          <div className="space-y-2">
-                            {analysis.upsets.map((u, i) => (
-                              <div key={i} className="bg-stone-900/60 rounded-lg p-3 border border-red-900/30">
-                                <div className="font-bold text-white text-sm">{u.winner}</div>
-                                <div className="text-stone-400 text-xs">def. {u.loser}</div>
-                                <div className="text-red-400 text-xs mt-1">{u.method} · R{u.round} · {u.time}</div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-stone-500 text-sm">No first-round finishes this card</p>
-                        )}
-                      </div>
-
-                      {/* Best Value Fighters */}
-                      <div className="bg-stone-800/50 border border-green-900/40 rounded-xl p-4">
-                        <h2 className="text-xs font-bold tracking-[0.3em] uppercase text-green-400 mb-3">💎 Best Value Fighters</h2>
-                        {analysis.valueFighters.length > 0 ? (
-                          <div className="space-y-2">
-                            {analysis.valueFighters.slice(0, 5).map((f, i) => (
-                              <div key={i} className="bg-stone-900/60 rounded-lg p-3 border border-green-900/30">
-                                <div className="font-bold text-white text-sm">{f.name}</div>
-                                <div className="text-stone-400 text-xs">{f.weightclass}</div>
-                                <div className="text-green-400 text-xs mt-1">{f.method} · R{f.round} · {f.time}</div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-stone-500 text-sm">No finishes recorded</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Method Breakdown + Key Insights */}
-                    {analysis.cardAnalysis.methodBreakdown && (
-                      <div className="mb-6 grid grid-cols-2 gap-4">
-                        <div>
-                          <h3 className="text-[10px] font-bold uppercase tracking-widest text-yellow-500 mb-2">Finish Methods</h3>
-                          <div className="space-y-1">
-                            {Object.entries(analysis.cardAnalysis.methodBreakdown).map(([method, count]) => (
-                              <div key={method} className="flex justify-between text-xs">
-                                <span className="text-stone-400 truncate pr-2">{method}</span>
-                                <span className="font-bold text-white">{count}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        <div>
-                          <h3 className="text-[10px] font-bold uppercase tracking-widest text-yellow-500 mb-2">Key Insights</h3>
-                          <div className="space-y-1 text-xs text-stone-300">
-                            <p>• {analysis.cardAnalysis.finishRate}% finish rate</p>
-                            <p>• Avg fight: {analysis.cardAnalysis.avgRound} rounds</p>
-                            <p>• {analysis.totalFights} total bouts on the card</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs sm:text-sm font-mono">
-                    <thead>
-                      <tr className="border-b border-stone-700">
-                        <th className="text-left py-2 px-2 text-yellow-500 font-bold">
-                          Bout
-                        </th>
-                        <th className="text-left py-2 px-2 text-yellow-500 font-bold">
-                          Outcome
-                        </th>
-                        <th className="text-left py-2 px-2 text-yellow-500 font-bold">
-                          Method
-                        </th>
-                        <th
-                          className="text-left py-2 px-2 text-yellow-500 font-bold cursor-pointer hover:text-yellow-400"
-                          onClick={() =>
-                            setResultsSort({
-                              key: "ROUND",
-                              order:
-                                resultsSort.key === "ROUND" &&
-                                resultsSort.order === "asc"
-                                  ? "desc"
-                                  : "asc",
-                            })
-                          }
-                        >
-                          Round{" "}
-                          {resultsSort.key === "ROUND" &&
-                            (resultsSort.order === "asc" ? "↑" : "↓")}
-                        </th>
-                        <th
-                          className="text-left py-2 px-2 text-yellow-500 font-bold cursor-pointer hover:text-yellow-400"
-                          onClick={() =>
-                            setResultsSort({
-                              key: "TIME",
-                              order:
-                                resultsSort.key === "TIME" &&
-                                resultsSort.order === "asc"
-                                  ? "desc"
-                                  : "asc",
-                            })
-                          }
-                        >
-                          Time{" "}
-                          {resultsSort.key === "TIME" &&
-                            (resultsSort.order === "asc" ? "↑" : "↓")}
-                        </th>
-                        <th className="text-left py-2 px-2 text-yellow-500 font-bold">
-                          Details
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {fightResults
-                        .sort((a, b) => {
-                          const aVal = a[resultsSort.key] || "";
-                          const bVal = b[resultsSort.key] || "";
-                          const order = resultsSort.order === "asc" ? 1 : -1;
-                          if (resultsSort.key === "ROUND") {
-                            return (parseInt(aVal) || 0) > (parseInt(bVal) || 0)
-                              ? order
-                              : -order;
-                          }
-                          return aVal.localeCompare(bVal) * order;
-                        })
-                        .map((result, index) => {
-                          const boutParts = result.BOUT?.split(" vs. ") || [
-                            "",
-                            "",
-                          ];
-                          const outcome = result.OUTCOME || "";
-                          const eventShort =
-                            result.EVENT?.replace(
-                              "UFC Fight Night: ",
-                              "",
-                            ).replace("UFC ", "") || "N/A";
-
-                          // Determine winner/loser colors based on OUTCOME
-                          let fighter1Color = "text-stone-100";
-                          let fighter2Color = "text-stone-100";
-                          let outcomeText = "";
-
-                          if (outcome === "W/L") {
-                            fighter1Color = "text-green-400 font-semibold";
-                            fighter2Color = "text-red-400";
-                            outcomeText = `${boutParts[0]} def. ${boutParts[1]}`;
-                          } else if (outcome === "L/W") {
-                            fighter1Color = "text-red-400";
-                            fighter2Color = "text-green-400 font-semibold";
-                            outcomeText = `${boutParts[1]} def. ${boutParts[0]}`;
-                          } else if (outcome === "D/D") {
-                            fighter1Color = "text-stone-400";
-                            fighter2Color = "text-stone-400";
-                            outcomeText = "Draw";
-                          }
-
-                          return (
-                            <tr
-                              key={index}
-                              className="border-b border-stone-800 hover:bg-stone-800/30"
-                            >
-                              <td className="py-2 px-2 text-stone-200">
-                                <span className={fighter1Color}>
-                                  {boutParts[0]}
-                                </span>
-                                <span className="text-stone-500 mx-1">vs</span>
-                                <span className={fighter2Color}>
-                                  {boutParts[1]}
-                                </span>
-                              </td>
-                              <td className="py-2 px-2 text-stone-300 text-sm">
-                                {outcomeText}
-                              </td>
-                              <td className="py-2 px-2 text-stone-300">
-                                {result.METHOD || "N/A"}
-                              </td>
-                              <td className="py-2 px-2 text-stone-300">
-                                {result.ROUND || "N/A"}
-                              </td>
-                              <td className="py-2 px-2 text-stone-300">
-                                {result.TIME || "N/A"}
-                              </td>
-                              <td
-                                className="py-2 px-2 text-stone-300 text-sm max-w-[200px] truncate"
-                                title={result.DETAILS}
-                              >
-                                {result.DETAILS || "N/A"}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                    </tbody>
-                  </table>
-                </div>
-                <p className="text-stone-500 text-xs mt-4 text-center">
-                  Data sourced from UFCStats.com — showing fights from the most
-                  recent UFC event only
+            <div className="border-t border-yellow-700/30 p-4 sm:p-6">
+              {resultsLoading && (
+                <p className="text-stone-500 text-sm text-center py-4 italic animate-pulse">
+                  Loading last event results…
                 </p>
+              )}
+              {!resultsLoading && resultsError && (
+                <p className="text-stone-500 text-sm text-center py-4 italic">
+                  No previous event data available.
+                </p>
+              )}
+              {!resultsLoading &&
+                !resultsError &&
+                fightResults.length === 0 && (
+                  <p className="text-stone-500 text-sm text-center py-4 italic">
+                    No previous event data available.
+                  </p>
+                )}
+              {/* Fight Night Stats */}
+              {analysis && (
+                <>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                    {[
+                      {
+                        label: "Total Fights",
+                        value: analysis.totalFights,
+                        color: "text-yellow-400",
+                      },
+                      {
+                        label: "KO / TKO",
+                        value: analysis.cardAnalysis.koCount,
+                        color: "text-red-400",
+                      },
+                      {
+                        label: "Submissions",
+                        value: analysis.cardAnalysis.subCount,
+                        color: "text-blue-400",
+                      },
+                      {
+                        label: "Finish Rate",
+                        value: `${analysis.cardAnalysis.finishRate}%`,
+                        color: "text-green-400",
+                      },
+                    ].map(({ label, value, color }) => (
+                      <div
+                        key={label}
+                        className="bg-stone-800/60 border border-yellow-700/20 rounded-xl p-4 text-center"
+                      >
+                        <div className={`text-2xl font-black ${color}`}>
+                          {value}
+                        </div>
+                        <div className="text-stone-500 text-[10px] uppercase tracking-widest mt-1">
+                          {label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+                    {/* Biggest Upsets */}
+                    <div className="bg-stone-800/50 border border-red-900/40 rounded-xl p-4">
+                      <h2 className="text-xs font-bold tracking-[0.3em] uppercase text-red-400 mb-3">
+                        💥 Biggest Upsets
+                      </h2>
+                      {analysis.upsets.length > 0 ? (
+                        <div className="space-y-2">
+                          {analysis.upsets.map((u, i) => (
+                            <div
+                              key={i}
+                              className="bg-stone-900/60 rounded-lg p-3 border border-red-900/30"
+                            >
+                              <div className="font-bold text-white text-sm">
+                                {u.winner}
+                              </div>
+                              <div className="text-stone-400 text-xs">
+                                def. {u.loser}
+                              </div>
+                              <div className="text-red-400 text-xs mt-1">
+                                {u.method} · R{u.round} · {u.time}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-stone-500 text-sm">
+                          No first-round finishes this card
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Best Value Fighters */}
+                    <div className="bg-stone-800/50 border border-green-900/40 rounded-xl p-4">
+                      <h2 className="text-xs font-bold tracking-[0.3em] uppercase text-green-400 mb-3">
+                        💎 Best Value Fighters
+                      </h2>
+                      {analysis.valueFighters.length > 0 ? (
+                        <div className="space-y-2">
+                          {analysis.valueFighters.slice(0, 5).map((f, i) => (
+                            <div
+                              key={i}
+                              className="bg-stone-900/60 rounded-lg p-3 border border-green-900/30"
+                            >
+                              <div className="font-bold text-white text-sm">
+                                {f.name}
+                              </div>
+                              <div className="text-stone-400 text-xs">
+                                {f.weightclass}
+                              </div>
+                              <div className="text-green-400 text-xs mt-1">
+                                {f.method} · R{f.round} · {f.time}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-stone-500 text-sm">
+                          No finishes recorded
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Method Breakdown + Key Insights */}
+                  {analysis.cardAnalysis.methodBreakdown && (
+                    <div className="mb-6 grid grid-cols-2 gap-4">
+                      <div>
+                        <h3 className="text-[10px] font-bold uppercase tracking-widest text-yellow-500 mb-2">
+                          Finish Methods
+                        </h3>
+                        <div className="space-y-1">
+                          {Object.entries(
+                            analysis.cardAnalysis.methodBreakdown,
+                          ).map(([method, count]) => (
+                            <div
+                              key={method}
+                              className="flex justify-between text-xs"
+                            >
+                              <span className="text-stone-400 truncate pr-2">
+                                {method}
+                              </span>
+                              <span className="font-bold text-white">
+                                {count}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-[10px] font-bold uppercase tracking-widest text-yellow-500 mb-2">
+                          Key Insights
+                        </h3>
+                        <div className="space-y-1 text-xs text-stone-300">
+                          <p>
+                            • {analysis.cardAnalysis.finishRate}% finish rate
+                          </p>
+                          <p>
+                            • Avg fight: {analysis.cardAnalysis.avgRound} rounds
+                          </p>
+                          <p>
+                            • {analysis.totalFights} total bouts on the card
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs sm:text-sm font-mono">
+                  <thead>
+                    <tr className="border-b border-stone-700">
+                      <th className="text-left py-2 px-2 text-yellow-500 font-bold">
+                        Bout
+                      </th>
+                      <th className="text-left py-2 px-2 text-yellow-500 font-bold">
+                        Outcome
+                      </th>
+                      <th className="text-left py-2 px-2 text-yellow-500 font-bold">
+                        Method
+                      </th>
+                      <th
+                        className="text-left py-2 px-2 text-yellow-500 font-bold cursor-pointer hover:text-yellow-400"
+                        onClick={() =>
+                          setResultsSort({
+                            key: "ROUND",
+                            order:
+                              resultsSort.key === "ROUND" &&
+                              resultsSort.order === "asc"
+                                ? "desc"
+                                : "asc",
+                          })
+                        }
+                      >
+                        Round{" "}
+                        {resultsSort.key === "ROUND" &&
+                          (resultsSort.order === "asc" ? "↑" : "↓")}
+                      </th>
+                      <th
+                        className="text-left py-2 px-2 text-yellow-500 font-bold cursor-pointer hover:text-yellow-400"
+                        onClick={() =>
+                          setResultsSort({
+                            key: "TIME",
+                            order:
+                              resultsSort.key === "TIME" &&
+                              resultsSort.order === "asc"
+                                ? "desc"
+                                : "asc",
+                          })
+                        }
+                      >
+                        Time{" "}
+                        {resultsSort.key === "TIME" &&
+                          (resultsSort.order === "asc" ? "↑" : "↓")}
+                      </th>
+                      <th className="text-left py-2 px-2 text-yellow-500 font-bold">
+                        Details
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {fightResults
+                      .sort((a, b) => {
+                        const aVal = a[resultsSort.key] || "";
+                        const bVal = b[resultsSort.key] || "";
+                        const order = resultsSort.order === "asc" ? 1 : -1;
+                        if (resultsSort.key === "ROUND") {
+                          return (parseInt(aVal) || 0) > (parseInt(bVal) || 0)
+                            ? order
+                            : -order;
+                        }
+                        return aVal.localeCompare(bVal) * order;
+                      })
+                      .map((result, index) => {
+                        const boutParts = result.BOUT?.split(" vs. ") || [
+                          "",
+                          "",
+                        ];
+                        const outcome = result.OUTCOME || "";
+                        const eventShort =
+                          result.EVENT?.replace(
+                            "UFC Fight Night: ",
+                            "",
+                          ).replace("UFC ", "") || "N/A";
+
+                        // Determine winner/loser colors based on OUTCOME
+                        let fighter1Color = "text-stone-100";
+                        let fighter2Color = "text-stone-100";
+                        let outcomeText = "";
+
+                        if (outcome === "W/L") {
+                          fighter1Color = "text-green-400 font-semibold";
+                          fighter2Color = "text-red-400";
+                          outcomeText = `${boutParts[0]} def. ${boutParts[1]}`;
+                        } else if (outcome === "L/W") {
+                          fighter1Color = "text-red-400";
+                          fighter2Color = "text-green-400 font-semibold";
+                          outcomeText = `${boutParts[1]} def. ${boutParts[0]}`;
+                        } else if (outcome === "D/D") {
+                          fighter1Color = "text-stone-400";
+                          fighter2Color = "text-stone-400";
+                          outcomeText = "Draw";
+                        }
+
+                        return (
+                          <tr
+                            key={index}
+                            className="border-b border-stone-800 hover:bg-stone-800/30"
+                          >
+                            <td className="py-2 px-2 text-stone-200">
+                              <span className={fighter1Color}>
+                                {boutParts[0]}
+                              </span>
+                              <span className="text-stone-500 mx-1">vs</span>
+                              <span className={fighter2Color}>
+                                {boutParts[1]}
+                              </span>
+                            </td>
+                            <td className="py-2 px-2 text-stone-300 text-sm">
+                              {outcomeText}
+                            </td>
+                            <td className="py-2 px-2 text-stone-300">
+                              {result.METHOD || "N/A"}
+                            </td>
+                            <td className="py-2 px-2 text-stone-300">
+                              {result.ROUND || "N/A"}
+                            </td>
+                            <td className="py-2 px-2 text-stone-300">
+                              {result.TIME || "N/A"}
+                            </td>
+                            <td
+                              className="py-2 px-2 text-stone-300 text-sm max-w-[200px] truncate"
+                              title={result.DETAILS}
+                            >
+                              {result.DETAILS || "N/A"}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
               </div>
-            </details>
-          </div>
+              <p className="text-stone-500 text-xs mt-4 text-center">
+                Data sourced from UFCStats.com — showing fights from the most
+                recent UFC event only
+              </p>
+            </div>
+          </details>
+        </div>
       </div>
 
       {/* === FULL FIGHT RECORD MODAL — POLISHED === */}

@@ -106,13 +106,13 @@ def get_current_user(
 
 @router.post(
     "/register",
-    response_model=UserOut,
+    response_model=Token,
     status_code=status.HTTP_201_CREATED,
     summary="Register a new user",
 )
-def register(payload: UserCreate, db: Session = Depends(get_db)) -> UserOut:
+def register(payload: UserCreate, db: Session = Depends(get_db)) -> Token:
     """
-    Create a new account.  Returns the created user (without password).
+    Create a new account and return a JWT access token (auto-login).
 
     - **email**: must be unique
     - **username**: 3–50 chars, alphanumeric / underscore / dash; must be unique
@@ -138,7 +138,8 @@ def register(payload: UserCreate, db: Session = Depends(get_db)) -> UserOut:
     db.commit()
     db.refresh(user)
     logger.info("New user registered: %s", user.email)
-    return user  # type: ignore[return-value]
+    token = _create_access_token(user.email)
+    return Token(access_token=token)
 
 
 @router.post(

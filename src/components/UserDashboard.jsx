@@ -74,7 +74,9 @@ const UserDashboard = ({ currentUser }) => {
     if (!token) {
       // Request login modal from App shell
       window.dispatchEvent(
-        new CustomEvent("cagevault:openAuthModal", { detail: { tab: "login" } })
+        new CustomEvent("cagevault:openAuthModal", {
+          detail: { tab: "login" },
+        }),
       );
       return;
     }
@@ -87,7 +89,7 @@ const UserDashboard = ({ currentUser }) => {
         setUpgradeError(
           data.detail === "Failed to create checkout session"
             ? "Payment setup is not yet complete. Please contact support at cagevault.com."
-            : data.detail || "Checkout failed — please try again."
+            : data.detail || "Checkout failed — please try again.",
         );
       }
     } catch (err) {
@@ -162,7 +164,9 @@ const UserDashboard = ({ currentUser }) => {
             onClick={handleUpgrade}
             className="bg-gradient-to-r from-secondary to-primary hover:from-secondary/80 hover:to-primary/80 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 shadow-neon"
           >
-            {currentUser ? "Upgrade to Pro — $19.99/month" : "Log In to Upgrade"}
+            {currentUser
+              ? "Upgrade to Pro — $19.99/month"
+              : "Log In to Upgrade"}
           </motion.button>
         </div>
       </div>

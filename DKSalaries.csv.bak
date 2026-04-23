@@ -1,36 +1,27 @@
-F,F,F,F,F,F,,Instructions
-,,,,,,,1. Locate the player you want to select in the list below 
-,,,,,,,2. Copy the ID of your player (you can use the Name + ID column or the ID column) 
-,,,,,,,3. Paste the ID into the roster position desired 
-,,,,,,,4. You must include an ID for each player; you cannot use just the player's name 
-,,,,,,,5. You can create up to 500 lineups per file 
- 
-,,,,,,,Position,Name + ID,Name,ID,Roster Position,Salary,Game Info,TeamAbbrev,AvgPointsPerGame
-,,,,,,,F,Mario Pinto (42305467),Mario Pinto,42305467,F,9700,Franco@Pinto 03/21/2026 02:40PM ET,Pinto,106.49
-,,,,,,,F,Mantas Kondratavicius (42305462),Mantas Kondratavicius,42305462,F,9600,Trocoli@Kondratavicius 03/21/2026 02:20PM ET,Kondratavicius,0
-,,,,,,,F,Iwo Baraniewski (42305448),Iwo Baraniewski,42305448,F,9500,Lane@Baraniewski 03/21/2026 04:40PM ET,Baraniewski,120.33
-,,,,,,,F,Shanelle Dyer (42305463),Shanelle Dyer,42305463,F,9400,Oliveira@Dyer 03/21/2026 01:20PM ET,Dyer,0
-,,,,,,,F,Christian Leroy Duncan (42305445),Christian Leroy Duncan,42305445,F,9300,Duncan@Dolidze 03/21/2026 04:20PM ET,Duncan,82.44
-,,,,,,,F,Luke Riley (42305456),Luke Riley,42305456,F,9100,Aswell Jr.@Riley 03/21/2026 05:20PM ET,Riley,87.25
-,,,,,,,F,Brando Pericic (42305457),Brando Pericic,42305457,F,9000,Pericic@Sutherland 03/21/2026 02:00PM ET,Pericic,102.67
-,,,,,,,F,Movsar Evloev (42305441),Movsar Evloev,42305441,F,8900,Murphy@Evloev 03/21/2026 05:40PM ET,Evloev,102.27
-,,,,,,,F,Kurtis Campbell (42305450),Kurtis Campbell,42305450,F,8800,Silva@Campbell 03/21/2026 04:00PM ET,Campbell,0
-,,,,,,,F,Losene Keita (42305444),Losene Keita,42305444,F,8700,Keita@Wood 03/21/2026 03:00PM ET,Keita,0
-,,,,,,,F,Michael Page (42305465),Michael Page,42305465,F,8600,Patterson@Page 03/21/2026 05:00PM ET,Page,40.77
-,,,,,,,F,Mason Jones (42305451),Mason Jones,42305451,F,8400,Sola@Jones 03/21/2026 03:20PM ET,Jones,81.34
-,,,,,,,F,Abdul-Kareem Al-Selwady (42305454),Abdul-Kareem Al-Selwady,42305454,F,8300,Al-Selwady@Rock 03/21/2026 01:40PM ET,Al-Selwady,37.52
-,,,,,,,F,Luana Carolina (42305460),Luana Carolina,42305460,F,8200,Carolina@Mullins 03/21/2026 01:00PM ET,Carolina,58.09
-,,,,,,,F,Melissa Mullins (42305459),Melissa Mullins,42305459,F,8000,Carolina@Mullins 03/21/2026 01:00PM ET,Mullins,60.97
-,,,,,,,F,Shem Rock (42305453),Shem Rock,42305453,F,7900,Al-Selwady@Rock 03/21/2026 01:40PM ET,Rock,30.16
-,,,,,,,F,Axel Sola (42305452),Axel Sola,42305452,F,7800,Sola@Jones 03/21/2026 03:20PM ET,Sola,84.95
-,,,,,,,F,Sam Patterson (42305466),Sam Patterson,42305466,F,7600,Patterson@Page 03/21/2026 05:00PM ET,Patterson,81.48
-,,,,,,,F,Nathaniel Wood (42305443),Nathaniel Wood,42305443,F,7500,Keita@Wood 03/21/2026 03:00PM ET,Wood,80.30
-,,,,,,,F,Danny Silva (42305449),Danny Silva,42305449,F,7400,Silva@Campbell 03/21/2026 04:00PM ET,Silva,61.32
-,,,,,,,F,Lerone Murphy (42305442),Lerone Murphy,42305442,F,7300,Murphy@Evloev 03/21/2026 05:40PM ET,Murphy,87.25
-,,,,,,,F,Louie Sutherland (42305458),Louie Sutherland,42305458,F,7200,Pericic@Sutherland 03/21/2026 02:00PM ET,Sutherland,1.2
-,,,,,,,F,Michael Aswell Jr. (42305455),Michael Aswell Jr.,42305455,F,7100,Aswell Jr.@Riley 03/21/2026 05:20PM ET,Aswell Jr.,85.22
-,,,,,,,F,Roman Dolidze (42305446),Roman Dolidze,42305446,F,6900,Duncan@Dolidze 03/21/2026 04:20PM ET,Dolidze,77.17
-,,,,,,,F,Ravena Oliveira (42305464),Ravena Oliveira,42305464,F,6800,Oliveira@Dyer 03/21/2026 01:20PM ET,Oliveira,23.43
-,,,,,,,F,Austen Lane (42305447),Austen Lane,42305447,F,6700,Lane@Baraniewski 03/21/2026 04:40PM ET,Lane,22.8
-,,,,,,,F,Antonio Trocoli (42305461),Antonio Trocoli,42305461,F,6600,Trocoli@Kondratavicius 03/21/2026 02:20PM ET,Trocoli,7.28
-,,,,,,,F,Felipe Franco (42305468),Felipe Franco,42305468,F,6500,Franco@Pinto 03/21/2026 02:40PM ET,Franco,0
+Position,Name + ID,Name,ID,Roster Position,Salary,Game Info,TeamAbbrev,AvgPointsPerGame
+F,Jafel Filho (42728122),Jafel Filho,42728122,F,9500,Durden@Filho 04/25/2026 06:00PM ET,Filho,78.29
+F,Francis Marshall (42728124),Francis Marshall,42728124,F,9400,Brennan@Marshall 04/25/2026 05:40PM ET,Marshall,59.05
+F,Michelle Montague (42704868),Michelle Montague,42704868,F,9300,Montague@Bueno Silva 04/25/2026 06:20PM ET,Montague,102.29
+F,Rodolfo Vieira (42704866),Rodolfo Vieira,42704866,F,9100,McConico@Vieira 04/25/2026 07:00PM ET,Vieira,69.44
+F,Julia Polastri (42704864),Julia Polastri,42704864,F,9000,Polastri@Alencar 04/25/2026 05:00PM ET,Polastri,69.64
+F,Norma Dumont (42704860),Norma Dumont,42704860,F,8800,Edwards@Dumont 04/25/2026 09:20PM ET,Dumont,70.50
+F,Jackson McVey (42704870),Jackson McVey,42704870,F,8700,Dumas@McVey 04/25/2026 06:40PM ET,McVey,17.96
+F,Montel Jackson (42704862),Montel Jackson,42704862,F,8600,Barcelos@Jackson 04/25/2026 08:20PM ET,Jackson,89.25
+F,Victor Valenzuela (42728126),Victor Valenzuela,42728126,F,8600,Valenzuela@Griffin 04/25/2026 05:20PM ET,Valenzuela,0
+F,Alexander Hernandez (42704872),Alexander Hernandez,42704872,F,8500,Hernandez@Garcia 04/25/2026 09:00PM ET,Hernandez,65.15
+F,Youssef Zalal (42704858),Youssef Zalal,42704858,F,8400,Zalal@Sterling 04/25/2026 09:40PM ET,Zalal,72.12
+F,Marcus Buchecha (42704875),Marcus Buchecha,42704875,F,8300,Spann@Buchecha 04/25/2026 08:00PM ET,Buchecha,40.58
+F,Adrian Luna Martinetti (42704856),Adrian Luna Martinetti,42704856,F,8200,Martinetti@Grant 04/25/2026 08:40PM ET,Martinetti,0
+F,Davey Grant (42704857),Davey Grant,42704857,F,8000,Martinetti@Grant 04/25/2026 08:40PM ET,Grant,57.06
+F,Ryan Spann (42704874),Ryan Spann,42704874,F,7900,Spann@Buchecha 04/25/2026 08:00PM ET,Spann,62.05
+F,Aljamain Sterling (42704859),Aljamain Sterling,42704859,F,7800,Zalal@Sterling 04/25/2026 09:40PM ET,Sterling,84.48
+F,Rafa Garcia (42704873),Rafa Garcia,42704873,F,7700,Hernandez@Garcia 04/25/2026 09:00PM ET,Garcia,71.86
+F,Raoni Barcelos (42704863),Raoni Barcelos,42704863,F,7600,Barcelos@Jackson 04/25/2026 08:20PM ET,Barcelos,76.26
+F,Max Griffin (42728127),Max Griffin,42728127,F,7600,Valenzuela@Griffin 04/25/2026 05:20PM ET,Griffin,58.53
+F,Sedriques Dumas (42704871),Sedriques Dumas,42704871,F,7500,Dumas@McVey 04/25/2026 06:40PM ET,Dumas,31.98
+F,Joselyne Edwards (42704861),Joselyne Edwards,42704861,F,7400,Edwards@Dumont 04/25/2026 09:20PM ET,Edwards,78.21
+F,Talita Alencar (42704865),Talita Alencar,42704865,F,7200,Polastri@Alencar 04/25/2026 05:00PM ET,Alencar,73.02
+F,Eric McConico (42704867),Eric McConico,42704867,F,7100,McConico@Vieira 04/25/2026 07:00PM ET,McConico,28.89
+F,Mayra Bueno Silva (42704869),Mayra Bueno Silva,42704869,F,6900,Montague@Bueno Silva 04/25/2026 06:20PM ET,Bueno Silva,58.00
+F,Lucas Brennan (42728125),Lucas Brennan,42728125,F,6800,Brennan@Marshall 04/25/2026 05:40PM ET,Brennan,0
+F,Cody Durden (42728123),Cody Durden,42728123,F,6700,Durden@Filho 04/25/2026 06:00PM ET,Durden,56.34

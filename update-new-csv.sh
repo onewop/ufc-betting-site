@@ -159,5 +159,40 @@ echo "  ✅ DONE!  New card is ready."
 echo "  Refresh the site (npm start / hard-reload)"
 echo "  to see the updated fighters."
 echo "=============================================="
+
+# ── Step 6: Check for missing highlight videos ────────────────────────────────
+echo ""
+echo "── Checking highlight_videos.json for missing entries..."
+python3 - <<'EOF'
+import json, sys
+
+try:
+    videos = json.load(open("public/highlight_videos.json"))
+    stats  = json.load(open("public/this_weeks_stats.json"))
+except Exception as e:
+    print(f"  ⚠️  Could not check videos: {e}")
+    sys.exit(0)
+
+missing = []
+for fight in stats.get("fights", []):
+    for f in fight.get("fighters", []):
+        name = f["name"]
+        vid  = videos.get(name, "")
+        if not vid:
+            missing.append(name)
+
+if missing:
+    print(f"  ⚠️  {len(missing)} fighter(s) have no highlight video:")
+    for name in missing:
+        slug = name.replace(" ", "+")
+        print(f"     - {name}")
+        print(f"       https://www.youtube.com/results?search_query={slug}+UFC+highlights")
+    print()
+    print("  Edit public/highlight_videos.json and add the 11-char video ID for each.")
+    print("  Then re-run:  python scripts/aggregate_stats.py  (or just redeploy)")
+else:
+    print("  ✓ All fighters have highlight videos set up.")
+EOF
+
 echo ""
 read -rp "  Press Enter to close this window..."

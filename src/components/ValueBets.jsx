@@ -108,6 +108,13 @@ const EV_THRESHOLDS = [
 
 const BET_TYPE_FILTERS = ["All", "Moneyline", "Totals"];
 
+const SORT_OPTIONS = [
+  { label: "Best +EV", value: "ev_desc" },
+  { label: "EV ↑", value: "ev_asc" },
+  { label: "A–Z", value: "fighter_asc" },
+  { label: "Best Odds", value: "odds_asc" },
+];
+
 // ─── Recommendation labels ───────────────────────────────────────────────────
 
 const getRecommendation = (ev) => {
@@ -164,59 +171,153 @@ const getRecommendation = (ev) => {
 
 // ─── Reasoning generators ────────────────────────────────────────────────────
 
+/** Returns a contextual label for the INTEL section based on the primary edge */
+const getIntelLabel = (bet) => {
+  if (bet.stats) {
+    const { stats, oppStats, finishRate } = bet;
+    const kd = stats?.avg_kd_per_fight || 0;
+    const tdDiff = (stats?.td_avg || 0) - (oppStats?.td_avg || 0);
+    const slpmDiff = (stats?.slpm || 0) - (oppStats?.slpm || 0);
+    if (kd >= 0.5) return "POWER THREAT";
+    if (tdDiff > 0.8) return "WRESTLING EDGE";
+    if (slpmDiff > 0.8) return "STRIKING EDGE";
+    if (finishRate && finishRate > 65) return "FINISH UPSIDE";
+    return "VALUE PICK";
+  }
+  const { type, avgFinRate } = bet;
+  if (type?.includes("Under") && avgFinRate > 55) return "EARLY FINISH";
+  if (type?.includes("Over") && avgFinRate < 45) return "DISTANCE LIKELY";
+  return "ROUND PROP";
+};
+
 const generateMoneylineReasoning = (bet) => {
-  const { fighter, modelProb, impliedProb, stats } = bet;
+  const { fighter, opponent, modelProb, impliedProb, stats, oppStats, ev, bestOdds, finishRate } = bet;
   const lastName = fighter.split(" ").pop();
-  const modelPct = (modelProb * 100).toFixed(0);
-  const impliedPct = impliedProb ? (impliedProb * 100).toFixed(0) : null;
-  const gap = impliedPct
-    ? (modelProb * 100 - impliedProb * 100).toFixed(0)
+  const oppLastName = (opponent || "").split(" ").pop();
+  const modelPct = (modelProb * 100).toFixed(1);
+  const impliedPct = impliedProb ? (impliedProb * 100).toFixed(1) : null;
+  const gapPts = impliedPct
+    ? (modelProb * 100 - parseFloat(impliedPct)).toFixed(1)
     : null;
 
-  // Build edge description (pick best 2)
-  const edges = [];
-  if (stats?.slpm && stats.slpm > 4.5)
-    edges.push(`${stats.slpm.toFixed(1)} SLpM`);
-  if (stats?.avg_kd_per_fight && stats.avg_kd_per_fight >= 0.8)
-    edges.push(`${stats.avg_kd_per_fight.toFixed(1)} KD/fight`);
-  if (stats?.td_avg && stats.td_avg >= 1.5)
-    edges.push(`${stats.td_avg.toFixed(1)} TD avg`);
-  const finRate = bet.finishRate;
-  if (finRate && finRate >= 60)
-    edges.push(`${finRate.toFixed(0)}% finish rate`);
-  const strDef = parseFloat(stats?.striking_defense);
-  if (!isNaN(strDef) && strDef >= 58) edges.push(`${strDef}% str. defense`);
+  const parts = [];
 
-  const edgeStr = edges.slice(0, 2).join(" + ");
+  // Sentence 1: The core pricing gap
+  if (gapPts && parseFloat(gapPts) > 0) {
+    parts.push(
+      `Books price ${lastName} at ${impliedPct}% — our model finds ${modelPct}%, a ${gapPts}pt gap the market hasn't fully corrected.`
+    );
+  } else {
+    parts.push(`Model projects ${lastName} at ${modelPct}% win probability.`);
+  }
 
-  // Concise 2-sentence reasoning
-  if (gap && parseInt(gap) > 0 && edgeStr) {
-    return `${lastName} is ${gap}pts undervalued \u2014 our model has ${modelPct}% vs the book's ${impliedPct}%. Edge: ${edgeStr}.`;
+  // Sentence 2: Named statistical edge vs opponent
+  const slpmDiff = ((stats?.slpm || 0) - (oppStats?.slpm || 0)).toFixed(1);
+  const tdDiff = ((stats?.td_avg || 0) - (oppStats?.td_avg || 0)).toFixed(1);
+  const defA = parseFloat(stats?.striking_defense) || 0;
+  const defB = parseFloat(oppStats?.striking_defense) || 0;
+  const kd = stats?.avg_kd_per_fight || 0;
+  if (kd >= 0.5) {
+    parts.push(
+      `${lastName} averages ${kd.toFixed(1)} knockdowns/fight — a genuine one-shot threat that books tend to underprice against ${oppLastName}.`
+    );
+  } else if (parseFloat(tdDiff) > 0.8) {
+    parts.push(
+      `Grappling edge is significant: ${stats?.td_avg?.toFixed(1) || "—"} TDs/fight vs ${oppStats?.td_avg?.toFixed(1) || "—"} for ${oppLastName} — expect cage control rounds to dominate the scoring.`
+    );
+  } else if (parseFloat(slpmDiff) > 0.8) {
+    parts.push(
+      `Outstrikes ${oppLastName} by ${slpmDiff} SLpM (${stats?.slpm?.toFixed(1) || "—"} vs ${oppStats?.slpm?.toFixed(1) || "—"}) — volume advantage should show clearly if this reaches the scorecards.`
+    );
+  } else if (defA - defB > 5) {
+    parts.push(
+      `${lastName} absorbs less damage (${defA.toFixed(0)}% defense vs ${defB.toFixed(0)}% for ${oppLastName}) — harder to hurt, which keeps win probability elevated in close rounds.`
+    );
+  } else if (finishRate && finishRate > 65) {
+    parts.push(
+      `${finishRate.toFixed(0)}% career finish rate means this isn't just a win — it often comes with a bonus-earning stoppage.`
+    );
   }
-  if (gap && parseInt(gap) > 0) {
-    return `Books imply ${impliedPct}% but our model sees ${modelPct}% \u2014 a ${gap}-point gap the market hasn't corrected.`;
+
+  // Sentence 3: Actionable context
+  if (bestOdds > 0) {
+    parts.push(
+      `At ${fmt(bestOdds)}, the underdog payout amplifies the value — this is a high-ceiling play ideal for parlays or small standalone bets.`
+    );
+  } else if (bestOdds != null && bestOdds < -200) {
+    parts.push(
+      `At ${fmt(bestOdds)}, chalk — best used as a parlay anchor. The EV comes from the line being softer than it should be.`
+    );
+  } else if (ev >= 10) {
+    parts.push(
+      `+${ev.toFixed(1)}% EV makes this one of the sharpest value opportunities on the card this week.`
+    );
   }
-  if (edgeStr) {
-    return `Model gives ${lastName} ${modelPct}% win probability. Backed by ${edgeStr}.`;
-  }
-  return `Our model projects ${lastName} at ${modelPct}% \u2014 higher than the market implies.`;
+
+  return parts.join(" ");
 };
 
 const generateTotalsReasoning = (bet) => {
-  const { type, estRounds, avgFinRate } = bet;
+  const { type, estRounds, avgFinRate, fighterA, fighterB, bestOdds, ev, modelProb } = bet;
   const isOver = type.includes("Over");
+  const point = parseFloat(type.match(/[\d.]+/)?.[0] || "2.5");
   const roundStr = estRounds?.toFixed(1) || "2.5";
+  const modelPct = (modelProb * 100).toFixed(0);
+  const lastA = (fighterA || "").split(" ").pop();
+  const lastB = (fighterB || "").split(" ").pop();
+  const parts = [];
 
+  // Sentence 1: Duration projection with context
   if (isOver) {
-    if (avgFinRate && avgFinRate < 45) {
-      return `Model estimates ${roundStr} rounds. Both fighters trend to decisions (${avgFinRate.toFixed(0)}% combined finish rate).`;
+    if (parseFloat(roundStr) > point) {
+      parts.push(
+        `Model projects ${roundStr} avg rounds — above the ${point} line — driven by both fighters' tendency to grind out late decisions.`
+      );
+    } else {
+      parts.push(
+        `Despite projecting ${roundStr} rounds, the Over at ${fmt(bestOdds)} carries +${ev.toFixed(1)}% EV based on historical pacing patterns for this style matchup.`
+      );
     }
-    return `Projected ${roundStr} rounds \u2014 fight duration data supports the Over.`;
+  } else {
+    if (parseFloat(roundStr) < point) {
+      parts.push(
+        `Model estimates only ${roundStr} rounds — well under the ${point} line — suggesting this fight ends before the scorecards are needed.`
+      );
+    } else {
+      parts.push(
+        `Projecting ${roundStr} rounds, but the Under at ${fmt(bestOdds)} carries +${ev.toFixed(1)}% EV given the finishers involved.`
+      );
+    }
   }
-  if (avgFinRate && avgFinRate > 60) {
-    return `Just ${roundStr} projected rounds. Combined ${avgFinRate.toFixed(0)}% finish rate makes early stoppage likely.`;
+
+  // Sentence 2: Fighter context
+  if (avgFinRate != null) {
+    const finRateStr = avgFinRate.toFixed(0);
+    if (!isOver && avgFinRate > 60) {
+      parts.push(
+        `${lastA} and ${lastB} combine for a ${finRateStr}% finish rate — neither fighter is comfortable taking a fight the full distance.`
+      );
+    } else if (!isOver && avgFinRate > 45) {
+      parts.push(
+        `Combined ${finRateStr}% finish rate — at least one of these fighters has a strong track record of early stoppages.`
+      );
+    } else if (isOver && avgFinRate < 40) {
+      parts.push(
+        `${lastA} and ${lastB} combine for just ${finRateStr}% finishes — both are comfortable grinding out five rounds if necessary.`
+      );
+    } else {
+      parts.push(
+        `Combined ${finRateStr}% finish rate. The duration projection gives this ${modelPct}% probability — lean on the model's historical accuracy here.`
+      );
+    }
   }
-  return `Model projects only ${roundStr} rounds \u2014 pace and style favor an early finish.`;
+
+  // Sentence 3: Recommendation
+  parts.push(
+    `Look for ${isOver ? "a gritty pace war and late-round action" : "early aggression in rounds 1–2 — if neither fighter gets hurt early, reassess live"}.`
+  );
+
+  return parts.join(" ");
 };
 
 // ─── Sample bet builder ──────────────────────────────────────────────────────
@@ -361,7 +462,10 @@ const buildSampleBets = (fights) => {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 const ValueBets = ({ eventTitle, currentUser }) => {
-  if (!isPro(currentUser)) return <PaywallGate currentUser={currentUser} featureName="+EV Value Bets" />;
+  if (!isPro(currentUser))
+    return (
+      <PaywallGate currentUser={currentUser} featureName="+EV Value Bets" />
+    );
 
   const [fights, setFights] = useState([]);
   const [oddsData, setOddsData] = useState([]);
@@ -372,6 +476,7 @@ const ValueBets = ({ eventTitle, currentUser }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showExplainer, setShowExplainer] = useState(false);
   const [eventInfo, setEventInfo] = useState({ name: "", date: "" });
+  const [sortBy, setSortBy] = useState("ev_desc");
 
   // ── Load fighter stats ──
   useEffect(() => {
@@ -616,8 +721,12 @@ const ValueBets = ({ eventTitle, currentUser }) => {
           b.opponent.toLowerCase().includes(q),
       );
     }
+    if (sortBy === "ev_asc") bets = [...bets].sort((a, b) => a.ev - b.ev);
+    else if (sortBy === "fighter_asc") bets = [...bets].sort((a, b) => a.fighter.localeCompare(b.fighter));
+    else if (sortBy === "odds_asc") bets = [...bets].sort((a, b) => (b.bestOdds ?? -9999) - (a.bestOdds ?? -9999));
+    else bets = [...bets].sort((a, b) => b.ev - a.ev); // ev_desc default
     return bets;
-  }, [activeBets.moneyline, evThreshold, searchQuery]);
+  }, [activeBets.moneyline, evThreshold, searchQuery, sortBy]);
 
   const filteredTotals = useMemo(() => {
     let bets = activeBets.totals.filter((b) => b.ev >= evThreshold);
@@ -629,8 +738,12 @@ const ValueBets = ({ eventTitle, currentUser }) => {
           (b.fighterB || "").toLowerCase().includes(q),
       );
     }
+    if (sortBy === "ev_asc") bets = [...bets].sort((a, b) => a.ev - b.ev);
+    else if (sortBy === "fighter_asc") bets = [...bets].sort((a, b) => (a.fighterA || "").localeCompare(b.fighterA || ""));
+    else if (sortBy === "odds_asc") bets = [...bets].sort((a, b) => (b.bestOdds ?? -9999) - (a.bestOdds ?? -9999));
+    else bets = [...bets].sort((a, b) => b.ev - a.ev); // ev_desc default
     return bets;
-  }, [activeBets.totals, evThreshold, searchQuery]);
+  }, [activeBets.totals, evThreshold, searchQuery, sortBy]);
 
   const showMoneyline =
     betTypeFilter === "All" || betTypeFilter === "Moneyline";
@@ -779,7 +892,7 @@ const ValueBets = ({ eventTitle, currentUser }) => {
 
         {/* ── FILTERS BAR ── */}
         <div className="bg-stone-900/80 border border-stone-800 rounded-xl p-4 sm:p-5">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             <div>
               <span className="text-yellow-500/80 text-[10px] font-bold tracking-widest uppercase block mb-2.5 font-mono">
                 MIN +EV THRESHOLD
@@ -816,6 +929,26 @@ const ValueBets = ({ eventTitle, currentUser }) => {
                     }`}
                   >
                     {f}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <span className="text-yellow-500/80 text-[10px] font-bold tracking-widest uppercase block mb-2.5 font-mono">
+                SORT BY
+              </span>
+              <div className="flex gap-1 flex-wrap">
+                {SORT_OPTIONS.map((s) => (
+                  <button
+                    key={s.value}
+                    onClick={() => setSortBy(s.value)}
+                    className={`px-3 py-2 text-xs tracking-wide rounded-lg border transition-all font-mono ${
+                      sortBy === s.value
+                        ? "bg-yellow-600/20 border-yellow-500/70 text-yellow-300 font-bold shadow-[0_0_8px_rgba(234,179,8,0.15)]"
+                        : "border-stone-700/60 text-stone-500 hover:border-yellow-700/50 hover:text-yellow-500/80 hover:bg-stone-800/50"
+                    }`}
+                  >
+                    {s.label}
                   </button>
                 ))}
               </div>
@@ -1007,12 +1140,12 @@ const ValueBets = ({ eventTitle, currentUser }) => {
                         </div>
                       </div>
 
-                      {/* Reasoning — concise */}
-                      <div className="bg-stone-800/30 border border-stone-700/40 rounded-lg px-3 py-2.5">
+                      {/* INTEL label — dynamic based on edge type */}
+                        <div className="bg-stone-800/30 border border-stone-700/40 rounded-lg px-3 py-2.5">
                         <div className="flex items-center gap-1.5 mb-1">
                           <span className="text-yellow-600 text-[8px]">▸</span>
                           <span className="text-[8px] text-yellow-600/80 tracking-[0.15em] uppercase font-mono font-bold">
-                            INTEL
+                            {getIntelLabel(bet)}
                           </span>
                         </div>
                         <p className="text-stone-400 text-[11px] leading-relaxed font-mono">
@@ -1116,7 +1249,7 @@ const ValueBets = ({ eventTitle, currentUser }) => {
                         <div className="flex items-center gap-1.5 mb-1">
                           <span className="text-yellow-600 text-[8px]">▸</span>
                           <span className="text-[8px] text-yellow-600/80 tracking-[0.15em] uppercase font-mono font-bold">
-                            INTEL
+                            {getIntelLabel(bet)}
                           </span>
                         </div>
                         <p className="text-stone-400 text-[11px] leading-relaxed font-mono">
@@ -1137,71 +1270,82 @@ const ValueBets = ({ eventTitle, currentUser }) => {
             onClick={() => setShowExplainer(!showExplainer)}
             className="w-full flex items-center justify-between px-5 py-4 hover:bg-stone-800/50 transition-colors"
           >
-            <span className="text-yellow-500 text-xs font-bold tracking-widest uppercase font-mono">
-              HOW +EV IS CALCULATED
-            </span>
+            <div>
+              <span className="text-yellow-500 text-xs font-bold tracking-widest uppercase font-mono">
+                HOW THIS PAGE WORKS
+              </span>
+              <p className="text-stone-600 text-[10px] font-mono mt-0.5">
+                Understanding +EV betting and what each tier means
+              </p>
+            </div>
             <span className="text-stone-500 text-sm">
               {showExplainer ? "▲" : "▼"}
             </span>
           </button>
           {showExplainer && (
-            <div className="px-4 pb-4 border-t border-stone-800 space-y-3 text-sm text-stone-300">
-              <div className="pt-3">
-                <p className="font-bold text-yellow-400 mb-1">
-                  What is +EV (Expected Value)?
-                </p>
-                <p>
-                  A bet is +EV when the sportsbook odds imply a lower
-                  probability of winning than our model predicts. In simple
-                  terms: the book is offering better odds than they should be.
+            <div className="px-4 pb-5 border-t border-stone-800 space-y-4 text-sm text-stone-300">
+              <div className="pt-4">
+                <p className="font-bold text-yellow-400 mb-1.5">💡 What does +EV actually mean?</p>
+                <p className="text-stone-400 text-xs leading-relaxed">
+                  +EV (positive expected value) means the sportsbook is offering odds that are{" "}
+                  <span className="text-stone-200 font-semibold">better than they should be</span>{" "}
+                  based on each fighter's real win probability. Think of it like a coin flip that
+                  pays $1.10 but only costs $1 to play — even though you'll lose individual flips,
+                  the math works in your favor over time.
                 </p>
               </div>
-              <div className="bg-stone-800 rounded-lg p-3 font-mono text-xs">
-                <p className="text-yellow-500 mb-1">FORMULA:</p>
-                <p className="text-stone-300">
-                  +EV % = (Our Model Probability × Decimal Odds) − 1
-                </p>
-                <p className="text-stone-500 mt-1">
-                  Example: If our model gives a fighter 55% chance to win, but
-                  the best odds imply only 47% — that's a +EV bet.
+              <div className="bg-stone-800/60 rounded-xl p-4 font-mono text-xs space-y-3">
+                <p className="text-yellow-500 font-bold">HOW THE MODEL WORKS</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <p className="text-stone-400 leading-relaxed">
+                    We start with the sharpest sportsbook lines (vig removed) to get a baseline,
+                    then adjust using real UFCStats data:
+                  </p>
+                  <ul className="space-y-1 text-stone-400">
+                    <li><span className="text-yellow-600 mr-1.5">▸</span>Striking volume &amp; accuracy differential</li>
+                    <li><span className="text-yellow-600 mr-1.5">▸</span>Takedown game &amp; grappling edge</li>
+                    <li><span className="text-yellow-600 mr-1.5">▸</span>Striking defense (damage absorbed)</li>
+                    <li><span className="text-yellow-600 mr-1.5">▸</span>Finish rate &amp; knockout power</li>
+                    <li><span className="text-yellow-600 mr-1.5">▸</span>Win streak momentum</li>
+                  </ul>
+                </div>
+                <p className="text-stone-500 border-t border-stone-700 pt-2">
+                  Formula: <span className="text-stone-300">EV% = (Model Probability × Decimal Odds) − 1</span>
                 </p>
               </div>
               <div>
-                <p className="font-bold text-yellow-400 mb-1">
-                  How Our Model Works
-                </p>
-                <p>
-                  We start with vig-removed implied probabilities from the
-                  sharpest sportsbook lines, then adjust based on:
-                </p>
-                <ul className="list-none space-y-1 mt-2 text-stone-400 text-xs">
-                  <li>
-                    <span className="text-yellow-600 mr-2">▸</span>
-                    Striking differential (SLpM, accuracy, defense)
-                  </li>
-                  <li>
-                    <span className="text-yellow-600 mr-2">▸</span>
-                    Grappling edge (TD average, TD defense)
-                  </li>
-                  <li>
-                    <span className="text-yellow-600 mr-2">▸</span>
-                    Finish rate advantage
-                  </li>
-                  <li>
-                    <span className="text-yellow-600 mr-2">▸</span>
-                    Win streak momentum
-                  </li>
-                  <li>
-                    <span className="text-yellow-600 mr-2">▸</span>
-                    Historical fight duration vs O/U lines
-                  </li>
-                </ul>
+                <p className="font-bold text-yellow-400 mb-2">🎯 Reading the confidence tiers</p>
+                <div className="space-y-2 text-xs">
+                  <div className="flex items-start gap-3">
+                    <span className="w-3 h-3 rounded-full bg-green-400 flex-shrink-0 mt-0.5 shadow-[0_0_6px_rgba(34,197,94,0.4)]" />
+                    <div>
+                      <span className="text-green-400 font-bold">ELITE EDGE / STRONG BET (+12%+)</span>
+                      {" — "}
+                      <span className="text-stone-400">Significant model-vs-market gap. These are the bets to prioritize.</span>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="w-3 h-3 rounded-full bg-amber-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <span className="text-amber-400 font-bold">GOOD VALUE (+6%+)</span>
+                      {" — "}
+                      <span className="text-stone-400">Solid edge with real statistical backing. Good for straight bets or parlay inclusions.</span>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="w-3 h-3 rounded-full bg-yellow-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <span className="text-yellow-500 font-bold">SLIGHT EDGE (+3%+)</span>
+                      {" — "}
+                      <span className="text-stone-400">Worth noting, best used as supplementary data alongside your own research.</span>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div className="bg-yellow-900/20 border border-yellow-700/40 rounded-lg p-3 text-xs text-yellow-300">
-                <span className="font-bold">⚠ DISCLAIMER:</span> +EV does not
-                guarantee a win. It means that over many bets at these odds, you
-                would expect to profit. Always bet responsibly and never wager
-                more than you can afford to lose.
+                <span className="font-bold">⚠ IMPORTANT:</span> +EV doesn't guarantee a win on any individual bet.
+                It means that if you consistently bet at these prices, the math works in your favor over a large sample.
+                Always bet within your means and treat this as one data point among many.
               </div>
             </div>
           )}

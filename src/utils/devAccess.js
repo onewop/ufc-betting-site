@@ -14,9 +14,7 @@
 const DEV_BYPASS_ENABLED = true;
 
 // ─── Emails granted automatic Pro access ────────────────────────────────────
-const DEV_EMAILS = [
-  "toscott4321@gmail.com",
-];
+const DEV_EMAILS = ["toscott4321@gmail.com"];
 
 /**
  * Returns true if the email belongs to a dev/owner account.

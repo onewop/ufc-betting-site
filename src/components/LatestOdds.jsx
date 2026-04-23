@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { isDevUser } from "../utils/devAccess";
 
 // Format American-style moneyline for display (e.g. -150 → "-150", 120 → "+120")
 const fmt = (price) => {
@@ -61,7 +62,7 @@ const evaluateAlertHit = (direction, currentOdds, targetOdds) => {
     : currentOdds < targetOdds;
 };
 
-const LatestOdds = () => {
+const LatestOdds = ({ currentUser }) => {
   const [odds, setOdds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -412,70 +413,76 @@ const LatestOdds = () => {
         </div>
       </div>
 
-      {/* ── Debug info bar ── */}
-      <div className="max-w-4xl mx-auto px-4 py-2 flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-stone-600 border-b border-stone-800/60">
-        <span>
-          <span className="text-stone-500 font-bold uppercase tracking-wider">
-            API event:{" "}
-          </span>
-          {odds.length > 0
-            ? new Date(odds[0].commence_time).toLocaleDateString("en-US", {
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })
-            : loading
-              ? "loading…"
-              : "—"}
-        </span>
-        <span>
-          <span className="text-stone-500 font-bold uppercase tracking-wider">
-            API fights:{" "}
-          </span>
-          {odds.length}
-        </span>
-        <span>
-          <span className="text-stone-500 font-bold uppercase tracking-wider">
-            DK slate:{" "}
-          </span>
-          {dkFighters.length > 0 ? `${dkFighters.length} fighters` : "loading…"}
-        </span>
-        <span>
-          <span className="text-stone-500 font-bold uppercase tracking-wider">
-            Cache fetched:{" "}
-          </span>
-          {cacheTimestamp
-            ? new Date(cacheTimestamp).toLocaleString("en-US", {
-                month: "short",
-                day: "numeric",
-                hour: "numeric",
-                minute: "2-digit",
-              })
-            : "—"}
-          {fromCache && <span className="ml-1 text-yellow-600">(cached)</span>}
-        </span>
-        {(() => {
-          if (!fromCache || dkFighters.length === 0 || odds.length === 0)
-            return null;
-          const apiNames = new Set(
-            odds
-              .flatMap((e) => [e.home_team, e.away_team])
-              .filter(Boolean)
-              .map((n) => n.trim().toLowerCase()),
-          );
-          const hasMatch = dkFighters.some((f) =>
-            apiNames.has(f.trim().toLowerCase()),
-          );
-          return hasMatch ? (
-            <span className="text-green-600">✓ DK slate matches API</span>
-          ) : (
-            <span className="text-red-500">
-              ⚠ Cache appears stale — auto-refreshing
+      {/* ── Debug info bar — dev/owner only ── */}
+      {isDevUser(currentUser?.email) && (
+        <div className="max-w-4xl mx-auto px-4 py-2 flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-stone-600 border-b border-stone-800/60">
+          <span>
+            <span className="text-stone-500 font-bold uppercase tracking-wider">
+              API event:{" "}
             </span>
-          );
-        })()}
-      </div>
+            {odds.length > 0
+              ? new Date(odds[0].commence_time).toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              : loading
+                ? "loading…"
+                : "—"}
+          </span>
+          <span>
+            <span className="text-stone-500 font-bold uppercase tracking-wider">
+              API fights:{" "}
+            </span>
+            {odds.length}
+          </span>
+          <span>
+            <span className="text-stone-500 font-bold uppercase tracking-wider">
+              DK slate:{" "}
+            </span>
+            {dkFighters.length > 0
+              ? `${dkFighters.length} fighters`
+              : "loading…"}
+          </span>
+          <span>
+            <span className="text-stone-500 font-bold uppercase tracking-wider">
+              Cache fetched:{" "}
+            </span>
+            {cacheTimestamp
+              ? new Date(cacheTimestamp).toLocaleString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit",
+                })
+              : "—"}
+            {fromCache && (
+              <span className="ml-1 text-yellow-600">(cached)</span>
+            )}
+          </span>
+          {(() => {
+            if (!fromCache || dkFighters.length === 0 || odds.length === 0)
+              return null;
+            const apiNames = new Set(
+              odds
+                .flatMap((e) => [e.home_team, e.away_team])
+                .filter(Boolean)
+                .map((n) => n.trim().toLowerCase()),
+            );
+            const hasMatch = dkFighters.some((f) =>
+              apiNames.has(f.trim().toLowerCase()),
+            );
+            return hasMatch ? (
+              <span className="text-green-600">✓ DK slate matches API</span>
+            ) : (
+              <span className="text-red-500">
+                ⚠ Cache appears stale — auto-refreshing
+              </span>
+            );
+          })()}
+        </div>
+      )}
 
       <div className="max-w-4xl mx-auto px-4 py-4">
         {/* ── Odds Alert Request Form ── */}

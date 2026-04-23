@@ -77,7 +77,10 @@ const CustomTooltip = ({ active, payload }) => {
 
 // ────────────────────────────────────────────────────────────────────────────
 const DFSPicksProjections = ({ eventTitle = "", currentUser }) => {
-  if (!isPro(currentUser)) return <PaywallGate currentUser={currentUser} featureName="DFS Projections" />;
+  if (!isPro(currentUser))
+    return (
+      <PaywallGate currentUser={currentUser} featureName="DFS Projections" />
+    );
 
   const [picks, setPicks] = useState([]);
   const [fights, setFights] = useState([]);
@@ -952,7 +955,10 @@ const DFSPicksProjections = ({ eventTitle = "", currentUser }) => {
                           {pick.projection}
                         </td>
                         <td className="p-2 border border-stone-700 font-mono text-green-400">
-                          {isNaN(pick.pointsPerThousand) || !pick.pointsPerThousand ? "—" : pick.pointsPerThousand.toFixed(2)}
+                          {isNaN(pick.pointsPerThousand) ||
+                          !pick.pointsPerThousand
+                            ? "—"
+                            : pick.pointsPerThousand.toFixed(2)}
                         </td>
                         <td className="p-2 border border-stone-700 whitespace-nowrap w-[108px] min-w-[108px]">
                           <span
@@ -1077,8 +1083,8 @@ const DFSPicksProjections = ({ eventTitle = "", currentUser }) => {
           </div>
           {!openSections.matchupIntel && (
             <p className="text-stone-500 text-center text-xs mb-2">
-              Comprehensive fight predictions using all stats, records & fight history.
-              Click the header to expand.
+              Comprehensive fight predictions using all stats, records & fight
+              history. Click the header to expand.
             </p>
           )}
           {openSections.matchupIntel && (

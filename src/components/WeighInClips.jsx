@@ -1,8 +1,9 @@
 /**
  * WeighInClips.jsx
  *
- * Displays weigh-in video placeholder cards for each fighter.
- * No external iframes — just a clean placeholder until real clips are added.
+ * Displays weigh-in video clips for fighters that have a weighInVideoId set.
+ * Hidden entirely when no fighters have videos assigned yet.
+ * Each fighter card shows a YouTube embed when weighInVideoId is present.
  */
 
 import { memo } from "react";
@@ -14,13 +15,17 @@ const FALLBACK_AVATAR =
 const WeighInClips = memo(({ fighters }) => {
   if (!fighters || fighters.length === 0) return null;
 
+  // Only show the section if at least one fighter has a real weigh-in video
+  const fightersWithVideos = fighters.filter((f) => f.weighInVideoId);
+  if (fightersWithVideos.length === 0) return null;
+
   return (
     <div className="mt-6 border-t border-stone-700 pt-6">
       <h3 className="text-stone-300 text-lg font-bold mb-4 uppercase tracking-wide">
         Weigh-In Clips
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {fighters.map((fighter) => (
+        {fightersWithVideos.map((fighter) => (
           <div
             key={fighter.name}
             className="border border-stone-700 rounded-lg p-4 bg-stone-900"
@@ -37,21 +42,18 @@ const WeighInClips = memo(({ fighters }) => {
               />
               <div>
                 <h4 className="text-stone-100 font-semibold">{fighter.name}</h4>
-                <p className="text-stone-500 text-sm">
-                  Weigh-In Moment (5–10 sec)
-                </p>
+                <p className="text-stone-500 text-sm">Weigh-In</p>
               </div>
             </div>
-            <div
-              className="relative w-full rounded bg-stone-800 border border-stone-700 flex items-center justify-center"
-              style={{ paddingBottom: "56.25%" }}
-            >
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-stone-500">
-                <span className="text-3xl mb-2">🎬</span>
-                <p className="text-xs font-semibold uppercase tracking-wide">
-                  Weigh-In Clip Coming Soon
-                </p>
-              </div>
+            <div className="relative w-full rounded overflow-hidden" style={{ paddingBottom: "56.25%" }}>
+              <iframe
+                className="absolute inset-0 w-full h-full"
+                src={`https://www.youtube.com/embed/${fighter.weighInVideoId}`}
+                title={`${fighter.name} weigh-in`}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
             </div>
           </div>
         ))}
@@ -59,5 +61,7 @@ const WeighInClips = memo(({ fighters }) => {
     </div>
   );
 });
+
+WeighInClips.displayName = "WeighInClips";
 
 export default WeighInClips;
