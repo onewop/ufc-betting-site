@@ -1619,7 +1619,6 @@ const FightAnalyzer = ({
                 <div className="p-5 sm:p-6">
                   {/* Fighters side by side */}
                   <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3 sm:gap-6">
-
                     {/* Fighter 1 */}
                     <div className="flex flex-col items-center text-center">
                       <FighterImage
@@ -1640,11 +1639,16 @@ const FightAnalyzer = ({
                         <div className="h-2 bg-stone-800 rounded-full overflow-hidden">
                           <div
                             className="h-full bg-gradient-to-r from-red-700 to-red-500 rounded-full transition-all duration-500"
-                            style={{ width: `${pred.winner.name === f1.name ? pred.winner.winProb : pred.loser.winProb}%` }}
+                            style={{
+                              width: `${pred.winner.name === f1.name ? pred.winner.winProb : pred.loser.winProb}%`,
+                            }}
                           />
                         </div>
                         <p className="text-[11px] font-mono mt-1 text-red-400">
-                          {pred.winner.name === f1.name ? pred.winner.winProb : pred.loser.winProb}% WIN
+                          {pred.winner.name === f1.name
+                            ? pred.winner.winProb
+                            : pred.loser.winProb}
+                          % WIN
                         </p>
                       </div>
                     </div>
@@ -1676,11 +1680,16 @@ const FightAnalyzer = ({
                         <div className="h-2 bg-stone-800 rounded-full overflow-hidden">
                           <div
                             className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full transition-all duration-500"
-                            style={{ width: `${pred.winner.name === f2.name ? pred.winner.winProb : pred.loser.winProb}%` }}
+                            style={{
+                              width: `${pred.winner.name === f2.name ? pred.winner.winProb : pred.loser.winProb}%`,
+                            }}
                           />
                         </div>
                         <p className="text-[11px] font-mono mt-1 text-emerald-400">
-                          {pred.winner.name === f2.name ? pred.winner.winProb : pred.loser.winProb}% WIN
+                          {pred.winner.name === f2.name
+                            ? pred.winner.winProb
+                            : pred.loser.winProb}
+                          % WIN
                         </p>
                       </div>
                     </div>
@@ -1688,8 +1697,11 @@ const FightAnalyzer = ({
 
                   {/* Prediction confidence badge */}
                   <div className="mt-4 flex justify-center">
-                    <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold tracking-widest uppercase ${CONFIDENCE_LEVELS[pred.confidence].badge}`}>
-                      {pred.winner.name.split(" ").pop()} favored — {CONFIDENCE_LEVELS[pred.confidence].label}
+                    <span
+                      className={`text-[10px] px-2.5 py-1 rounded-full font-bold tracking-widest uppercase ${CONFIDENCE_LEVELS[pred.confidence].badge}`}
+                    >
+                      {pred.winner.name.split(" ").pop()} favored —{" "}
+                      {CONFIDENCE_LEVELS[pred.confidence].label}
                     </span>
                   </div>
 
