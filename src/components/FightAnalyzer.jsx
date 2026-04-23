@@ -8,6 +8,7 @@ import { predictFight, CONFIDENCE_LEVELS } from "./fightAnalyzerHelpers";
 import api from "../services/api";
 import FightStatsSection from "./FightStatsSection";
 import MatchupIntel from "./MatchupIntel";
+import FighterImage from "./FighterImage";
 
 const FightAnalyzer = ({
   eventTitle = "Latest UFC Event",
@@ -38,6 +39,7 @@ const FightAnalyzer = ({
   const [selectedFighterForRecord, setSelectedFighterForRecord] =
     useState(null);
   const scrollContentRef = useRef(null);
+  const statsRef = useRef(null);
 
   const openRecordModal = useCallback((fighter) => {
     setSelectedFighterForRecord(fighter);
@@ -46,6 +48,23 @@ const FightAnalyzer = ({
 
   const closeRecordModal = useCallback(() => {
     setShowRecordModal(false);
+  }, []);
+
+  const openFullStats = useCallback((fight) => {
+    setSelectedFight(String(fight.fight_id));
+    setQuestion("Who wins? Overall fight prediction.");
+    setActiveTab("basics");
+    setTimeout(() => {
+      statsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 120);
+  }, []);
+
+  const openHighlights = useCallback((fight) => {
+    setSelectedFight(String(fight.fight_id));
+    setActiveTab("basics");
+    setTimeout(() => {
+      statsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 120);
   }, []);
 
   // Reset scroll to top after AnimatePresence has mounted the DOM node
@@ -1561,107 +1580,142 @@ const FightAnalyzer = ({
         </div>
 
         {/* Custom fight dropdown — replaces native <select> to fix invisible options on Android WebView */}
-        <div
-          ref={fightDropdownRef}
-          className="relative w-full md:w-1/3 mb-4"
-          onBlur={(e) => {
-            if (!fightDropdownRef.current?.contains(e.relatedTarget)) {
-              setFightDropdownOpen(false);
-            }
-          }}
-        >
-          <button
-            type="button"
-            onClick={() => setFightDropdownOpen((o) => !o)}
-            className="w-full min-h-[48px] flex items-center justify-between gap-2 border border-yellow-700/40 rounded-lg px-4 py-3 text-left bg-stone-950"
-            style={{
-              WebkitFontSmoothing: "antialiased",
-              MozOsxFontSmoothing: "grayscale",
-            }}
-          >
-            <span
-              className="truncate font-bold tracking-wide"
-              style={{
-                fontSize: 17,
-                color: "#ffffff",
-                textShadow: "0 0 1px rgba(255,255,255,0.3)",
-              }}
-            >
-              {selectedFight
-                ? (fights
-                    .find((f) => f.fight_id === parseInt(selectedFight))
-                    ?.fighters.map((f) => f.name)
-                    .join(" vs. ") ?? "Select a Fight...")
-                : "Select a Fight..."}
-            </span>
-            <svg
-              style={{ width: 16, height: 16, flexShrink: 0 }}
-              className={
-                "transition-transform text-stone-400 " +
-                (fightDropdownOpen ? "rotate-180" : "")
-              }
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.5}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </button>
+        {/* ── Fight Card Grid ── */}
+        <div className="grid grid-cols-1 gap-5 mb-10">
+          {fights.map((fight, idx) => {
+            if (fight.fighters.length < 2) return null;
+            const [f1, f2] = fight.fighters;
+            const pred = predictFight(f1, f2);
+            const isSelected = parseInt(selectedFight) === fight.fight_id;
 
-          {fightDropdownOpen && (
-            <ul
-              className="absolute z-50 w-full mt-1 border border-yellow-700/40 rounded-lg overflow-y-auto max-h-64 shadow-xl"
-              style={{
-                backgroundColor: "#111827",
-                WebkitFontSmoothing: "antialiased",
-                MozOsxFontSmoothing: "grayscale",
-              }}
-            >
-              <li>
-                <button
-                  type="button"
-                  className="w-full text-left px-4 py-3 font-medium"
-                  style={{ fontSize: 17, color: "#6b7280" }}
-                  onClick={() => {
-                    setSelectedFight("");
-                    setFightDropdownOpen(false);
-                  }}
-                >
-                  Select a Fight...
-                </button>
-              </li>
-              {fights.map((fight) => (
-                <li key={fight.fight_id}>
-                  <button
-                    type="button"
-                    className="w-full text-left px-4 py-3 font-bold tracking-wide"
-                    style={{
-                      fontSize: 17,
-                      color: "#ffffff",
-                      textShadow: "0 0 1px rgba(255,255,255,0.3)",
-                      backgroundColor:
-                        parseInt(selectedFight) === fight.fight_id
-                          ? "#1f2937"
-                          : undefined,
-                    }}
-                    onClick={() => {
-                      setSelectedFight(String(fight.fight_id));
-                      setQuestion("Who wins? Overall fight prediction.");
-                      setFightDropdownOpen(false);
-                    }}
-                  >
-                    {fight.fighters.map((f) => f.name).join(" vs. ")}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+            return (
+              <div
+                key={fight.fight_id}
+                className={`bg-stone-900 border rounded-2xl overflow-hidden transition-all duration-300 ${
+                  isSelected
+                    ? "border-yellow-600 shadow-[0_0_24px_rgba(202,138,4,0.2)]"
+                    : "border-stone-700 hover:border-yellow-700/60 hover:shadow-xl"
+                }`}
+              >
+                {/* Card header */}
+                <div className="bg-stone-950 px-5 py-3 border-b border-stone-800 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-mono text-stone-500">
+                      FIGHT #{idx + 1}
+                    </span>
+                    {fight.weight_class && (
+                      <span className="px-2.5 py-0.5 text-[11px] font-mono bg-stone-800 text-yellow-500 rounded-full border border-yellow-700/30">
+                        {fight.weight_class}
+                      </span>
+                    )}
+                  </div>
+                  {isSelected && (
+                    <span className="text-[11px] font-mono text-yellow-500 tracking-widest uppercase">
+                      ◆ SELECTED
+                    </span>
+                  )}
+                </div>
+
+                <div className="p-5 sm:p-6">
+                  {/* Fighters side by side */}
+                  <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3 sm:gap-6">
+
+                    {/* Fighter 1 */}
+                    <div className="flex flex-col items-center text-center">
+                      <FighterImage
+                        name={f1.name}
+                        size="w-20 h-20 sm:w-28 sm:h-28"
+                        className="rounded-xl border-2 border-red-700/60 shadow-lg"
+                      />
+                      <h3 className="mt-3 text-sm sm:text-lg font-black text-white tracking-tight leading-tight">
+                        {f1.name}
+                      </h3>
+                      {f1.record && (
+                        <p className="text-stone-500 text-[11px] mt-0.5">
+                          {f1.record}
+                        </p>
+                      )}
+                      {/* Win prob bar */}
+                      <div className="w-full mt-3">
+                        <div className="h-2 bg-stone-800 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-red-700 to-red-500 rounded-full transition-all duration-500"
+                            style={{ width: `${pred.winner.name === f1.name ? pred.winner.winProb : pred.loser.winProb}%` }}
+                          />
+                        </div>
+                        <p className="text-[11px] font-mono mt-1 text-red-400">
+                          {pred.winner.name === f1.name ? pred.winner.winProb : pred.loser.winProb}% WIN
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* VS */}
+                    <div className="flex flex-col items-center justify-center pt-6 sm:pt-8">
+                      <span className="text-3xl sm:text-5xl font-black text-stone-700/70 tracking-tighter select-none">
+                        VS
+                      </span>
+                    </div>
+
+                    {/* Fighter 2 */}
+                    <div className="flex flex-col items-center text-center">
+                      <FighterImage
+                        name={f2.name}
+                        size="w-20 h-20 sm:w-28 sm:h-28"
+                        className="rounded-xl border-2 border-emerald-700/60 shadow-lg"
+                      />
+                      <h3 className="mt-3 text-sm sm:text-lg font-black text-white tracking-tight leading-tight">
+                        {f2.name}
+                      </h3>
+                      {f2.record && (
+                        <p className="text-stone-500 text-[11px] mt-0.5">
+                          {f2.record}
+                        </p>
+                      )}
+                      {/* Win prob bar */}
+                      <div className="w-full mt-3">
+                        <div className="h-2 bg-stone-800 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full transition-all duration-500"
+                            style={{ width: `${pred.winner.name === f2.name ? pred.winner.winProb : pred.loser.winProb}%` }}
+                          />
+                        </div>
+                        <p className="text-[11px] font-mono mt-1 text-emerald-400">
+                          {pred.winner.name === f2.name ? pred.winner.winProb : pred.loser.winProb}% WIN
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Prediction confidence badge */}
+                  <div className="mt-4 flex justify-center">
+                    <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold tracking-widest uppercase ${CONFIDENCE_LEVELS[pred.confidence].badge}`}>
+                      {pred.winner.name.split(" ").pop()} favored — {CONFIDENCE_LEVELS[pred.confidence].label}
+                    </span>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="mt-5 flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={() => openHighlights(fight)}
+                      className="flex-1 flex items-center justify-center gap-2 bg-stone-800 hover:bg-stone-700 border border-stone-700 hover:border-stone-600 px-4 py-2.5 rounded-xl text-xs font-mono tracking-wider text-stone-300 transition-all active:scale-95"
+                    >
+                      🎬 WATCH HIGHLIGHTS
+                    </button>
+                    <button
+                      onClick={() => openFullStats(fight)}
+                      className="flex-1 flex items-center justify-center gap-2 bg-yellow-900/30 hover:bg-yellow-900/50 border border-yellow-700/50 hover:border-yellow-600 px-4 py-2.5 rounded-xl text-xs font-mono tracking-wider text-yellow-400 transition-all active:scale-95"
+                    >
+                      📋 VIEW FULL INTEL
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
+
+        {/* Anchor for scroll-to-stats */}
+        <div ref={statsRef} />
 
         <div className="text-stone-300 mb-6">{answer}</div>
 
