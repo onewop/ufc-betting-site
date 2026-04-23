@@ -9,6 +9,7 @@ import api from "../services/api";
 import FightStatsSection from "./FightStatsSection";
 import MatchupIntel from "./MatchupIntel";
 import FighterImage from "./FighterImage";
+import FighterHighlights from "./FighterHighlights";
 
 const FightAnalyzer = ({
   eventTitle = "Latest UFC Event",
@@ -40,6 +41,7 @@ const FightAnalyzer = ({
     useState(null);
   const scrollContentRef = useRef(null);
   const statsRef = useRef(null);
+  const [highlightModalFight, setHighlightModalFight] = useState(null);
 
   const openRecordModal = useCallback((fighter) => {
     setSelectedFighterForRecord(fighter);
@@ -54,17 +56,10 @@ const FightAnalyzer = ({
     setSelectedFight(String(fight.fight_id));
     setQuestion("Who wins? Overall fight prediction.");
     setActiveTab("basics");
-    setTimeout(() => {
-      statsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 120);
   }, []);
 
   const openHighlights = useCallback((fight) => {
-    setSelectedFight(String(fight.fight_id));
-    setActiveTab("basics");
-    setTimeout(() => {
-      statsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 120);
+    setHighlightModalFight(fight);
   }, []);
 
   // Reset scroll to top after AnimatePresence has mounted the DOM node
@@ -1623,6 +1618,7 @@ const FightAnalyzer = ({
                     <div className="flex flex-col items-center text-center">
                       <FighterImage
                         name={f1.name}
+                        youtubeThumbnailId={f1.highlightVideoId || null}
                         size="w-20 h-20 sm:w-28 sm:h-28"
                         className="rounded-xl border-2 border-red-700/60 shadow-lg"
                       />
@@ -1664,6 +1660,7 @@ const FightAnalyzer = ({
                     <div className="flex flex-col items-center text-center">
                       <FighterImage
                         name={f2.name}
+                        youtubeThumbnailId={f2.highlightVideoId || null}
                         size="w-20 h-20 sm:w-28 sm:h-28"
                         className="rounded-xl border-2 border-emerald-700/60 shadow-lg"
                       />
@@ -2484,6 +2481,67 @@ const FightAnalyzer = ({
                 </div>
               </motion.div>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* === HIGHLIGHTS MODAL === */}
+      <AnimatePresence>
+        {highlightModalFight && (
+          <motion.div
+            key="highlights-modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+            style={{
+              backgroundColor: "rgba(0,0,0,0.82)",
+              backdropFilter: "blur(6px)",
+            }}
+            onClick={() => setHighlightModalFight(null)}
+          >
+            <motion.div
+              key="highlights-modal-content"
+              initial={{ scale: 0.92, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.94, opacity: 0, y: 12 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="relative bg-stone-900 rounded-2xl w-full max-w-lg"
+              style={{
+                boxShadow:
+                  "0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06)",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-stone-700/60">
+                <div>
+                  <p className="text-[10px] text-stone-500 uppercase tracking-[0.35em] mb-0.5">
+                    Career Highlights
+                  </p>
+                  <h2 className="text-base font-black text-stone-100 tracking-wide">
+                    {highlightModalFight.fighters
+                      .map((f) => f.name.split(" ").pop())
+                      .join(" vs. ")}
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setHighlightModalFight(null)}
+                  aria-label="Close highlights"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white text-lg transition-all hover:scale-110"
+                >
+                  ×
+                </button>
+              </div>
+              {/* Highlight thumbnails */}
+              <div className="p-5">
+                <FighterHighlights
+                  fighter1={highlightModalFight.fighters[0]}
+                  fighter2={highlightModalFight.fighters[1]}
+                />
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

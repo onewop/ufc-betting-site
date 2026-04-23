@@ -52,27 +52,36 @@ export const toKebabCase = (name) =>
 
 /**
  * FighterImage — displays a fighter headshot with:
+ *   • YouTube highlight thumbnail as primary source (when youtubeThumbnailId is provided)
  *   • Automatic path derivation from name (/images/fighters/first-last.jpg)
  *   • Initials avatar fallback (no external API — unique color per fighter)
  *   • Hover tooltip showing CC credit (if available)
  *   • Accessible alt text
  *
  * Props:
- *   name      {string}  Fighter's full name (required)
- *   src       {string}  Override image URL (optional)
- *   size      {string}  Tailwind sizing classes (default: "w-16 h-16 sm:w-20 sm:h-20")
- *   className {string}  Additional classes
- *   showName  {bool}    Show name label below image (default: false)
+ *   name               {string}  Fighter's full name (required)
+ *   src                {string}  Override image URL (optional)
+ *   youtubeThumbnailId {string}  YouTube video ID — uses hqdefault.jpg thumbnail (optional)
+ *   size               {string}  Tailwind sizing classes (default: "w-16 h-16 sm:w-20 sm:h-20")
+ *   className          {string}  Additional classes
+ *   showName           {bool}    Show name label below image (default: false)
  */
 const FighterImage = ({
   name,
   src,
+  youtubeThumbnailId,
   size = "w-16 h-16 sm:w-20 sm:h-20",
   className = "",
   showName = false,
 }) => {
   const key = toKebabCase(name);
-  const primarySrc = src || `/images/fighters/${key}.jpg`;
+  // Fallback chain: explicit src → YouTube thumb → local jpg → local png → initials
+  const primarySrc =
+    src ||
+    (youtubeThumbnailId
+      ? `https://img.youtube.com/vi/${youtubeThumbnailId}/hqdefault.jpg`
+      : null) ||
+    `/images/fighters/${key}.jpg`;
   const credit = CREDITS[key] || null;
   const altText = `${name} UFC fighter portrait`;
 
@@ -81,12 +90,15 @@ const FighterImage = ({
   const [showInitials, setShowInitials] = useState(false);
 
   const handleError = () => {
-    if (!triedPng && imgSrc.endsWith(".jpg")) {
-      // Step 1: try .png variant
+    if (imgSrc.includes("youtube.com")) {
+      // YouTube thumb failed → fall back to local jpg
+      setImgSrc(`/images/fighters/${key}.jpg`);
+    } else if (!triedPng && imgSrc.endsWith(".jpg")) {
+      // Local jpg failed → try .png variant
       setImgSrc(`/images/fighters/${key}.png`);
       setTriedPng(true);
     } else {
-      // Step 2: give up on images — show initials avatar
+      // All image sources exhausted — show initials avatar
       setShowInitials(true);
     }
   };

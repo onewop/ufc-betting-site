@@ -26,7 +26,6 @@
 import { memo } from "react";
 import WeighInClips from "./WeighInClips";
 import KeyNotes from "./KeyNotes";
-import FighterHighlights from "./FighterHighlights";
 
 /* ── FightStatsSection ────────────────────────────────────────────────────── */
 
@@ -423,12 +422,6 @@ const FightStatsSection = memo(
           </summary>
 
           <div className="border-t border-yellow-700/30 p-4 sm:p-6">
-            {/* ── Fighter highlight video thumbnails (comparison view only) ── */}
-            <FighterHighlights
-              fighter1={fight.fighters[0]}
-              fighter2={fight.fighters[1]}
-            />
-
             {/* Desktop tab bar */}
             <div className="hidden md:flex flex-wrap gap-2 mb-6 border-b border-gray-600 pb-4">
               {tabList.map((tab) => (
