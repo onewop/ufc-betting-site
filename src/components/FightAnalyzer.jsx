@@ -55,7 +55,7 @@ const FightAnalyzer = ({
 
   const openFullStats = useCallback((fight) => {
     setExpandedFightId((prev) =>
-      prev === fight.fight_id ? null : fight.fight_id
+      prev === fight.fight_id ? null : fight.fight_id,
     );
     setSelectedFight(String(fight.fight_id));
     setQuestion("Who wins? Overall fight prediction.");
@@ -1791,10 +1791,8 @@ const FightAnalyzer = ({
                             matchEvent.bookmakers,
                             f2.name,
                           );
-                          const f1Fav =
-                            o1 != null && o2 != null && o1 < o2;
-                          const f2Fav =
-                            o1 != null && o2 != null && o2 < o1;
+                          const f1Fav = o1 != null && o2 != null && o1 < o2;
+                          const f2Fav = o1 != null && o2 != null && o2 < o1;
 
                           return (
                             <div className="mb-5 border border-yellow-700/40 rounded-lg overflow-hidden bg-stone-900">
@@ -1991,10 +1989,8 @@ const FightAnalyzer = ({
                                   <div className="space-y-3">
                                     {Object.entries(pred.catLabels).map(
                                       ([key, label]) => {
-                                        const wScore =
-                                          wBreak[key]?.score ?? 50;
-                                        const lScore =
-                                          lBreak[key]?.score ?? 50;
+                                        const wScore = wBreak[key]?.score ?? 50;
+                                        const lScore = lBreak[key]?.score ?? 50;
                                         const isWinnerCat =
                                           pred.catWins.winner.includes(key);
                                         const isLoserCat =
