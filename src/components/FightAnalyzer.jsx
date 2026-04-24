@@ -148,13 +148,19 @@ const FightAnalyzer = ({
 
   // Community votes: { [fight_id]: { [fighterName]: count } }
   const [communityVotes, setCommunityVotes] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("cv_votes") || "{}"); }
-    catch { return {}; }
+    try {
+      return JSON.parse(localStorage.getItem("cv_votes") || "{}");
+    } catch {
+      return {};
+    }
   });
   // Which fighter the current browser user voted for per fight
   const [userVotes, setUserVotes] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("cv_uservotes") || "{}"); }
-    catch { return {}; }
+    try {
+      return JSON.parse(localStorage.getItem("cv_uservotes") || "{}");
+    } catch {
+      return {};
+    }
   });
   const [voteFlash, setVoteFlash] = useState({});
 
@@ -191,13 +197,17 @@ const FightAnalyzer = ({
           ...prev,
           [key]: { ...current, [fighterName]: (current[fighterName] || 0) + 1 },
         };
-        try { localStorage.setItem("cv_votes", JSON.stringify(updated)); } catch {}
+        try {
+          localStorage.setItem("cv_votes", JSON.stringify(updated));
+        } catch {}
         return updated;
       });
 
       setUserVotes((prev) => {
         const updated = { ...prev, [key]: fighterName };
-        try { localStorage.setItem("cv_uservotes", JSON.stringify(updated)); } catch {}
+        try {
+          localStorage.setItem("cv_uservotes", JSON.stringify(updated));
+        } catch {}
         return updated;
       });
 

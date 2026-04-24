@@ -38,7 +38,9 @@ function FightRow({ fight }) {
           {fight.bout}
         </p>
         {fight.weight_class && (
-          <p className="text-[10px] text-stone-500 mt-0.5">{fight.weight_class}</p>
+          <p className="text-[10px] text-stone-500 mt-0.5">
+            {fight.weight_class}
+          </p>
         )}
       </div>
 
@@ -384,7 +386,9 @@ export default function PredictionTrackRecord() {
                 />
               </div>
               <div className="flex justify-between mt-1.5">
-                <span className="text-[10px] font-mono text-yellow-600">0%</span>
+                <span className="text-[10px] font-mono text-yellow-600">
+                  0%
+                </span>
                 <span className="text-[10px] font-mono text-yellow-600">
                   {pct(stats.totalWins, stats.total)} win rate
                 </span>

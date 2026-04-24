@@ -252,8 +252,8 @@ const AppShell = () => {
               </span>
             </Link>
 
-            {/* Desktop links — lg+ (1024px) */}
-            <ul className="hidden lg:flex items-center gap-0.5">
+            {/* Desktop links — xl+ (1280px) */}
+            <ul className="hidden xl:flex items-center gap-0.5">
               {navLinks.map(({ to, label }) => {
                 const isActive =
                   to === "/"
@@ -280,7 +280,7 @@ const AppShell = () => {
             </ul>
 
             {/* Desktop auth / user controls */}
-            <div className="hidden lg:flex items-center gap-2 shrink-0">
+            <div className="hidden xl:flex items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() =>
@@ -367,7 +367,7 @@ const AppShell = () => {
             </div>
 
             {/* Mobile: theme + avatar + hamburger */}
-            <div className="flex lg:hidden items-center gap-1">
+            <div className="flex xl:hidden items-center gap-1">
               <button
                 type="button"
                 onClick={() =>
@@ -407,7 +407,7 @@ const AppShell = () => {
 
         {/* ── Mobile drawer ── */}
         {menuOpen && (
-          <div className="lg:hidden border-t border-yellow-900/30 bg-stone-950/98 backdrop-blur-sm">
+          <div className="xl:hidden border-t border-yellow-900/30 bg-stone-950/98 backdrop-blur-sm">
             {/* User identity row */}
             {currentUser && (
               <div className="px-5 py-3.5 border-b border-stone-800/80 flex items-center gap-3">
