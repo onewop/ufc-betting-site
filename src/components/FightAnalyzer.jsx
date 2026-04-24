@@ -11,6 +11,108 @@ import MatchupIntel from "./MatchupIntel";
 import FighterImage from "./FighterImage";
 import FighterHighlights from "./FighterHighlights";
 
+// ── Community Vote helpers ──────────────────────────────────────────────────
+const VoteBar = memo(function VoteBar({ name, pct, color, isVoted }) {
+  const barColor =
+    color === "red"
+      ? "bg-gradient-to-r from-red-700 to-red-500"
+      : "bg-gradient-to-r from-emerald-700 to-emerald-500";
+  const pctColor = color === "red" ? "text-red-400" : "text-emerald-400";
+  return (
+    <div className="flex items-center gap-2">
+      <span
+        className={`text-[11px] font-bold w-24 truncate text-right shrink-0 ${isVoted ? "text-yellow-300" : "text-stone-400"}`}
+      >
+        {isVoted ? "▶ " : ""}
+        {name.split(" ").pop()}
+      </span>
+      <div className="flex-1 h-2 bg-stone-800 rounded-full overflow-hidden">
+        <div
+          className={`h-full ${barColor} rounded-full transition-all duration-700`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className={`text-[11px] font-mono w-8 shrink-0 ${pctColor}`}>
+        {pct}%
+      </span>
+    </div>
+  );
+});
+
+const CommunityVoteBox = memo(function CommunityVoteBox({
+  fight,
+  f1,
+  f2,
+  userVote,
+  votes,
+  flash,
+  onVote,
+}) {
+  const f1Votes = (votes && votes[f1.name]) || 0;
+  const f2Votes = (votes && votes[f2.name]) || 0;
+  const total = f1Votes + f2Votes;
+  const f1Pct = total > 0 ? Math.round((f1Votes / total) * 100) : 50;
+  const f2Pct = total > 0 ? 100 - f1Pct : 50;
+  const hasVoted = !!userVote;
+
+  return (
+    <div className="mt-5">
+      <div className="bg-stone-950/80 border border-yellow-700/40 rounded-2xl p-4">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-[11px] font-mono text-yellow-500 tracking-widest uppercase">
+            ⚔ Who Wins?
+          </p>
+          {total > 0 && (
+            <p className="text-[10px] font-mono text-stone-500">
+              {total.toLocaleString()} votes
+            </p>
+          )}
+        </div>
+
+        {flash ? (
+          <div className="flex items-center justify-center py-1 gap-2">
+            <span className="text-yellow-400 text-sm font-bold tracking-wide">
+              ✓ Vote recorded!
+            </span>
+          </div>
+        ) : !hasVoted ? (
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => onVote(fight.fight_id, f1.name)}
+              className="bg-red-900/30 hover:bg-red-800/50 border border-red-700/50 hover:border-red-500 px-3 py-2.5 rounded-xl text-xs font-bold text-red-300 hover:text-white transition-all active:scale-95 truncate"
+            >
+              {f1.name.split(" ").pop()}
+            </button>
+            <button
+              onClick={() => onVote(fight.fight_id, f2.name)}
+              className="bg-emerald-900/30 hover:bg-emerald-800/50 border border-emerald-700/50 hover:border-emerald-500 px-3 py-2.5 rounded-xl text-xs font-bold text-emerald-300 hover:text-white transition-all active:scale-95 truncate"
+            >
+              {f2.name.split(" ").pop()}
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <VoteBar
+              name={f1.name}
+              pct={f1Pct}
+              color="red"
+              isVoted={userVote === f1.name}
+            />
+            <VoteBar
+              name={f2.name}
+              pct={f2Pct}
+              color="emerald"
+              isVoted={userVote === f2.name}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+});
+// ────────────────────────────────────────────────────────────────────────────
+
 const FightAnalyzer = ({
   eventTitle = "Latest UFC Event",
   currentUser = null,
@@ -44,6 +146,18 @@ const FightAnalyzer = ({
   const statsRef = useRef(null);
   const [highlightModalFight, setHighlightModalFight] = useState(null);
 
+  // Community votes: { [fight_id]: { [fighterName]: count } }
+  const [communityVotes, setCommunityVotes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("cv_votes") || "{}"); }
+    catch { return {}; }
+  });
+  // Which fighter the current browser user voted for per fight
+  const [userVotes, setUserVotes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("cv_uservotes") || "{}"); }
+    catch { return {}; }
+  });
+  const [voteFlash, setVoteFlash] = useState({});
+
   const openRecordModal = useCallback((fighter) => {
     setSelectedFighterForRecord(fighter);
     setShowRecordModal(true);
@@ -65,6 +179,40 @@ const FightAnalyzer = ({
   const openHighlights = useCallback((fight) => {
     setHighlightModalFight(fight);
   }, []);
+
+  const handleVote = useCallback(
+    (fightId, fighterName) => {
+      const key = String(fightId);
+      if (userVotes[key]) return; // already voted
+
+      setCommunityVotes((prev) => {
+        const current = prev[key] || {};
+        const updated = {
+          ...prev,
+          [key]: { ...current, [fighterName]: (current[fighterName] || 0) + 1 },
+        };
+        try { localStorage.setItem("cv_votes", JSON.stringify(updated)); } catch {}
+        return updated;
+      });
+
+      setUserVotes((prev) => {
+        const updated = { ...prev, [key]: fighterName };
+        try { localStorage.setItem("cv_uservotes", JSON.stringify(updated)); } catch {}
+        return updated;
+      });
+
+      // Flash "thank you" for 2 seconds
+      setVoteFlash((prev) => ({ ...prev, [key]: true }));
+      setTimeout(
+        () => setVoteFlash((prev) => ({ ...prev, [key]: false })),
+        2000,
+      );
+
+      // Send to backend (fire-and-forget — endpoint wired up later)
+      api.post(`/votes/${fightId}`, { fighter: fighterName }).catch(() => {});
+    },
+    [userVotes],
+  );
 
   // Reset scroll to top after AnimatePresence has mounted the DOM node
   useEffect(() => {
@@ -1734,6 +1882,17 @@ const FightAnalyzer = ({
                         {CONFIDENCE_LEVELS[pred.confidence].label}
                       </span>
                     </div>
+
+                    {/* Community vote */}
+                    <CommunityVoteBox
+                      fight={fight}
+                      f1={f1}
+                      f2={f2}
+                      userVote={userVotes[String(fight.fight_id)]}
+                      votes={communityVotes[String(fight.fight_id)]}
+                      flash={!!voteFlash[String(fight.fight_id)]}
+                      onVote={handleVote}
+                    />
 
                     {/* Action buttons */}
                     <div className="mt-5 flex flex-col sm:flex-row gap-3">
