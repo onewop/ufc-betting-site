@@ -1616,18 +1616,18 @@ const FightAnalyzer = ({
                     )}
                   </div>
 
-                  <div className="p-5 sm:p-8">
+                  <div className="p-5 sm:p-10">
                     {/* Fighters side by side */}
-                    <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3 sm:gap-8">
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3 sm:gap-10">
                       {/* Fighter 1 */}
                       <div className="flex flex-col items-center text-center">
                         <FighterImage
                           name={f1.name}
                           youtubeThumbnailId={f1.highlightVideoId || null}
-                          size="w-20 h-20 sm:w-40 sm:h-40"
-                          className="rounded-xl border-2 border-red-700/60 shadow-lg"
+                          size="w-20 h-20 sm:w-48 sm:h-48"
+                          className="rounded-2xl border-2 border-red-700/60 shadow-2xl ring-4 ring-red-700/20 ring-offset-2 ring-offset-stone-900"
                         />
-                        <h3 className="mt-3 text-sm sm:text-xl font-black text-white tracking-tight leading-tight">
+                        <h3 className="mt-4 text-sm sm:text-2xl font-black text-white tracking-tight leading-tight">
                           {f1.name}
                         </h3>
                         {f1.record && (
@@ -1654,7 +1654,7 @@ const FightAnalyzer = ({
                       </div>
 
                       {/* VS */}
-                      <div className="flex flex-col items-center justify-center pt-6 sm:pt-16">
+                      <div className="flex flex-col items-center justify-center pt-6 sm:pt-20">
                         <span className="text-3xl sm:text-5xl font-black text-stone-700/70 tracking-tighter select-none">
                           VS
                         </span>
@@ -1665,10 +1665,10 @@ const FightAnalyzer = ({
                         <FighterImage
                           name={f2.name}
                           youtubeThumbnailId={f2.highlightVideoId || null}
-                          size="w-20 h-20 sm:w-40 sm:h-40"
-                          className="rounded-xl border-2 border-emerald-700/60 shadow-lg"
+                          size="w-20 h-20 sm:w-48 sm:h-48"
+                          className="rounded-2xl border-2 border-emerald-700/60 shadow-2xl ring-4 ring-emerald-700/20 ring-offset-2 ring-offset-stone-900"
                         />
-                        <h3 className="mt-3 text-sm sm:text-xl font-black text-white tracking-tight leading-tight">
+                        <h3 className="mt-4 text-sm sm:text-2xl font-black text-white tracking-tight leading-tight">
                           {f2.name}
                         </h3>
                         {f2.record && (

@@ -316,7 +316,6 @@ const FightStatsSection = memo(
               </div>
             );
           })}
-
         </div>
       );
     };

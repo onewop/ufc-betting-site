@@ -233,239 +233,283 @@ const AppShell = () => {
       className={`min-h-screen nav-safe-bottom xl:pb-0 ${theme === "light" ? "theme-light bg-stone-100 text-stone-900" : "bg-gray-900"}`}
     >
       <nav
-        className="sticky top-0 z-50 text-stone-100 shadow-lg border-b border-yellow-900/60"
-        style={{
-          backgroundColor: "#92400e",
-          paddingTop: "env(safe-area-inset-top, 0px)",
-        }}
+        className="sticky top-0 z-50 bg-stone-950 border-b border-yellow-700/40 shadow-[0_2px_24px_rgba(0,0,0,0.7)]"
+        style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
       >
-        <div className="max-w-7xl mx-auto px-4 py-2 xl:py-3 flex items-center justify-between xl:justify-center flex-col">
-          {/* Desktop nav links — visible only at xl (1280px+) */}
-          <ul className="hidden xl:flex flex-wrap justify-center gap-x-5 gap-y-1">
-            {navLinks.map(({ to, label }) => (
-              <li key={to}>
-                <Link
-                  to={to}
-                  className="text-sm hover:underline whitespace-nowrap"
-                >
-                  {label}
-                </Link>
-              </li>
-            ))}
-            <li>
+        <div className="max-w-7xl mx-auto px-4">
+          {/* ── Main bar ── */}
+          <div className="flex items-center justify-between h-14">
+            {/* Brand */}
+            <Link
+              to="/"
+              className="flex items-center gap-2 shrink-0 group"
+              aria-label="Combat Vault home"
+            >
+              <span className="text-yellow-500 text-[11px] font-black tracking-[0.35em] uppercase group-hover:text-yellow-400 transition-colors">
+                ⚡ COMBAT VAULT
+              </span>
+            </Link>
+
+            {/* Desktop links — lg+ (1024px) */}
+            <ul className="hidden lg:flex items-center gap-0.5">
+              {navLinks.map(({ to, label }) => {
+                const isActive =
+                  to === "/"
+                    ? location.pathname === "/"
+                    : location.pathname.startsWith(to);
+                return (
+                  <li key={to}>
+                    <Link
+                      to={to}
+                      className={`relative px-3 py-2 text-[11px] font-bold tracking-wider uppercase transition-all rounded-lg whitespace-nowrap ${
+                        isActive
+                          ? "text-yellow-400 bg-yellow-900/25"
+                          : "text-stone-400 hover:text-stone-100 hover:bg-stone-800/70"
+                      }`}
+                    >
+                      {isActive && (
+                        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-yellow-500 rounded-full" />
+                      )}
+                      {label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+
+            {/* Desktop auth / user controls */}
+            <div className="hidden lg:flex items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() =>
                   setTheme((prev) => (prev === "dark" ? "light" : "dark"))
                 }
-                className="border border-yellow-200/40 rounded px-2 py-1 text-xs uppercase tracking-wider hover:bg-yellow-900/30 transition"
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-stone-500 hover:text-stone-300 hover:bg-stone-800 transition text-sm"
                 aria-label="Toggle theme"
               >
-                {theme === "dark" ? "Light" : "Dark"}
+                {theme === "dark" ? "☀" : "☾"}
               </button>
-            </li>
-            {currentUser && !checkIsPro(currentUser) && (
-              <li>
+
+              {currentUser && !checkIsPro(currentUser) && (
                 <button
                   onClick={handleUpgrade}
-                  className="border border-green-500/40 rounded px-2 py-1 text-xs uppercase tracking-wider hover:bg-green-900/30 transition text-green-400"
+                  className="text-[11px] font-bold uppercase tracking-wide text-green-400 border border-green-600/40 px-3 py-1.5 rounded-lg hover:bg-green-900/30 transition"
                 >
-                  Upgrade Pro
+                  ⬆ Pro
                 </button>
-              </li>
-            )}
-            {currentUser ? (
-              <>
-                <li>
-                  <Link
-                    to="/dashboard"
-                    className="text-sm hover:underline whitespace-nowrap"
-                  >
-                    Dashboard
-                  </Link>
-                </li>
-                <li className="relative">
+              )}
+
+              {currentUser ? (
+                <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="text-sm hover:underline whitespace-nowrap flex items-center gap-1"
+                    className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-stone-800 transition"
                   >
-                    {currentUser.username || currentUser.email} ▼
+                    <span className="w-7 h-7 rounded-full bg-yellow-900/70 text-yellow-400 text-xs font-black border border-yellow-700/50 flex items-center justify-center">
+                      {(currentUser.username || currentUser.email || "?")
+                        .charAt(0)
+                        .toUpperCase()}
+                    </span>
+                    <span className="text-stone-400 text-xs hidden xl:block max-w-[120px] truncate">
+                      {currentUser.username || currentUser.email}
+                    </span>
+                    <span className="text-stone-600 text-[10px]">▾</span>
                   </button>
                   {dropdownOpen && (
                     <div
                       ref={dropdownRef}
-                      className="absolute top-full right-0 mt-1 bg-stone-800 border border-stone-600 rounded p-2 z-50"
+                      className="absolute top-full right-0 mt-2 bg-stone-900 border border-stone-700/80 rounded-xl shadow-2xl p-1.5 min-w-[160px] z-50"
                     >
+                      {checkIsPro(currentUser) && (
+                        <div className="px-3 py-1.5 mb-1 border-b border-stone-800">
+                          <span className="text-[10px] uppercase tracking-widest text-yellow-600 font-bold">
+                            ⚡ Pro Member
+                          </span>
+                        </div>
+                      )}
+                      <Link
+                        to="/dashboard"
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 text-xs text-stone-300 hover:text-white hover:bg-stone-800 rounded-lg transition"
+                      >
+                        Dashboard
+                      </Link>
                       <button
-                        onClick={handleLogout}
-                        className="text-xs text-stone-300 hover:text-white"
+                        onClick={() => {
+                          handleLogout();
+                          setDropdownOpen(false);
+                        }}
+                        className="w-full text-left flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-stone-800 rounded-lg transition mt-0.5"
                       >
                         Log Out
                       </button>
                     </div>
                   )}
-                </li>
-              </>
-            ) : (
-              <>
-                <li>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
                   <button
                     onClick={() => openAuth("login")}
-                    className="text-sm hover:underline whitespace-nowrap"
+                    className="text-[11px] font-bold uppercase tracking-wide text-stone-400 hover:text-stone-100 px-3 py-1.5 rounded-lg hover:bg-stone-800 transition"
                   >
                     Log In
                   </button>
-                </li>
-                <li>
                   <button
                     onClick={() => openAuth("register")}
-                    className="text-sm hover:underline whitespace-nowrap"
+                    className="text-[11px] font-bold uppercase tracking-wide text-stone-950 bg-yellow-500 hover:bg-yellow-400 px-3 py-1.5 rounded-lg transition shadow-lg"
                   >
                     Register
                   </button>
-                </li>
-              </>
-            )}
-          </ul>
+                </div>
+              )}
+            </div>
 
-          {/* Hamburger row — visible below xl (< 1280px) */}
-          <div className="w-full flex items-center justify-between xl:hidden">
-            <span className="font-bold tracking-wide text-sm sm:text-base truncate pr-2">
-              {eventTitle} - Combat Vault
-            </span>
-            <div className="flex items-center gap-2">
+            {/* Mobile: theme + avatar + hamburger */}
+            <div className="flex lg:hidden items-center gap-1">
               <button
                 type="button"
                 onClick={() =>
                   setTheme((prev) => (prev === "dark" ? "light" : "dark"))
                 }
-                className="min-h-[40px] px-2 border border-yellow-200/40 rounded text-xs uppercase tracking-wider"
+                className="w-9 h-9 flex items-center justify-center rounded-lg text-stone-500 hover:text-stone-300 hover:bg-stone-800 transition text-sm"
                 aria-label="Toggle theme"
               >
                 {theme === "dark" ? "☀" : "☾"}
               </button>
-              {currentUser && !menuOpen && (
-                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-yellow-900/70 text-yellow-400 text-xs font-bold border border-yellow-700/50">
+              {currentUser && (
+                <span className="w-7 h-7 rounded-full bg-yellow-900/70 text-yellow-400 text-xs font-black border border-yellow-700/50 flex items-center justify-center">
                   {(currentUser.username || currentUser.email || "?")
                     .charAt(0)
                     .toUpperCase()}
                 </span>
               )}
               <button
-                className="flex flex-col gap-1.5 p-2 focus:outline-none min-h-[44px] min-w-[44px] items-center justify-center"
+                className="w-10 h-10 flex flex-col items-center justify-center gap-[5px] rounded-lg hover:bg-stone-800 transition focus:outline-none"
                 onClick={() => setMenuOpen((o) => !o)}
-                aria-label="Toggle menu"
+                aria-label={menuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={menuOpen}
               >
                 <span
-                  className={`block h-0.5 w-6 bg-stone-100 transition-transform duration-200 ${menuOpen ? "translate-y-2 rotate-45" : ""}`}
+                  className={`block h-0.5 w-5 bg-stone-300 transition-all duration-200 origin-center ${menuOpen ? "translate-y-[7px] rotate-45" : ""}`}
                 />
                 <span
-                  className={`block h-0.5 w-6 bg-stone-100 transition-opacity duration-200 ${menuOpen ? "opacity-0" : ""}`}
+                  className={`block h-0.5 w-5 bg-stone-300 transition-all duration-200 ${menuOpen ? "opacity-0 scale-x-0" : ""}`}
                 />
                 <span
-                  className={`block h-0.5 w-6 bg-stone-100 transition-transform duration-200 ${menuOpen ? "-translate-y-2 -rotate-45" : ""}`}
+                  className={`block h-0.5 w-5 bg-stone-300 transition-all duration-200 origin-center ${menuOpen ? "-translate-y-[7px] -rotate-45" : ""}`}
                 />
               </button>
             </div>
           </div>
+        </div>
 
-          {/* Hamburger dropdown */}
-          {menuOpen && (
-            <ul className="xl:hidden flex flex-col border-t border-yellow-900/60 w-full bg-stone-900">
-              {currentUser && (
-                <li className="px-6 py-3 border-b border-yellow-900/40 flex items-center gap-2">
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-yellow-900/50 text-yellow-400 text-xs font-bold">
-                    {(currentUser.username || currentUser.email || "?")
-                      .charAt(0)
-                      .toUpperCase()}
-                  </span>
-                  <span className="text-yellow-400 text-sm font-medium truncate">
+        {/* ── Mobile drawer ── */}
+        {menuOpen && (
+          <div className="lg:hidden border-t border-yellow-900/30 bg-stone-950/98 backdrop-blur-sm">
+            {/* User identity row */}
+            {currentUser && (
+              <div className="px-5 py-3.5 border-b border-stone-800/80 flex items-center gap-3">
+                <span className="w-9 h-9 rounded-full bg-yellow-900/70 text-yellow-400 text-sm font-black border border-yellow-700/50 flex items-center justify-center shrink-0">
+                  {(currentUser.username || currentUser.email || "?")
+                    .charAt(0)
+                    .toUpperCase()}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-yellow-400 text-sm font-bold truncate">
                     {currentUser.username || currentUser.email}
-                  </span>
-                  {checkIsPro(currentUser) && (
-                    <span className="text-[10px] uppercase tracking-widest bg-yellow-600/30 text-yellow-400 px-1.5 py-0.5 rounded font-bold">
-                      Pro
-                    </span>
-                  )}
-                </li>
-              )}
-              {navLinks.map(({ to, label }) => (
-                <li key={to}>
+                  </p>
+                  <p className="text-[10px] uppercase tracking-widest text-stone-600">
+                    {checkIsPro(currentUser) ? "⚡ Pro Member" : "Free Tier"}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Nav links */}
+            <div className="py-2">
+              {navLinks.map(({ to, label }) => {
+                const isActive =
+                  to === "/"
+                    ? location.pathname === "/"
+                    : location.pathname.startsWith(to);
+                return (
                   <Link
+                    key={to}
                     to={to}
-                    className="block px-6 py-3 hover:bg-yellow-900/40 transition"
                     onClick={() => setMenuOpen(false)}
+                    className={`flex items-center px-5 py-3 text-sm font-bold uppercase tracking-wide transition-all border-l-2 ${
+                      isActive
+                        ? "text-yellow-400 bg-yellow-900/15 border-yellow-500"
+                        : "text-stone-400 hover:text-stone-100 hover:bg-stone-900/60 border-transparent"
+                    }`}
                   >
                     {label}
                   </Link>
-                </li>
-              ))}
+                );
+              })}
               {currentUser && (
-                <li>
-                  <Link
-                    to="/dashboard"
-                    className="block px-6 py-3 hover:bg-yellow-900/40 transition text-yellow-400"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Dashboard
-                  </Link>
-                </li>
+                <Link
+                  to="/dashboard"
+                  onClick={() => setMenuOpen(false)}
+                  className={`flex items-center px-5 py-3 text-sm font-bold uppercase tracking-wide transition-all border-l-2 ${
+                    location.pathname === "/dashboard"
+                      ? "text-yellow-400 bg-yellow-900/15 border-yellow-500"
+                      : "text-yellow-600 hover:text-yellow-400 hover:bg-stone-900/60 border-transparent"
+                  }`}
+                >
+                  Dashboard
+                </Link>
               )}
+            </div>
+
+            {/* Bottom actions */}
+            <div className="px-4 pb-4 pt-2 border-t border-stone-800/80 flex flex-col gap-2">
               {currentUser && !checkIsPro(currentUser) && (
-                <li>
-                  <button
-                    onClick={() => {
-                      handleUpgrade();
-                      setMenuOpen(false);
-                    }}
-                    className="block w-full text-left px-6 py-3 hover:bg-green-900/40 transition text-green-400"
-                  >
-                    Upgrade to Pro
-                  </button>
-                </li>
+                <button
+                  onClick={() => {
+                    handleUpgrade();
+                    setMenuOpen(false);
+                  }}
+                  className="w-full py-2.5 text-xs font-bold uppercase tracking-wide text-green-400 border border-green-600/40 rounded-xl hover:bg-green-900/25 transition"
+                >
+                  ⬆ Upgrade to Pro — $19.99/mo
+                </button>
               )}
-              {/* Auth buttons — always shown at bottom of mobile menu */}
               {currentUser ? (
-                <li>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setMenuOpen(false);
+                  }}
+                  className="w-full py-2.5 text-xs font-bold uppercase tracking-wide text-red-400 border border-red-700/30 rounded-xl hover:bg-red-900/20 transition"
+                >
+                  Log Out
+                </button>
+              ) : (
+                <div className="flex gap-2">
                   <button
                     onClick={() => {
-                      handleLogout();
+                      openAuth("login");
                       setMenuOpen(false);
                     }}
-                    className="block w-full text-left px-6 py-3 hover:bg-red-900/40 transition text-red-400 border-t border-yellow-900/40"
+                    className="flex-1 py-2.5 text-xs font-bold uppercase tracking-wide text-stone-300 border border-stone-700 rounded-xl hover:bg-stone-800 transition"
                   >
-                    Log Out
+                    Log In
                   </button>
-                </li>
-              ) : (
-                <>
-                  <li className="border-t border-yellow-900/40">
-                    <button
-                      onClick={() => {
-                        openAuth("login");
-                        setMenuOpen(false);
-                      }}
-                      className="block w-full text-left px-6 py-3 hover:bg-yellow-900/40 transition text-yellow-400 font-medium"
-                    >
-                      Log In
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      onClick={() => {
-                        openAuth("register");
-                        setMenuOpen(false);
-                      }}
-                      className="block w-full text-left px-6 py-3 hover:bg-yellow-900/40 transition text-yellow-300"
-                    >
-                      Register
-                    </button>
-                  </li>
-                </>
+                  <button
+                    onClick={() => {
+                      openAuth("register");
+                      setMenuOpen(false);
+                    }}
+                    className="flex-1 py-2.5 text-xs font-bold uppercase tracking-wide text-stone-950 bg-yellow-500 hover:bg-yellow-400 rounded-xl transition shadow-lg"
+                  >
+                    Register
+                  </button>
+                </div>
               )}
-            </ul>
-          )}
-        </div>
+            </div>
+          </div>
+        )}
       </nav>
       <div className="bg-gray-800 text-yellow-400 text-center py-2 sm:py-3 font-semibold text-sm sm:text-xl border-b border-yellow-900/60 px-3">
         {eventTitle}
