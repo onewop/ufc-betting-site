@@ -19,6 +19,7 @@ const FightAnalyzer = ({
   const [fights, setFights] = useState([]);
   const [highlightVideos, setHighlightVideos] = useState({});
   const [selectedFight, setSelectedFight] = useState("");
+  const [expandedFightId, setExpandedFightId] = useState(null);
   const [fightDropdownOpen, setFightDropdownOpen] = useState(false);
   const fightDropdownRef = useRef(null);
   const [question, setQuestion] = useState("");
@@ -53,6 +54,9 @@ const FightAnalyzer = ({
   }, []);
 
   const openFullStats = useCallback((fight) => {
+    setExpandedFightId((prev) =>
+      prev === fight.fight_id ? null : fight.fight_id
+    );
     setSelectedFight(String(fight.fight_id));
     setQuestion("Who wins? Overall fight prediction.");
     setActiveTab("basics");
@@ -104,9 +108,9 @@ const FightAnalyzer = ({
 
   // Single shared fight lookup — stable reference, prevents redundant .find() in each render block
   const selectedFightData = useMemo(() => {
-    if (!selectedFight) return null;
-    return fights.find((f) => f.fight_id === parseInt(selectedFight)) || null;
-  }, [selectedFight, fights]);
+    if (expandedFightId === null) return null;
+    return fights.find((f) => f.fight_id === expandedFightId) || null;
+  }, [expandedFightId, fights]);
 
   useEffect(() => {
     setError(null);
@@ -1581,497 +1585,503 @@ const FightAnalyzer = ({
             if (fight.fighters.length < 2) return null;
             const [f1, f2] = fight.fighters;
             const pred = predictFight(f1, f2);
-            const isSelected = parseInt(selectedFight) === fight.fight_id;
+            const isExpanded = expandedFightId === fight.fight_id;
 
             return (
-              <div
-                key={fight.fight_id}
-                className={`bg-stone-900 border rounded-2xl overflow-hidden transition-all duration-300 ${
-                  isSelected
-                    ? "border-yellow-600 shadow-[0_0_24px_rgba(202,138,4,0.2)]"
-                    : "border-stone-700 hover:border-yellow-700/60 hover:shadow-xl"
-                }`}
-              >
-                {/* Card header */}
-                <div className="bg-stone-950 px-5 py-3 border-b border-stone-800 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono text-stone-500">
-                      FIGHT #{idx + 1}
-                    </span>
-                    {fight.weight_class && (
-                      <span className="px-2.5 py-0.5 text-[11px] font-mono bg-stone-800 text-yellow-500 rounded-full border border-yellow-700/30">
-                        {fight.weight_class}
+              <div key={fight.fight_id}>
+                {/* ── Fight card ── */}
+                <div
+                  className={`bg-stone-900 border rounded-2xl overflow-hidden transition-all duration-300 ${
+                    isExpanded
+                      ? "border-yellow-500 shadow-[0_0_32px_rgba(202,138,4,0.28)] rounded-b-none"
+                      : "border-stone-700 hover:border-yellow-700/60 hover:shadow-xl"
+                  }`}
+                >
+                  {/* Card header */}
+                  <div className="bg-stone-950 px-5 py-3 border-b border-stone-800 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-mono text-stone-500">
+                        FIGHT #{idx + 1}
+                      </span>
+                      {fight.weight_class && (
+                        <span className="px-2.5 py-0.5 text-[11px] font-mono bg-stone-800 text-yellow-500 rounded-full border border-yellow-700/30">
+                          {fight.weight_class}
+                        </span>
+                      )}
+                    </div>
+                    {isExpanded && (
+                      <span className="text-[11px] font-mono text-yellow-500 tracking-widest uppercase">
+                        ◆ INTEL OPEN
                       </span>
                     )}
                   </div>
-                  {isSelected && (
-                    <span className="text-[11px] font-mono text-yellow-500 tracking-widest uppercase">
-                      ◆ SELECTED
-                    </span>
-                  )}
-                </div>
 
-                <div className="p-5 sm:p-6">
-                  {/* Fighters side by side */}
-                  <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3 sm:gap-6">
-                    {/* Fighter 1 */}
-                    <div className="flex flex-col items-center text-center">
-                      <FighterImage
-                        name={f1.name}
-                        youtubeThumbnailId={f1.highlightVideoId || null}
-                        size="w-20 h-20 sm:w-28 sm:h-28"
-                        className="rounded-xl border-2 border-red-700/60 shadow-lg"
-                      />
-                      <h3 className="mt-3 text-sm sm:text-lg font-black text-white tracking-tight leading-tight">
-                        {f1.name}
-                      </h3>
-                      {f1.record && (
-                        <p className="text-stone-500 text-[11px] mt-0.5">
-                          {f1.record}
-                        </p>
-                      )}
-                      {/* Win prob bar */}
-                      <div className="w-full mt-3">
-                        <div className="h-2 bg-stone-800 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-gradient-to-r from-red-700 to-red-500 rounded-full transition-all duration-500"
-                            style={{
-                              width: `${pred.winner.name === f1.name ? pred.winner.winProb : pred.loser.winProb}%`,
-                            }}
-                          />
+                  <div className="p-5 sm:p-6">
+                    {/* Fighters side by side */}
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3 sm:gap-6">
+                      {/* Fighter 1 */}
+                      <div className="flex flex-col items-center text-center">
+                        <FighterImage
+                          name={f1.name}
+                          youtubeThumbnailId={f1.highlightVideoId || null}
+                          size="w-20 h-20 sm:w-28 sm:h-28"
+                          className="rounded-xl border-2 border-red-700/60 shadow-lg"
+                        />
+                        <h3 className="mt-3 text-sm sm:text-lg font-black text-white tracking-tight leading-tight">
+                          {f1.name}
+                        </h3>
+                        {f1.record && (
+                          <p className="text-stone-500 text-[11px] mt-0.5">
+                            {f1.record}
+                          </p>
+                        )}
+                        <div className="w-full mt-3">
+                          <div className="h-2 bg-stone-800 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-red-700 to-red-500 rounded-full transition-all duration-500"
+                              style={{
+                                width: `${pred.winner.name === f1.name ? pred.winner.winProb : pred.loser.winProb}%`,
+                              }}
+                            />
+                          </div>
+                          <p className="text-[11px] font-mono mt-1 text-red-400">
+                            {pred.winner.name === f1.name
+                              ? pred.winner.winProb
+                              : pred.loser.winProb}
+                            % WIN
+                          </p>
                         </div>
-                        <p className="text-[11px] font-mono mt-1 text-red-400">
-                          {pred.winner.name === f1.name
-                            ? pred.winner.winProb
-                            : pred.loser.winProb}
-                          % WIN
-                        </p>
+                      </div>
+
+                      {/* VS */}
+                      <div className="flex flex-col items-center justify-center pt-6 sm:pt-8">
+                        <span className="text-3xl sm:text-5xl font-black text-stone-700/70 tracking-tighter select-none">
+                          VS
+                        </span>
+                      </div>
+
+                      {/* Fighter 2 */}
+                      <div className="flex flex-col items-center text-center">
+                        <FighterImage
+                          name={f2.name}
+                          youtubeThumbnailId={f2.highlightVideoId || null}
+                          size="w-20 h-20 sm:w-28 sm:h-28"
+                          className="rounded-xl border-2 border-emerald-700/60 shadow-lg"
+                        />
+                        <h3 className="mt-3 text-sm sm:text-lg font-black text-white tracking-tight leading-tight">
+                          {f2.name}
+                        </h3>
+                        {f2.record && (
+                          <p className="text-stone-500 text-[11px] mt-0.5">
+                            {f2.record}
+                          </p>
+                        )}
+                        <div className="w-full mt-3">
+                          <div className="h-2 bg-stone-800 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full transition-all duration-500"
+                              style={{
+                                width: `${pred.winner.name === f2.name ? pred.winner.winProb : pred.loser.winProb}%`,
+                              }}
+                            />
+                          </div>
+                          <p className="text-[11px] font-mono mt-1 text-emerald-400">
+                            {pred.winner.name === f2.name
+                              ? pred.winner.winProb
+                              : pred.loser.winProb}
+                            % WIN
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    {/* VS */}
-                    <div className="flex flex-col items-center justify-center pt-6 sm:pt-8">
-                      <span className="text-3xl sm:text-5xl font-black text-stone-700/70 tracking-tighter select-none">
-                        VS
+                    {/* Prediction confidence badge */}
+                    <div className="mt-4 flex justify-center">
+                      <span
+                        className={`text-[10px] px-2.5 py-1 rounded-full font-bold tracking-widest uppercase ${CONFIDENCE_LEVELS[pred.confidence].badge}`}
+                      >
+                        {pred.winner.name.split(" ").pop()} favored —{" "}
+                        {CONFIDENCE_LEVELS[pred.confidence].label}
                       </span>
                     </div>
 
-                    {/* Fighter 2 */}
-                    <div className="flex flex-col items-center text-center">
-                      <FighterImage
-                        name={f2.name}
-                        youtubeThumbnailId={f2.highlightVideoId || null}
-                        size="w-20 h-20 sm:w-28 sm:h-28"
-                        className="rounded-xl border-2 border-emerald-700/60 shadow-lg"
-                      />
-                      <h3 className="mt-3 text-sm sm:text-lg font-black text-white tracking-tight leading-tight">
-                        {f2.name}
-                      </h3>
-                      {f2.record && (
-                        <p className="text-stone-500 text-[11px] mt-0.5">
-                          {f2.record}
-                        </p>
-                      )}
-                      {/* Win prob bar */}
-                      <div className="w-full mt-3">
-                        <div className="h-2 bg-stone-800 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full transition-all duration-500"
-                            style={{
-                              width: `${pred.winner.name === f2.name ? pred.winner.winProb : pred.loser.winProb}%`,
-                            }}
-                          />
-                        </div>
-                        <p className="text-[11px] font-mono mt-1 text-emerald-400">
-                          {pred.winner.name === f2.name
-                            ? pred.winner.winProb
-                            : pred.loser.winProb}
-                          % WIN
-                        </p>
-                      </div>
+                    {/* Action buttons */}
+                    <div className="mt-5 flex flex-col sm:flex-row gap-3">
+                      <button
+                        onClick={() => openHighlights(fight)}
+                        className="flex-1 flex items-center justify-center gap-2 bg-stone-800 hover:bg-stone-700 border border-stone-700 hover:border-stone-600 px-4 py-2.5 rounded-xl text-xs font-mono tracking-wider text-stone-300 transition-all active:scale-95"
+                      >
+                        🎬 WATCH HIGHLIGHTS
+                      </button>
+                      <button
+                        onClick={() => openFullStats(fight)}
+                        className={`flex-1 flex items-center justify-center gap-2 border px-4 py-2.5 rounded-xl text-xs font-mono tracking-wider transition-all active:scale-95 ${
+                          isExpanded
+                            ? "bg-yellow-600/20 hover:bg-yellow-600/30 border-yellow-500 text-yellow-300"
+                            : "bg-yellow-900/30 hover:bg-yellow-900/50 border-yellow-700/50 hover:border-yellow-600 text-yellow-400"
+                        }`}
+                      >
+                        {isExpanded ? "▲ HIDE INTEL" : "📋 VIEW FULL INTEL"}
+                      </button>
                     </div>
                   </div>
-
-                  {/* Prediction confidence badge */}
-                  <div className="mt-4 flex justify-center">
-                    <span
-                      className={`text-[10px] px-2.5 py-1 rounded-full font-bold tracking-widest uppercase ${CONFIDENCE_LEVELS[pred.confidence].badge}`}
-                    >
-                      {pred.winner.name.split(" ").pop()} favored —{" "}
-                      {CONFIDENCE_LEVELS[pred.confidence].label}
-                    </span>
-                  </div>
-
-                  {/* Action buttons */}
-                  <div className="mt-5 flex flex-col sm:flex-row gap-3">
-                    <button
-                      onClick={() => openHighlights(fight)}
-                      className="flex-1 flex items-center justify-center gap-2 bg-stone-800 hover:bg-stone-700 border border-stone-700 hover:border-stone-600 px-4 py-2.5 rounded-xl text-xs font-mono tracking-wider text-stone-300 transition-all active:scale-95"
-                    >
-                      🎬 WATCH HIGHLIGHTS
-                    </button>
-                    <button
-                      onClick={() => openFullStats(fight)}
-                      className="flex-1 flex items-center justify-center gap-2 bg-yellow-900/30 hover:bg-yellow-900/50 border border-yellow-700/50 hover:border-yellow-600 px-4 py-2.5 rounded-xl text-xs font-mono tracking-wider text-yellow-400 transition-all active:scale-95"
-                    >
-                      📋 VIEW FULL INTEL
-                    </button>
-                  </div>
                 </div>
+
+                {/* ── Inline accordion — stats panel ── */}
+                <AnimatePresence initial={false}>
+                  {isExpanded && (
+                    <motion.div
+                      key={`intel-${fight.fight_id}`}
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                      style={{ overflow: "hidden" }}
+                      className="border border-t-0 border-yellow-500 rounded-b-2xl bg-stone-950"
+                    >
+                      <div className="px-4 py-5 sm:px-6">
+                        {/* Live odds */}
+                        {(() => {
+                          const lastName = (name) =>
+                            name.trim().split(" ").pop().toLowerCase();
+                          const matchEvent = cachedOdds.find((ev) => {
+                            const names = [ev.home_team, ev.away_team].map(
+                              (n) => lastName(n),
+                            );
+                            return (
+                              names.includes(lastName(f1.name)) ||
+                              names.includes(lastName(f2.name))
+                            );
+                          });
+                          if (!matchEvent) return null;
+
+                          const fmt = (p) =>
+                            p == null ? "N/A" : p > 0 ? `+${p}` : `${p}`;
+                          const impliedProb = (p) => {
+                            if (p == null) return null;
+                            return p < 0
+                              ? ((-p / (-p + 100)) * 100).toFixed(0)
+                              : ((100 / (p + 100)) * 100).toFixed(0);
+                          };
+                          const bestOddsFor = (bookmakers, name) => {
+                            let best = null;
+                            const last = lastName(name);
+                            bookmakers.forEach((bm) => {
+                              const h2h = bm.markets.find(
+                                (m) => m.key === "h2h",
+                              );
+                              if (!h2h) return;
+                              const outcome = h2h.outcomes.find(
+                                (o) => lastName(o.name) === last,
+                              );
+                              if (
+                                outcome &&
+                                (best === null || outcome.price > best)
+                              )
+                                best = outcome.price;
+                            });
+                            return best;
+                          };
+
+                          const o1 = bestOddsFor(
+                            matchEvent.bookmakers,
+                            f1.name,
+                          );
+                          const o2 = bestOddsFor(
+                            matchEvent.bookmakers,
+                            f2.name,
+                          );
+                          const f1Fav =
+                            o1 != null && o2 != null && o1 < o2;
+                          const f2Fav =
+                            o1 != null && o2 != null && o2 < o1;
+
+                          return (
+                            <div className="mb-5 border border-yellow-700/40 rounded-lg overflow-hidden bg-stone-900">
+                              <div className="flex items-center justify-between px-3 py-1.5 border-b border-yellow-700/20 bg-yellow-900/10">
+                                <span className="text-yellow-500 text-xs font-bold tracking-widest uppercase">
+                                  ⚡ Live Odds
+                                </span>
+                                <span className="text-stone-500 text-xs">
+                                  {matchEvent.bookmakers.length} books · best
+                                  available
+                                </span>
+                              </div>
+                              <div className="hidden sm:grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 gap-2">
+                                <div>
+                                  <div className="text-stone-100 text-sm font-semibold">
+                                    {f1.name}
+                                  </div>
+                                  <div className="flex items-baseline gap-1.5 mt-0.5">
+                                    <span
+                                      className={`text-xl font-black ${f1Fav ? "text-red-400" : "text-green-400"}`}
+                                    >
+                                      {fmt(o1)}
+                                    </span>
+                                    {o1 != null && (
+                                      <span className="text-stone-500 text-xs">
+                                        {impliedProb(o1)}%
+                                      </span>
+                                    )}
+                                    {f1Fav && (
+                                      <span className="text-xs text-red-500/70 uppercase">
+                                        FAV
+                                      </span>
+                                    )}
+                                    {!f1Fav && o1 != null && (
+                                      <span className="text-xs text-green-500/70 uppercase">
+                                        DOG
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="text-stone-600 text-xs font-bold text-center px-2">
+                                  VS
+                                </div>
+                                <div className="items-end flex flex-col">
+                                  <div className="text-stone-100 text-sm font-semibold text-right">
+                                    {f2.name}
+                                  </div>
+                                  <div className="flex items-baseline gap-1.5 mt-0.5">
+                                    {f2Fav && (
+                                      <span className="text-xs text-red-500/70 uppercase">
+                                        FAV
+                                      </span>
+                                    )}
+                                    {!f2Fav && o2 != null && (
+                                      <span className="text-xs text-green-500/70 uppercase">
+                                        DOG
+                                      </span>
+                                    )}
+                                    {o2 != null && (
+                                      <span className="text-stone-500 text-xs">
+                                        {impliedProb(o2)}%
+                                      </span>
+                                    )}
+                                    <span
+                                      className={`text-xl font-black ${f2Fav ? "text-red-400" : "text-green-400"}`}
+                                    >
+                                      {fmt(o2)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="sm:hidden px-3 py-3 space-y-2">
+                                <div className="mobile-kv-row">
+                                  <span className="text-sm font-semibold text-stone-100 truncate pr-2">
+                                    {f1.name}
+                                  </span>
+                                  <span
+                                    className={`text-lg font-black ${f1Fav ? "text-red-400" : "text-green-400"}`}
+                                  >
+                                    {fmt(o1)}
+                                  </span>
+                                </div>
+                                <div className="mobile-kv-row">
+                                  <span className="text-sm font-semibold text-stone-100 truncate pr-2">
+                                    {f2.name}
+                                  </span>
+                                  <span
+                                    className={`text-lg font-black ${f2Fav ? "text-red-400" : "text-green-400"}`}
+                                  >
+                                    {fmt(o2)}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        {/* FightStatsSection */}
+                        <FightStatsSection
+                          fight={fight}
+                          activeTab={activeTab}
+                          setActiveTab={setActiveTab}
+                          openRecordModal={openRecordModal}
+                        />
+
+                        {/* Fight Prediction */}
+                        {(() => {
+                          const style = CONFIDENCE_LEVELS[pred.confidence];
+                          const wBreak = pred.categories[pred.winner.name];
+                          const lBreak = pred.categories[pred.loser.name];
+                          return (
+                            <div className="mt-6 mb-2">
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="h-px flex-1 bg-yellow-700/30" />
+                                <span className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600">
+                                  ◈ FIGHT PREDICTION
+                                </span>
+                                <div className="h-px flex-1 bg-yellow-700/30" />
+                              </div>
+                              <p className="text-stone-400 text-center text-xs mb-4">
+                                Comprehensive 10-category analysis using all
+                                available stats, records, physical attributes &
+                                fight history.
+                              </p>
+                              <div
+                                className={`bg-stone-900 rounded-lg border ${style.border} p-4 ${style.glow}`}
+                              >
+                                <div className="flex items-center justify-between gap-3 mb-3">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <span
+                                      className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${style.dot}`}
+                                    />
+                                    <div className="min-w-0">
+                                      <div className="text-stone-100 font-bold text-sm truncate">
+                                        {pred.winner.name}
+                                      </div>
+                                      <div className="text-stone-500 text-xs truncate">
+                                        vs {pred.loser.name}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <span
+                                    className={`text-[10px] px-2 py-0.5 rounded font-bold tracking-wider flex-shrink-0 ${style.badge}`}
+                                  >
+                                    {style.label}
+                                  </span>
+                                </div>
+                                <div className="mb-3">
+                                  <div className="flex justify-between text-xs mb-1 gap-2">
+                                    <span className="font-bold text-stone-100 truncate min-w-0 flex-1">
+                                      {pred.winner.name}
+                                      <span className="text-stone-400 font-normal ml-1.5">
+                                        {pred.winner.winProb}%
+                                      </span>
+                                    </span>
+                                    <span className="text-stone-400 truncate min-w-0 flex-1 text-right">
+                                      {pred.loser.name}
+                                      <span className="ml-1.5">
+                                        {pred.loser.winProb}%
+                                      </span>
+                                    </span>
+                                  </div>
+                                  <div className="h-2.5 bg-stone-800 rounded-full overflow-hidden flex">
+                                    <div
+                                      className={`${style.barColor} rounded-l-full transition-all`}
+                                      style={{
+                                        width: `${pred.winner.winProb}%`,
+                                      }}
+                                    />
+                                    <div className="bg-stone-600 flex-1 rounded-r-full" />
+                                  </div>
+                                </div>
+                                <p className="text-xs text-stone-300 leading-relaxed mb-3 border-t border-stone-700/50 pt-3">
+                                  {pred.narrative}
+                                </p>
+                                <div className="border-t border-stone-700/50 pt-3">
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <span
+                                      className="text-[11px] font-bold text-emerald-400 flex-1 truncate"
+                                      title={pred.winner.name}
+                                    >
+                                      {pred.winner.name}
+                                    </span>
+                                    <span className="text-[9px] text-stone-600 uppercase tracking-widest flex-shrink-0 w-6 text-center">
+                                      vs
+                                    </span>
+                                    <span
+                                      className="text-[11px] font-semibold text-stone-300 flex-1 truncate text-right"
+                                      title={pred.loser.name}
+                                    >
+                                      {pred.loser.name}
+                                    </span>
+                                  </div>
+                                  <div className="space-y-3">
+                                    {Object.entries(pred.catLabels).map(
+                                      ([key, label]) => {
+                                        const wScore =
+                                          wBreak[key]?.score ?? 50;
+                                        const lScore =
+                                          lBreak[key]?.score ?? 50;
+                                        const isWinnerCat =
+                                          pred.catWins.winner.includes(key);
+                                        const isLoserCat =
+                                          pred.catWins.loser.includes(key);
+                                        const total = wScore + lScore || 100;
+                                        return (
+                                          <div key={key}>
+                                            <div className="text-[9px] text-stone-500 uppercase tracking-widest font-bold mb-1">
+                                              {label}
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <span
+                                                className={`text-[11px] font-mono font-bold w-8 text-right flex-shrink-0 ${isWinnerCat ? "text-emerald-400" : "text-stone-500"}`}
+                                              >
+                                                {wScore}
+                                              </span>
+                                              <div className="h-2 flex-1 bg-stone-800 rounded-full overflow-hidden flex">
+                                                <div
+                                                  className={`rounded-l-full transition-all ${isWinnerCat ? "bg-emerald-500" : isLoserCat ? "bg-stone-600" : "bg-stone-500"}`}
+                                                  style={{
+                                                    width: `${(wScore / total) * 100}%`,
+                                                  }}
+                                                />
+                                                <div
+                                                  className={`rounded-r-full flex-1 ${isLoserCat ? "bg-red-500/60" : "bg-stone-700"}`}
+                                                />
+                                              </div>
+                                              <span
+                                                className={`text-[11px] font-mono font-bold w-8 flex-shrink-0 ${isLoserCat ? "text-red-400" : "text-stone-500"}`}
+                                              >
+                                                {lScore}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        );
+                                      },
+                                    )}
+                                  </div>
+                                  <div className="flex items-stretch gap-2 mt-4 pt-3 border-t border-stone-700/30">
+                                    <div className="flex-1 bg-emerald-500/10 border border-emerald-500/25 rounded-lg px-3 py-2 flex items-center gap-2.5 min-w-0">
+                                      <span className="text-2xl font-black text-emerald-400 flex-shrink-0 leading-none">
+                                        {pred.catWins.winner.length}
+                                      </span>
+                                      <div className="min-w-0">
+                                        <div className="text-[9px] text-stone-500 uppercase tracking-widest leading-none mb-0.5">
+                                          categories
+                                        </div>
+                                        <div
+                                          className="text-[11px] font-bold text-emerald-400 truncate"
+                                          title={pred.winner.name}
+                                        >
+                                          {pred.winner.name}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="flex-1 bg-stone-800/50 border border-stone-700/50 rounded-lg px-3 py-2 flex items-center gap-2.5 min-w-0 flex-row-reverse">
+                                      <span className="text-2xl font-black text-stone-300 flex-shrink-0 leading-none">
+                                        {pred.catWins.loser.length}
+                                      </span>
+                                      <div className="min-w-0">
+                                        <div className="text-[9px] text-stone-500 uppercase tracking-widest leading-none mb-0.5 text-right">
+                                          categories
+                                        </div>
+                                        <div
+                                          className="text-[11px] font-semibold text-stone-300 truncate text-right"
+                                          title={pred.loser.name}
+                                        >
+                                          {pred.loser.name}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             );
           })}
         </div>
 
-        {/* Anchor for scroll-to-stats */}
-        <div ref={statsRef} />
-
         <div className="text-stone-300 mb-6">{answer}</div>
-
-        {/* Live odds from cached API data */}
-        {selectedFightData &&
-          (() => {
-            const fight = selectedFightData;
-            if (fight.fighters.length < 2) return null;
-            const [f1, f2] = fight.fighters;
-
-            const lastName = (name) =>
-              name.trim().split(" ").pop().toLowerCase();
-            const matchEvent = cachedOdds.find((ev) => {
-              const names = [ev.home_team, ev.away_team].map((n) =>
-                lastName(n),
-              );
-              return (
-                names.includes(lastName(f1.name)) ||
-                names.includes(lastName(f2.name))
-              );
-            });
-
-            const fmt = (p) => (p == null ? "N/A" : p > 0 ? `+${p}` : `${p}`);
-            const impliedProb = (p) => {
-              if (p == null) return null;
-              return p < 0
-                ? ((-p / (-p + 100)) * 100).toFixed(0)
-                : ((100 / (p + 100)) * 100).toFixed(0);
-            };
-            const bestOddsFor = (bookmakers, name) => {
-              let best = null;
-              const last = lastName(name);
-              bookmakers.forEach((bm) => {
-                const h2h = bm.markets.find((m) => m.key === "h2h");
-                if (!h2h) return;
-                const outcome = h2h.outcomes.find(
-                  (o) => lastName(o.name) === last,
-                );
-                if (outcome && (best === null || outcome.price > best))
-                  best = outcome.price;
-              });
-              return best;
-            };
-
-            if (!matchEvent) {
-              return (
-                <div className="mb-4 px-3 py-2 bg-stone-900 border border-stone-700 rounded text-stone-500 text-xs">
-                  Live odds not in cache yet — visit{" "}
-                  <span className="text-yellow-500">Live Odds</span> page to
-                  load them.
-                </div>
-              );
-            }
-
-            const o1 = bestOddsFor(matchEvent.bookmakers, f1.name);
-            const o2 = bestOddsFor(matchEvent.bookmakers, f2.name);
-            const f1Fav = o1 != null && o2 != null && o1 < o2;
-            const f2Fav = o1 != null && o2 != null && o2 < o1;
-
-            return (
-              <div className="mb-5 border border-yellow-700/40 rounded-lg overflow-hidden bg-stone-900">
-                <div className="flex items-center justify-between px-3 py-1.5 border-b border-yellow-700/20 bg-yellow-900/10">
-                  <span className="text-yellow-500 text-xs font-bold tracking-widest uppercase">
-                    ⚡ Live Odds
-                  </span>
-                  <span className="text-stone-500 text-xs">
-                    {matchEvent.bookmakers.length} books · best available
-                  </span>
-                </div>
-                <div className="hidden sm:grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 gap-2">
-                  <div>
-                    <div className="text-stone-100 text-sm font-semibold">
-                      {f1.name}
-                    </div>
-                    <div className="flex items-baseline gap-1.5 mt-0.5">
-                      <span
-                        className={`text-xl font-black ${f1Fav ? "text-red-400" : "text-green-400"}`}
-                      >
-                        {fmt(o1)}
-                      </span>
-                      {o1 != null && (
-                        <span className="text-stone-500 text-xs">
-                          {impliedProb(o1)}%
-                        </span>
-                      )}
-                      {f1Fav && (
-                        <span className="text-xs text-red-500/70 uppercase">
-                          FAV
-                        </span>
-                      )}
-                      {!f1Fav && o1 != null && (
-                        <span className="text-xs text-green-500/70 uppercase">
-                          DOG
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-stone-600 text-xs font-bold text-center px-2">
-                    VS
-                  </div>
-                  <div className="items-end flex flex-col">
-                    <div className="text-stone-100 text-sm font-semibold text-right">
-                      {f2.name}
-                    </div>
-                    <div className="flex items-baseline gap-1.5 mt-0.5">
-                      {f2Fav && (
-                        <span className="text-xs text-red-500/70 uppercase">
-                          FAV
-                        </span>
-                      )}
-                      {!f2Fav && o2 != null && (
-                        <span className="text-xs text-green-500/70 uppercase">
-                          DOG
-                        </span>
-                      )}
-                      {o2 != null && (
-                        <span className="text-stone-500 text-xs">
-                          {impliedProb(o2)}%
-                        </span>
-                      )}
-                      <span
-                        className={`text-xl font-black ${f2Fav ? "text-red-400" : "text-green-400"}`}
-                      >
-                        {fmt(o2)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="sm:hidden px-3 py-3 space-y-2">
-                  <div className="mobile-kv-row">
-                    <span className="text-sm font-semibold text-stone-100 truncate pr-2">
-                      {f1.name}
-                    </span>
-                    <span
-                      className={`text-lg font-black ${f1Fav ? "text-red-400" : "text-green-400"}`}
-                    >
-                      {fmt(o1)}
-                    </span>
-                  </div>
-                  <div className="mobile-kv-row">
-                    <span className="text-sm font-semibold text-stone-100 truncate pr-2">
-                      {f2.name}
-                    </span>
-                    <span
-                      className={`text-lg font-black ${f2Fav ? "text-red-400" : "text-green-400"}`}
-                    >
-                      {fmt(o2)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-
-        {selectedFightData ? (
-          <FightStatsSection
-            fight={selectedFightData}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            openRecordModal={openRecordModal}
-          />
-        ) : selectedFight ? (
-          <div className="text-center text-stone-500 mb-8 tracking-wide">
-            ⚠️ Select a valid fight to view comprehensive stats
-          </div>
-        ) : null}
-
-        {/* ── Per-fight Fight Prediction ── */}
-        {selectedFightData &&
-          (() => {
-            const fight = selectedFightData;
-            if (fight.fighters.length < 2) return null;
-            const [f1, f2] = fight.fighters;
-            const pred = predictFight(f1, f2);
-            const style = CONFIDENCE_LEVELS[pred.confidence];
-            const wBreak = pred.categories[pred.winner.name];
-            const lBreak = pred.categories[pred.loser.name];
-
-            return (
-              <div className="mb-8">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="h-px flex-1 bg-yellow-700/30" />
-                  <span className="text-xs font-bold tracking-[0.4em] uppercase text-yellow-600">
-                    ◈ FIGHT PREDICTION
-                  </span>
-                  <div className="h-px flex-1 bg-yellow-700/30" />
-                </div>
-                <p className="text-stone-400 text-center text-xs mb-4">
-                  Comprehensive 10-category analysis using all available stats,
-                  records, physical attributes & fight history.
-                </p>
-
-                <div
-                  className={`bg-stone-900 rounded-lg border ${style.border} p-4 ${style.glow}`}
-                >
-                  {/* Winner header */}
-                  <div className="flex items-center justify-between gap-3 mb-3">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span
-                        className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${style.dot}`}
-                      />
-                      <div className="min-w-0">
-                        <div className="text-stone-100 font-bold text-sm truncate">
-                          {pred.winner.name}
-                        </div>
-                        <div className="text-stone-500 text-xs truncate">
-                          vs {pred.loser.name}
-                        </div>
-                      </div>
-                    </div>
-                    <span
-                      className={`text-[10px] px-2 py-0.5 rounded font-bold tracking-wider flex-shrink-0 ${style.badge}`}
-                    >
-                      {style.label}
-                    </span>
-                  </div>
-
-                  {/* Win probability bar */}
-                  <div className="mb-3">
-                    <div className="flex justify-between text-xs mb-1 gap-2">
-                      <span className="font-bold text-stone-100 truncate min-w-0 flex-1">
-                        {pred.winner.name}
-                        <span className="text-stone-400 font-normal ml-1.5">
-                          {pred.winner.winProb}%
-                        </span>
-                      </span>
-                      <span className="text-stone-400 truncate min-w-0 flex-1 text-right">
-                        {pred.loser.name}
-                        <span className="ml-1.5">{pred.loser.winProb}%</span>
-                      </span>
-                    </div>
-                    <div className="h-2.5 bg-stone-800 rounded-full overflow-hidden flex">
-                      <div
-                        className={`${style.barColor} rounded-l-full transition-all`}
-                        style={{ width: `${pred.winner.winProb}%` }}
-                      />
-                      <div className="bg-stone-600 flex-1 rounded-r-full" />
-                    </div>
-                  </div>
-
-                  {/* Narrative */}
-                  <p className="text-xs text-stone-300 leading-relaxed mb-3 border-t border-stone-700/50 pt-3">
-                    {pred.narrative}
-                  </p>
-
-                  {/* Category breakdown */}
-                  <div className="border-t border-stone-700/50 pt-3">
-                    {/* Full fighter name column headers */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <span
-                        className="text-[11px] font-bold text-emerald-400 flex-1 truncate"
-                        title={pred.winner.name}
-                      >
-                        {pred.winner.name}
-                      </span>
-                      <span className="text-[9px] text-stone-600 uppercase tracking-widest flex-shrink-0 w-6 text-center">
-                        vs
-                      </span>
-                      <span
-                        className="text-[11px] font-semibold text-stone-300 flex-1 truncate text-right"
-                        title={pred.loser.name}
-                      >
-                        {pred.loser.name}
-                      </span>
-                    </div>
-
-                    {/* Category rows — label above bar */}
-                    <div className="space-y-3">
-                      {Object.entries(pred.catLabels).map(([key, label]) => {
-                        const wScore = wBreak[key]?.score ?? 50;
-                        const lScore = lBreak[key]?.score ?? 50;
-                        const isWinnerCat = pred.catWins.winner.includes(key);
-                        const isLoserCat = pred.catWins.loser.includes(key);
-                        const total = wScore + lScore || 100;
-                        return (
-                          <div key={key}>
-                            <div className="text-[9px] text-stone-500 uppercase tracking-widest font-bold mb-1">
-                              {label}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span
-                                className={`text-[11px] font-mono font-bold w-8 text-right flex-shrink-0 ${isWinnerCat ? "text-emerald-400" : "text-stone-500"}`}
-                              >
-                                {wScore}
-                              </span>
-                              <div className="h-2 flex-1 bg-stone-800 rounded-full overflow-hidden flex">
-                                <div
-                                  className={`rounded-l-full transition-all ${isWinnerCat ? "bg-emerald-500" : isLoserCat ? "bg-stone-600" : "bg-stone-500"}`}
-                                  style={{
-                                    width: `${(wScore / total) * 100}%`,
-                                  }}
-                                />
-                                <div
-                                  className={`rounded-r-full flex-1 ${isLoserCat ? "bg-red-500/60" : "bg-stone-700"}`}
-                                />
-                              </div>
-                              <span
-                                className={`text-[11px] font-mono font-bold w-8 flex-shrink-0 ${isLoserCat ? "text-red-400" : "text-stone-500"}`}
-                              >
-                                {lScore}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Category wins summary — pill cards */}
-                    <div className="flex items-stretch gap-2 mt-4 pt-3 border-t border-stone-700/30">
-                      <div className="flex-1 bg-emerald-500/10 border border-emerald-500/25 rounded-lg px-3 py-2 flex items-center gap-2.5 min-w-0">
-                        <span className="text-2xl font-black text-emerald-400 flex-shrink-0 leading-none">
-                          {pred.catWins.winner.length}
-                        </span>
-                        <div className="min-w-0">
-                          <div className="text-[9px] text-stone-500 uppercase tracking-widest leading-none mb-0.5">
-                            categories
-                          </div>
-                          <div
-                            className="text-[11px] font-bold text-emerald-400 truncate"
-                            title={pred.winner.name}
-                          >
-                            {pred.winner.name}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex-1 bg-stone-800/50 border border-stone-700/50 rounded-lg px-3 py-2 flex items-center gap-2.5 min-w-0 flex-row-reverse">
-                        <span className="text-2xl font-black text-stone-300 flex-shrink-0 leading-none">
-                          {pred.catWins.loser.length}
-                        </span>
-                        <div className="min-w-0">
-                          <div className="text-[9px] text-stone-500 uppercase tracking-widest leading-none mb-0.5 text-right">
-                            categories
-                          </div>
-                          <div
-                            className="text-[11px] font-semibold text-stone-300 truncate text-right"
-                            title={pred.loser.name}
-                          >
-                            {pred.loser.name}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
 
         {/* Last Event Results Section — always visible */}
         <div className="mb-8">
