@@ -72,6 +72,7 @@ const FighterImage = ({
   youtubeThumbnailId,
   size = "w-16 h-16 sm:w-20 sm:h-20",
   className = "",
+  rounded = "rounded-full",
   showName = false,
 }) => {
   const key = toKebabCase(name);
@@ -113,7 +114,7 @@ const FighterImage = ({
       {showInitials ? (
         // Initials avatar — rendered purely in React, no image needed
         <div
-          className={`${size} ${sharedRingClass} rounded-full flex items-center justify-center font-bold select-none`}
+          className={`${size} ${sharedRingClass} ${rounded} flex items-center justify-center font-bold select-none`}
           style={{ backgroundColor: bgColor, color: textColor }}
           title={altText}
           role="img"
@@ -126,7 +127,7 @@ const FighterImage = ({
           src={imgSrc}
           alt={altText}
           title={credit ? `${altText} — ${credit}` : altText}
-          className={`${size} ${sharedRingClass} rounded-full object-cover bg-gray-700`}
+          className={`${size} ${sharedRingClass} ${rounded} object-cover bg-gray-700`}
           onError={handleError}
         />
       )}
