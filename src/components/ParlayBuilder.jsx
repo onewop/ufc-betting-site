@@ -1206,17 +1206,17 @@ export default function ParlayBuilder({ currentUser }) {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-900 text-stone-100">
+      <div className="min-h-screen bg-stone-950 text-stone-100">
         {/* Page header */}
-        <div
-          className="border-b border-yellow-900/40 px-4 py-5"
-          style={{
-            background: "linear-gradient(180deg, #451a03 0%, #1c1917 100%)",
-          }}
-        >
-          <div className="max-w-6xl mx-auto">
+        <div className="relative border-b border-yellow-700/30 bg-stone-950 px-4 py-8 overflow-hidden">
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{ backgroundImage: "repeating-linear-gradient(0deg, #ca8a04 0, #ca8a04 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, #ca8a04 0, #ca8a04 1px, transparent 1px, transparent 40px)" }}
+          />
+          <div className="max-w-6xl mx-auto relative">
             <div className="flex flex-wrap items-end gap-3 justify-between">
               <div>
+                <p className="text-[10px] font-mono text-yellow-600 tracking-[0.4em] uppercase mb-1">◆ COMBAT VAULT</p>
                 <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
                   Parlay Builder
                 </h1>
@@ -1252,8 +1252,8 @@ export default function ParlayBuilder({ currentUser }) {
               onClick={() => setActiveTab("picks")}
               className={`flex-1 py-2.5 text-sm font-semibold transition ${
                 activeTab === "picks"
-                  ? "bg-amber-800 text-white"
-                  : "bg-stone-800 text-stone-400 hover:text-stone-200"
+                  ? "bg-yellow-900/60 text-yellow-300 border-b-2 border-yellow-500"
+                  : "bg-stone-900 text-stone-400 hover:text-stone-200"
               }`}
             >
               Pick Fights
@@ -1262,8 +1262,8 @@ export default function ParlayBuilder({ currentUser }) {
               onClick={() => setActiveTab("slip")}
               className={`flex-1 py-2.5 text-sm font-semibold transition relative ${
                 activeTab === "slip"
-                  ? "bg-amber-800 text-white"
-                  : "bg-stone-800 text-stone-400 hover:text-stone-200"
+                  ? "bg-yellow-900/60 text-yellow-300 border-b-2 border-yellow-500"
+                  : "bg-stone-900 text-stone-400 hover:text-stone-200"
               }`}
             >
               Parlay Slip

@@ -188,43 +188,43 @@ export default function Home() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-5xl">
           <Link
             to="/fight-analyzer"
-            className="border border-yellow-700/50 rounded-lg bg-stone-900 hover:bg-stone-800 p-4 transition-colors duration-200 group"
+            className="border border-yellow-700/50 rounded-2xl bg-stone-900 hover:bg-stone-800 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(202,138,4,0.18)] p-5 transition-all duration-200 group"
           >
-            <div className="text-yellow-500 text-2xl mb-2">⊕</div>
-            <h3 className="text-stone-200 font-bold mb-1 uppercase tracking-wide">
+            <div className="text-yellow-400 text-2xl mb-3">📊</div>
+            <h3 className="text-stone-100 font-black mb-1 uppercase tracking-wide text-sm">
               Fight Analyzer
             </h3>
-            <p className="text-stone-400 text-sm">Deep stats & analysis</p>
+            <p className="text-stone-400 text-xs">Deep stats & AI analysis</p>
           </Link>
           <Link
             to="/parlay-builder"
-            className="border border-stone-700 rounded-lg bg-stone-900 hover:bg-stone-800 p-4 transition-colors duration-200 group"
+            className="border border-stone-700 rounded-2xl bg-stone-900 hover:bg-stone-800 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:border-stone-500 p-5 transition-all duration-200 group"
           >
-            <div className="text-stone-400 text-2xl mb-2">🎯</div>
-            <h3 className="text-stone-200 font-bold mb-1 uppercase tracking-wide">
+            <div className="text-stone-300 text-2xl mb-3">🎯</div>
+            <h3 className="text-stone-100 font-black mb-1 uppercase tracking-wide text-sm">
               Parlay Builder
             </h3>
-            <p className="text-stone-400 text-sm">Build winning parlays</p>
+            <p className="text-stone-400 text-xs">Build & calculate parlays</p>
           </Link>
           <Link
             to="/odds"
-            className="border border-stone-700 rounded-lg bg-stone-900 hover:bg-stone-800 p-4 transition-colors duration-200 group"
+            className="border border-stone-700 rounded-2xl bg-stone-900 hover:bg-stone-800 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:border-stone-500 p-5 transition-all duration-200 group"
           >
-            <div className="text-stone-400 text-2xl mb-2">$</div>
-            <h3 className="text-stone-200 font-bold mb-1 uppercase tracking-wide">
+            <div className="text-emerald-400 text-2xl mb-3">💹</div>
+            <h3 className="text-stone-100 font-black mb-1 uppercase tracking-wide text-sm">
               Live Odds
             </h3>
-            <p className="text-stone-400 text-sm">Real-time betting lines</p>
+            <p className="text-stone-400 text-xs">Real-time betting lines</p>
           </Link>
           <Link
             to="/team-combinations"
-            className="border border-stone-700 rounded-lg bg-stone-900 hover:bg-stone-800 p-4 transition-colors duration-200 group"
+            className="border border-stone-700 rounded-2xl bg-stone-900 hover:bg-stone-800 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:border-stone-500 p-5 transition-all duration-200 group"
           >
-            <div className="text-stone-400 text-2xl mb-2">◈</div>
-            <h3 className="text-stone-200 font-bold mb-1 uppercase tracking-wide">
+            <div className="text-stone-300 text-2xl mb-3">🏆</div>
+            <h3 className="text-stone-100 font-black mb-1 uppercase tracking-wide text-sm">
               DFS Teams
             </h3>
-            <p className="text-stone-400 text-sm">Optimize fantasy squads</p>
+            <p className="text-stone-400 text-xs">Optimize fantasy squads</p>
           </Link>
         </div>
 

@@ -376,46 +376,53 @@ const LatestOdds = ({ currentUser }) => {
       className="min-h-screen bg-stone-950 text-stone-200"
       style={{ fontFamily: "'Courier New', monospace" }}
     >
-      {/* Compact header */}
-      <div className="max-w-4xl mx-auto px-4 pt-6 pb-3 flex flex-wrap items-center justify-between gap-3 border-b border-yellow-900/40">
-        <div>
-          <h1 className="text-xl font-black text-stone-100 uppercase tracking-widest">
-            ⚡ Live <span className="text-yellow-500">Betting Odds</span>
-          </h1>
-          <p className="text-stone-500 text-xs mt-0.5">
-            Best moneylines across US books ·{" "}
-            {lastUpdated
-              ? `${fromCache ? "Cached" : "Updated"}: ${lastUpdated}`
-              : ""}
-          </p>
+      {/* Page header */}
+      <div className="relative border-b border-yellow-700/30 bg-stone-950 px-4 py-8 overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{ backgroundImage: "repeating-linear-gradient(0deg, #ca8a04 0, #ca8a04 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, #ca8a04 0, #ca8a04 1px, transparent 1px, transparent 40px)" }}
+        />
+        <div className="max-w-6xl mx-auto relative flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-mono text-yellow-600 tracking-[0.4em] uppercase mb-1">◆ INTEL FEED</p>
+            <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+              Live <span className="text-yellow-400">Betting Odds</span>
+            </h1>
+            <p className="text-stone-400 text-sm mt-1.5">
+              Best moneylines across US books ·{" "}
+              {lastUpdated
+                ? `${fromCache ? "Cached" : "Updated"}: ${lastUpdated}`
+                : "Fetching latest lines…"}
+            </p>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <button
+              onClick={() => fetchOdds(true)}
+              disabled={loading}
+              className="border border-yellow-700/60 rounded-lg text-yellow-400 px-4 py-1.5 text-xs tracking-widest uppercase hover:bg-yellow-900/20 transition disabled:opacity-40"
+            >
+              {loading ? "Loading..." : "↻ Refresh"}
+            </button>
+            <button
+              onClick={() => {
+                Object.keys(localStorage)
+                  .filter((k) => k.startsWith("ufc_odds_cache"))
+                  .forEach((k) => localStorage.removeItem(k));
+                fetchOdds(true);
+              }}
+              disabled={loading}
+              className="border border-red-700/60 rounded-lg text-red-400 px-4 py-1.5 text-xs tracking-widest uppercase hover:bg-red-900/20 transition disabled:opacity-40"
+            >
+              ✕ Clear Cache
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => fetchOdds(true)}
-            disabled={loading}
-            className="border border-yellow-700/60 text-yellow-400 px-4 py-1.5 text-xs tracking-widest uppercase hover:bg-yellow-900/20 transition disabled:opacity-40"
-          >
-            {loading ? "Loading..." : "↻ Refresh"}
-          </button>
-          <button
-            onClick={() => {
-              // Wipe ALL ufc_odds_cache_* keys so no stale version survives
-              Object.keys(localStorage)
-                .filter((k) => k.startsWith("ufc_odds_cache"))
-                .forEach((k) => localStorage.removeItem(k));
-              fetchOdds(true);
-            }}
-            disabled={loading}
-            className="border border-red-700/60 text-red-400 px-4 py-1.5 text-xs tracking-widest uppercase hover:bg-red-900/20 transition disabled:opacity-40"
-          >
-            ✕ Clear Cache
-          </button>
-        </div>
+        <div className="w-32 h-px bg-gradient-to-r from-transparent via-yellow-700 to-transparent mt-5 ml-4 sm:ml-0 max-w-6xl mx-auto" />
       </div>
 
       {/* ── Debug info bar — dev/owner only ── */}
       {isDevUser(currentUser?.email) && (
-        <div className="max-w-4xl mx-auto px-4 py-2 flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-stone-600 border-b border-stone-800/60">
+        <div className="max-w-6xl mx-auto px-4 py-2 flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-stone-600 border-b border-stone-800/60">
           <span>
             <span className="text-stone-500 font-bold uppercase tracking-wider">
               API event:{" "}
@@ -484,7 +491,7 @@ const LatestOdds = ({ currentUser }) => {
         </div>
       )}
 
-      <div className="max-w-4xl mx-auto px-4 py-4">
+      <div className="max-w-6xl mx-auto px-4 py-4">
         {/* ── Odds Alert Request Form ── */}
         <details
           ref={alertFormRef}

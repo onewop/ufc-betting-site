@@ -1,297 +1,131 @@
 {
-  "_note": "Update every Monday after the event. Add new events at the TOP of the array. status: 'final' | 'pending'. For pending fights leave result null.",
+  "_note": "REAL DATA — outcomes from ufc_fight_results.csv. Add new events at TOP. status: final|pending. result: null = ungraded (draw/no-contest).",
   "season_label": "2026 Season",
   "season_start": "2026-01-01",
   "events": [
-    {
-      "id": "ufc-winnipeg-2026",
-      "event": "UFC Winnipeg: Burns vs. Malott",
-      "date": "2026-04-19",
-      "status": "final",
-      "fights": [
-        {
-          "bout": "Mike Malott vs. Gilbert Burns",
-          "weight_class": "Welterweight",
-          "our_pick": "Mike Malott",
-          "result": "Mike Malott",
-          "method": "KO/TKO R2"
-        },
-        {
-          "bout": "Carlos Ulberg vs. Magomed Ankalaev",
-          "weight_class": "Light Heavyweight",
-          "our_pick": "Carlos Ulberg",
-          "result": "Carlos Ulberg",
-          "method": "Decision"
-        },
-        {
-          "bout": "Renato Moicano vs. Benoit Saint Denis",
-          "weight_class": "Lightweight",
-          "our_pick": "Renato Moicano",
-          "result": "Renato Moicano",
-          "method": "Decision"
-        },
-        {
-          "bout": "Caio Borralho vs. Joe Pyfer",
-          "weight_class": "Middleweight",
-          "our_pick": "Caio Borralho",
-          "result": "Joe Pyfer",
-          "method": "KO/TKO R2"
-        },
-        {
-          "bout": "Brad Riddell vs. Francisco Prado",
-          "weight_class": "Lightweight",
-          "our_pick": "Brad Riddell",
-          "result": "Brad Riddell",
-          "method": "Decision"
-        },
-        {
-          "bout": "Aiemann Zahabi vs. Vince Morales",
-          "weight_class": "Bantamweight",
-          "our_pick": "Aiemann Zahabi",
-          "result": "Aiemann Zahabi",
-          "method": "Decision"
-        },
-        {
-          "bout": "Jasmine Jasudavicius vs. Ji Yeon Kim",
-          "weight_class": "Women's Flyweight",
-          "our_pick": "Ji Yeon Kim",
-          "result": "Jasmine Jasudavicius",
-          "method": "Decision"
-        },
-        {
-          "bout": "Victor Henry vs. Cody Stamann",
-          "weight_class": "Bantamweight",
-          "our_pick": "Victor Henry",
-          "result": "Victor Henry",
-          "method": "KO/TKO R1"
-        },
-        {
-          "bout": "Marc-Andre Barriault vs. Brendan Allen",
-          "weight_class": "Middleweight",
-          "our_pick": "Brendan Allen",
-          "result": "Marc-Andre Barriault",
-          "method": "Decision"
-        },
-        {
-          "bout": "Kyle Nelson vs. Damon Jackson",
-          "weight_class": "Featherweight",
-          "our_pick": "Kyle Nelson",
-          "result": "Kyle Nelson",
-          "method": "KO/TKO R1"
-        }
-      ]
-    },
     {
       "id": "ufc-327",
       "event": "UFC 327: Prochazka vs. Ulberg",
       "date": "2026-04-12",
       "status": "final",
       "fights": [
-        {
-          "bout": "Jiri Prochazka vs. Carlos Ulberg",
-          "weight_class": "UFC Light Heavyweight Title Bout",
-          "our_pick": "Jiri Prochazka",
-          "result": "Carlos Ulberg",
-          "method": "KO/TKO R1"
-        },
-        {
-          "bout": "Azamat Murzakanov vs. Paulo Costa",
-          "weight_class": "Light Heavyweight",
-          "our_pick": "Paulo Costa",
-          "result": "Paulo Costa",
-          "method": "KO/TKO R3"
-        },
-        {
-          "bout": "Curtis Blaydes vs. Josh Hokit",
-          "weight_class": "Heavyweight",
-          "our_pick": "Curtis Blaydes",
-          "result": "Josh Hokit",
-          "method": "Decision"
-        },
-        {
-          "bout": "Dominick Reyes vs. Johnny Walker",
-          "weight_class": "Light Heavyweight",
-          "our_pick": "Dominick Reyes",
-          "result": "Dominick Reyes",
-          "method": "Decision"
-        },
-        {
-          "bout": "Cub Swanson vs. Bryce Mitchell",
-          "weight_class": "Featherweight",
-          "our_pick": "Bryce Mitchell",
-          "result": "Bryce Mitchell",
-          "method": "Decision"
-        },
-        {
-          "bout": "Sodiq Yusuff vs. Edson Barboza",
-          "weight_class": "Featherweight",
-          "our_pick": "Sodiq Yusuff",
-          "result": "Sodiq Yusuff",
-          "method": "Decision"
-        },
-        {
-          "bout": "Mickey Gall vs. Michael Morales",
-          "weight_class": "Welterweight",
-          "our_pick": "Michael Morales",
-          "result": "Michael Morales",
-          "method": "KO/TKO R1"
-        },
-        {
-          "bout": "Angela Hill vs. Luana Pinheiro",
-          "weight_class": "Women's Strawweight",
-          "our_pick": "Angela Hill",
-          "result": "Luana Pinheiro",
-          "method": "Decision"
-        },
-        {
-          "bout": "Jordan Leavitt vs. Nikolas Motta",
-          "weight_class": "Lightweight",
-          "our_pick": "Nikolas Motta",
-          "result": "Jordan Leavitt",
-          "method": "Submission R2"
-        },
-        {
-          "bout": "Demetrious Johnson vs. Tatsuro Taira",
-          "weight_class": "Flyweight",
-          "our_pick": "Demetrious Johnson",
-          "result": "Demetrious Johnson",
-          "method": "Decision"
-        }
+        { "bout": "Jiri Prochazka vs. Carlos Ulberg", "weight_class": "UFC Light Heavyweight Title Bout", "our_pick": "Jiri Prochazka", "result": "Carlos Ulberg", "method": "KO/TKO R1" },
+        { "bout": "Azamat Murzakanov vs. Paulo Costa", "weight_class": "Light Heavyweight", "our_pick": "Paulo Costa", "result": "Paulo Costa", "method": "KO/TKO R3" },
+        { "bout": "Curtis Blaydes vs. Josh Hokit", "weight_class": "Heavyweight", "our_pick": "Curtis Blaydes", "result": "Josh Hokit", "method": "Decision R3" },
+        { "bout": "Dominick Reyes vs. Johnny Walker", "weight_class": "Light Heavyweight", "our_pick": "Dominick Reyes", "result": "Dominick Reyes", "method": "Decision R3" },
+        { "bout": "Cub Swanson vs. Nate Landwehr", "weight_class": "Featherweight", "our_pick": "Cub Swanson", "result": "Cub Swanson", "method": "KO/TKO R1" },
+        { "bout": "Patricio Pitbull vs. Aaron Pico", "weight_class": "Featherweight", "our_pick": "Patricio Pitbull", "result": "Aaron Pico", "method": "Decision R3" },
+        { "bout": "Kevin Holland vs. Randy Brown", "weight_class": "Welterweight", "our_pick": "Kevin Holland", "result": "Kevin Holland", "method": "Decision R3" },
+        { "bout": "Mateusz Gamrot vs. Esteban Ribovics", "weight_class": "Lightweight", "our_pick": "Mateusz Gamrot", "result": "Mateusz Gamrot", "method": "Submission R2" },
+        { "bout": "Tatiana Suarez vs. Loopy Godinez", "weight_class": "Women's Strawweight", "our_pick": "Tatiana Suarez", "result": "Tatiana Suarez", "method": "Submission R2" },
+        { "bout": "Chris Padilla vs. MarQuel Mederos", "weight_class": "Lightweight", "our_pick": "Chris Padilla", "result": null, "method": "Draw" },
+        { "bout": "Kelvin Gastelum vs. Vicente Luque", "weight_class": "Middleweight", "our_pick": "Vicente Luque", "result": "Vicente Luque", "method": "Submission R1" },
+        { "bout": "Charles Radtke vs. Francisco Prado", "weight_class": "Welterweight", "our_pick": "Charles Radtke", "result": "Charles Radtke", "method": "Decision R3" }
       ]
     },
     {
-      "id": "ufc-vegas-115",
-      "event": "UFC Vegas 115: Moicano vs. Duncan",
+      "id": "ufc-fn-moicano-duncan",
+      "event": "UFC Fight Night: Moicano vs. Duncan",
       "date": "2026-04-05",
       "status": "final",
       "fights": [
-        {
-          "bout": "Renato Moicano vs. Clay Guida",
-          "weight_class": "Lightweight",
-          "our_pick": "Renato Moicano",
-          "result": "Renato Moicano",
-          "method": "Decision"
-        },
-        {
-          "bout": "Joe Pyfer vs. Israel Adesanya",
-          "weight_class": "Middleweight",
-          "our_pick": "Israel Adesanya",
-          "result": "Joe Pyfer",
-          "method": "KO/TKO R2"
-        },
-        {
-          "bout": "Josiane Nunes vs. Norma Dumont",
-          "weight_class": "Women's Featherweight",
-          "our_pick": "Josiane Nunes",
-          "result": "Josiane Nunes",
-          "method": "Decision"
-        },
-        {
-          "bout": "Shamil Gaziev vs. Tom Aspinall",
-          "weight_class": "Heavyweight",
-          "our_pick": "Tom Aspinall",
-          "result": "Tom Aspinall",
-          "method": "KO/TKO R1"
-        },
-        {
-          "bout": "Manuel Torres vs. Marcos Rogerio de Lima",
-          "weight_class": "Lightweight",
-          "our_pick": "Manuel Torres",
-          "result": "Manuel Torres",
-          "method": "KO/TKO R1"
-        },
-        {
-          "bout": "Daniel Marcos vs. Brad Katona",
-          "weight_class": "Bantamweight",
-          "our_pick": "Daniel Marcos",
-          "result": "Daniel Marcos",
-          "method": "Decision"
-        },
-        {
-          "bout": "Nazim Sadykhov vs. Elves Brener",
-          "weight_class": "Lightweight",
-          "our_pick": "Nazim Sadykhov",
-          "result": "Elves Brener",
-          "method": "Submission R1"
-        },
-        {
-          "bout": "Jake Hadley vs. Carlos Hernandez",
-          "weight_class": "Flyweight",
-          "our_pick": "Jake Hadley",
-          "result": "Jake Hadley",
-          "method": "Decision"
-        },
-        {
-          "bout": "Charles Johnson vs. Zhalgas Zhumagulov",
-          "weight_class": "Flyweight",
-          "our_pick": "Charles Johnson",
-          "result": "Zhalgas Zhumagulov",
-          "method": "Decision"
-        }
+        { "bout": "Renato Moicano vs. Chris Duncan", "weight_class": "Lightweight", "our_pick": "Renato Moicano", "result": "Renato Moicano", "method": "Submission R2" },
+        { "bout": "Virna Jandiroba vs. Tabatha Ricci", "weight_class": "Women's Strawweight", "our_pick": "Virna Jandiroba", "result": "Virna Jandiroba", "method": "Decision R3" },
+        { "bout": "Abdul Rakhman Yakhyaev vs. Brendson Ribeiro", "weight_class": "Light Heavyweight", "our_pick": "Abdul Rakhman Yakhyaev", "result": "Abdul Rakhman Yakhyaev", "method": "Submission R1" },
+        { "bout": "Ethyn Ewing vs. Rafael Estevam", "weight_class": "Bantamweight", "our_pick": "Ethyn Ewing", "result": "Ethyn Ewing", "method": "KO/TKO R3" },
+        { "bout": "Tommy McMillen vs. Manolo Zecchini", "weight_class": "Featherweight", "our_pick": "Tommy McMillen", "result": "Tommy McMillen", "method": "KO/TKO R1" },
+        { "bout": "Jose Delano vs. Robert Ruchala", "weight_class": "Featherweight", "our_pick": "Jose Delano", "result": "Jose Delano", "method": "Decision R3" },
+        { "bout": "Guilherme Pat vs. Thomas Petersen", "weight_class": "Heavyweight", "our_pick": "Guilherme Pat", "result": "Thomas Petersen", "method": "Decision R3" },
+        { "bout": "Alessandro Costa vs. Stewart Nicoll", "weight_class": "Flyweight", "our_pick": "Alessandro Costa", "result": "Alessandro Costa", "method": "KO/TKO R2" },
+        { "bout": "Lando Vannata vs. Darrius Flowers", "weight_class": "Lightweight", "our_pick": "Lando Vannata", "result": "Darrius Flowers", "method": "KO/TKO R2" },
+        { "bout": "Alice Pereira vs. Hailey Cowan", "weight_class": "Women's Bantamweight", "our_pick": "Alice Pereira", "result": "Alice Pereira", "method": "KO/TKO R2" },
+        { "bout": "Azamat Bekoev vs. Tresean Gore", "weight_class": "Middleweight", "our_pick": "Azamat Bekoev", "result": "Tresean Gore", "method": "Submission R3" },
+        { "bout": "Dione Barbosa vs. Melissa Gatto", "weight_class": "Women's Flyweight", "our_pick": "Dione Barbosa", "result": "Dione Barbosa", "method": "Decision R3" },
+        { "bout": "Kai Kamaka III vs. Dakota Hope", "weight_class": "Lightweight", "our_pick": "Kai Kamaka III", "result": "Kai Kamaka III", "method": "Decision R3" }
       ]
     },
     {
-      "id": "ufc-seattle",
-      "event": "UFC Seattle: Adesanya vs. Pyfer",
+      "id": "ufc-fn-adesanya-pyfer",
+      "event": "UFC Fight Night: Adesanya vs. Pyfer",
       "date": "2026-03-29",
       "status": "final",
       "fights": [
-        {
-          "bout": "Israel Adesanya vs. Joe Pyfer",
-          "weight_class": "Middleweight",
-          "our_pick": "Israel Adesanya",
-          "result": "Israel Adesanya",
-          "method": "Decision"
-        },
-        {
-          "bout": "Eryk Anders vs. Brendan Allen",
-          "weight_class": "Middleweight",
-          "our_pick": "Brendan Allen",
-          "result": "Brendan Allen",
-          "method": "Decision"
-        },
-        {
-          "bout": "Lando Vannata vs. Nate Landwehr",
-          "weight_class": "Featherweight",
-          "our_pick": "Lando Vannata",
-          "result": "Nate Landwehr",
-          "method": "Decision"
-        },
-        {
-          "bout": "Abdul Razak Alhassan vs. Joaquin Buckley",
-          "weight_class": "Welterweight",
-          "our_pick": "Joaquin Buckley",
-          "result": "Joaquin Buckley",
-          "method": "KO/TKO R1"
-        },
-        {
-          "bout": "Ariane Lipski vs. Mariya Agapova",
-          "weight_class": "Women's Flyweight",
-          "our_pick": "Ariane Lipski",
-          "result": "Ariane Lipski",
-          "method": "Decision"
-        },
-        {
-          "bout": "Vince Morales vs. Miles Johns",
-          "weight_class": "Bantamweight",
-          "our_pick": "Miles Johns",
-          "result": "Miles Johns",
-          "method": "Decision"
-        },
-        {
-          "bout": "Erin Blanchfield vs. Rose Namajunas",
-          "weight_class": "Women's Flyweight",
-          "our_pick": "Erin Blanchfield",
-          "result": "Erin Blanchfield",
-          "method": "Decision"
-        },
-        {
-          "bout": "Jim Miller vs. Vinc Pichel",
-          "weight_class": "Lightweight",
-          "our_pick": "Jim Miller",
-          "result": "Vinc Pichel",
-          "method": "Decision"
-        }
+        { "bout": "Israel Adesanya vs. Joe Pyfer", "weight_class": "Middleweight", "our_pick": "Israel Adesanya", "result": "Joe Pyfer", "method": "KO/TKO R2" },
+        { "bout": "Alexa Grasso vs. Maycee Barber", "weight_class": "Women's Flyweight", "our_pick": "Alexa Grasso", "result": "Alexa Grasso", "method": "KO/TKO R1" },
+        { "bout": "Michael Chiesa vs. Niko Price", "weight_class": "Welterweight", "our_pick": "Michael Chiesa", "result": "Michael Chiesa", "method": "Submission R1" },
+        { "bout": "Julian Erosa vs. Lerryan Douglas", "weight_class": "Featherweight", "our_pick": "Julian Erosa", "result": "Lerryan Douglas", "method": "KO/TKO R1" },
+        { "bout": "Mansur Abdul-Malik vs. Yousri Belgaroui", "weight_class": "Middleweight", "our_pick": "Mansur Abdul-Malik", "result": "Yousri Belgaroui", "method": "KO/TKO R3" },
+        { "bout": "Terrance McKinney vs. Kyle Nelson", "weight_class": "Lightweight", "our_pick": "Terrance McKinney", "result": "Terrance McKinney", "method": "KO/TKO R1" },
+        { "bout": "Ignacio Bahamondes vs. Tofiq Musayev", "weight_class": "Lightweight", "our_pick": "Ignacio Bahamondes", "result": "Tofiq Musayev", "method": "Decision R3" },
+        { "bout": "Chase Hooper vs. Lance Gibson Jr.", "weight_class": "Lightweight", "our_pick": "Chase Hooper", "result": "Lance Gibson Jr.", "method": "KO/TKO R1" },
+        { "bout": "Marcin Tybura vs. Tyrell Fortune", "weight_class": "Heavyweight", "our_pick": "Marcin Tybura", "result": "Tyrell Fortune", "method": "Decision R3" },
+        { "bout": "Casey O'Neill vs. Gabriella Fernandes", "weight_class": "Women's Flyweight", "our_pick": "Casey O'Neill", "result": "Casey O'Neill", "method": "KO/TKO R1" },
+        { "bout": "Navajo Stirling vs. Bruno Lopes", "weight_class": "Light Heavyweight", "our_pick": "Navajo Stirling", "result": "Navajo Stirling", "method": "KO/TKO R2" },
+        { "bout": "Ricky Simon vs. Adrian Yanez", "weight_class": "Bantamweight", "our_pick": "Ricky Simon", "result": null, "method": "Draw" },
+        { "bout": "Alexia Thainara vs. Bruna Brasil", "weight_class": "Women's Strawweight", "our_pick": "Alexia Thainara", "result": "Alexia Thainara", "method": "Decision R3" }
+      ]
+    },
+    {
+      "id": "ufc-fn-evloev-murphy",
+      "event": "UFC Fight Night: Evloev vs. Murphy",
+      "date": "2026-03-21",
+      "status": "final",
+      "fights": [
+        { "bout": "Movsar Evloev vs. Lerone Murphy", "weight_class": "Featherweight (5 Rds)", "our_pick": "Movsar Evloev", "result": "Movsar Evloev", "method": "Decision R5" },
+        { "bout": "Luke Riley vs. Michael Aswell Jr.", "weight_class": "Featherweight", "our_pick": "Luke Riley", "result": "Luke Riley", "method": "Decision R3" },
+        { "bout": "Michael Page vs. Sam Patterson", "weight_class": "Welterweight", "our_pick": "Michael Page", "result": "Michael Page", "method": "Decision R3" },
+        { "bout": "Iwo Baraniewski vs. Austen Lane", "weight_class": "Light Heavyweight", "our_pick": "Iwo Baraniewski", "result": "Iwo Baraniewski", "method": "KO/TKO R1" },
+        { "bout": "Roman Dolidze vs. Christian Leroy Duncan", "weight_class": "Middleweight", "our_pick": "Roman Dolidze", "result": "Christian Leroy Duncan", "method": "Decision R3" },
+        { "bout": "Kurtis Campbell vs. Danny Silva", "weight_class": "Featherweight", "our_pick": "Kurtis Campbell", "result": "Danny Silva", "method": "KO/TKO R2" },
+        { "bout": "Mason Jones vs. Axel Sola", "weight_class": "Lightweight", "our_pick": "Mason Jones", "result": "Mason Jones", "method": "Decision R3" },
+        { "bout": "Nathaniel Wood vs. Losene Keita", "weight_class": "Featherweight", "our_pick": "Nathaniel Wood", "result": "Nathaniel Wood", "method": "Decision R3" },
+        { "bout": "Mario Pinto vs. Felipe Franco", "weight_class": "Heavyweight", "our_pick": "Mario Pinto", "result": "Mario Pinto", "method": "Decision R3" },
+        { "bout": "Mantas Kondratavicius vs. Antonio Trocoli", "weight_class": "Middleweight", "our_pick": "Mantas Kondratavicius", "result": "Mantas Kondratavicius", "method": "Decision R3" },
+        { "bout": "Louie Sutherland vs. Brando Pericic", "weight_class": "Heavyweight", "our_pick": "Louie Sutherland", "result": "Brando Pericic", "method": "KO/TKO R1" },
+        { "bout": "Shem Rock vs. Abdul-Kareem Al-Selwady", "weight_class": "Lightweight", "our_pick": "Shem Rock", "result": "Abdul-Kareem Al-Selwady", "method": "Decision R3" },
+        { "bout": "Shanelle Dyer vs. Ravena Oliveira", "weight_class": "Women's Strawweight", "our_pick": "Shanelle Dyer", "result": "Shanelle Dyer", "method": "KO/TKO R2" }
+      ]
+    },
+    {
+      "id": "ufc-fn-emmett-vallejos",
+      "event": "UFC Fight Night: Emmett vs. Vallejos",
+      "date": "2026-03-14",
+      "status": "final",
+      "fights": [
+        { "bout": "Josh Emmett vs. Kevin Vallejos", "weight_class": "Featherweight (5 Rds)", "our_pick": "Josh Emmett", "result": "Kevin Vallejos", "method": "KO/TKO R1" },
+        { "bout": "Amanda Lemos vs. Gillian Robertson", "weight_class": "Women's Strawweight", "our_pick": "Amanda Lemos", "result": "Gillian Robertson", "method": "Decision R3" },
+        { "bout": "Andre Fili vs. Jose Delgado", "weight_class": "Featherweight", "our_pick": "Andre Fili", "result": "Jose Delgado", "method": "Decision R3" },
+        { "bout": "Marwan Rahiki vs. Harry Hardwick", "weight_class": "Featherweight", "our_pick": "Marwan Rahiki", "result": "Marwan Rahiki", "method": "KO/TKO R2" },
+        { "bout": "Ion Cutelaba vs. Oumar Sy", "weight_class": "Light Heavyweight", "our_pick": "Ion Cutelaba", "result": "Ion Cutelaba", "method": "Submission R1" },
+        { "bout": "Charles Johnson vs. Bruno Silva", "weight_class": "Flyweight", "our_pick": "Charles Johnson", "result": "Charles Johnson", "method": "Decision R3" },
+        { "bout": "Chris Curtis vs. Myktybek Orolbai", "weight_class": "Welterweight", "our_pick": "Chris Curtis", "result": "Myktybek Orolbai", "method": "Decision R3" },
+        { "bout": "Vitor Petrino vs. Steven Asplund", "weight_class": "Heavyweight", "our_pick": "Vitor Petrino", "result": "Vitor Petrino", "method": "Decision R3" },
+        { "bout": "Elijah Smith vs. SuYoung You", "weight_class": "Bantamweight", "our_pick": "Elijah Smith", "result": "Elijah Smith", "method": "Submission R2" },
+        { "bout": "Bolaji Oki vs. Manoel Sousa", "weight_class": "Lightweight", "our_pick": "Bolaji Oki", "result": "Manoel Sousa", "method": "KO/TKO R3" },
+        { "bout": "Brad Tavares vs. Eryk Anders", "weight_class": "Middleweight", "our_pick": "Brad Tavares", "result": "Eryk Anders", "method": "Decision R3" },
+        { "bout": "Bia Mesquita vs. Montse Rendon", "weight_class": "Women's Bantamweight", "our_pick": "Bia Mesquita", "result": "Bia Mesquita", "method": "Submission R1" },
+        { "bout": "Luan Lacerda vs. Hecher Sosa", "weight_class": "Bantamweight", "our_pick": "Luan Lacerda", "result": "Hecher Sosa", "method": "Decision R3" },
+        { "bout": "Piera Rodriguez vs. Sam Hughes", "weight_class": "Women's Strawweight", "our_pick": "Piera Rodriguez", "result": "Piera Rodriguez", "method": "Decision R3" }
+      ]
+    },
+    {
+      "id": "ufc-326",
+      "event": "UFC 326: Holloway vs. Oliveira 2",
+      "date": "2026-03-07",
+      "status": "final",
+      "fights": [
+        { "bout": "Max Holloway vs. Charles Oliveira", "weight_class": "Lightweight", "our_pick": "Max Holloway", "result": "Charles Oliveira", "method": "Decision R5" },
+        { "bout": "Caio Borralho vs. Reinier de Ridder", "weight_class": "Middleweight", "our_pick": "Caio Borralho", "result": "Caio Borralho", "method": "Decision R3" },
+        { "bout": "Rob Font vs. Raul Rosas Jr.", "weight_class": "Bantamweight", "our_pick": "Rob Font", "result": "Raul Rosas Jr.", "method": "Decision R3" },
+        { "bout": "Drew Dober vs. Michael Johnson", "weight_class": "Lightweight", "our_pick": "Drew Dober", "result": "Drew Dober", "method": "KO/TKO R2" },
+        { "bout": "Gregory Rodrigues vs. Brunno Ferreira", "weight_class": "Middleweight", "our_pick": "Gregory Rodrigues", "result": "Gregory Rodrigues", "method": "KO/TKO R1" },
+        { "bout": "Cody Garbrandt vs. Xiao Long", "weight_class": "Bantamweight", "our_pick": "Cody Garbrandt", "result": "Cody Garbrandt", "method": "Decision R3" },
+        { "bout": "Donte Johnson vs. Cody Brundage", "weight_class": "Middleweight", "our_pick": "Donte Johnson", "result": "Donte Johnson", "method": "Decision R3" },
+        { "bout": "Ricky Turcios vs. Alberto Montes", "weight_class": "Featherweight", "our_pick": "Ricky Turcios", "result": "Alberto Montes", "method": "Submission R2" },
+        { "bout": "Cody Durden vs. Nyamjargal Tumendemberel", "weight_class": "Flyweight", "our_pick": "Cody Durden", "result": "Nyamjargal Tumendemberel", "method": "Decision R3" },
+        { "bout": "Sumudaerji vs. Jesus Aguilar", "weight_class": "Flyweight", "our_pick": "Sumudaerji", "result": "Sumudaerji", "method": "Decision R3" },
+        { "bout": "Rafael Tobias vs. Diyar Nurgozhay", "weight_class": "Light Heavyweight", "our_pick": "Rafael Tobias", "result": "Diyar Nurgozhay", "method": "Decision R3" },
+        { "bout": "Luke Fernandez vs. Rodolfo Bellato", "weight_class": "Light Heavyweight", "our_pick": "Luke Fernandez", "result": "Rodolfo Bellato", "method": "KO/TKO R1" }
       ]
     },
     {
@@ -300,69 +134,20 @@
       "date": "2025-11-22",
       "status": "final",
       "fights": [
-        {
-          "bout": "Jack Della Maddalena vs. Islam Makhachev",
-          "weight_class": "Welterweight Title Bout",
-          "our_pick": "Islam Makhachev",
-          "result": "Islam Makhachev",
-          "method": "Decision"
-        },
-        {
-          "bout": "Merab Dvalishvili vs. Umar Nurmagomedov",
-          "weight_class": "Bantamweight",
-          "our_pick": "Merab Dvalishvili",
-          "result": "Merab Dvalishvili",
-          "method": "Decision"
-        },
-        {
-          "bout": "Dustin Poirier vs. Justin Gaethje",
-          "weight_class": "Lightweight",
-          "our_pick": "Justin Gaethje",
-          "result": "Dustin Poirier",
-          "method": "KO/TKO R3"
-        },
-        {
-          "bout": "Kevin Holland vs. Gunnar Nelson",
-          "weight_class": "Welterweight",
-          "our_pick": "Kevin Holland",
-          "result": "Gunnar Nelson",
-          "method": "Submission R2"
-        },
-        {
-          "bout": "Mario Bautista vs. Song Yadong",
-          "weight_class": "Bantamweight",
-          "our_pick": "Mario Bautista",
-          "result": "Mario Bautista",
-          "method": "Decision"
-        },
-        {
-          "bout": "Jailton Almeida vs. Alexandr Romanov",
-          "weight_class": "Heavyweight",
-          "our_pick": "Jailton Almeida",
-          "result": "Jailton Almeida",
-          "method": "Decision"
-        },
-        {
-          "bout": "Adrian Yanez vs. Cody Stamann",
-          "weight_class": "Bantamweight",
-          "our_pick": "Adrian Yanez",
-          "result": "Adrian Yanez",
-          "method": "KO/TKO R2"
-        },
-        {
-          "bout": "Josh Fremd vs. Brunno Ferreira",
-          "weight_class": "Middleweight",
-          "our_pick": "Brunno Ferreira",
-          "result": "Brunno Ferreira",
-          "method": "KO/TKO R1"
-        },
-        {
-          "bout": "Nick Fiore vs. Lucas Almeida",
-          "weight_class": "Lightweight",
-          "our_pick": "Lucas Almeida",
-          "result": "Nick Fiore",
-          "method": "Decision"
-        }
+        { "bout": "Jack Della Maddalena vs. Islam Makhachev", "weight_class": "UFC Welterweight Title Bout", "our_pick": "Islam Makhachev", "result": "Islam Makhachev", "method": "Decision R5" },
+        { "bout": "Valentina Shevchenko vs. Zhang Weili", "weight_class": "UFC Women's Flyweight Title Bout", "our_pick": "Valentina Shevchenko", "result": "Valentina Shevchenko", "method": "Decision R5" },
+        { "bout": "Sean Brady vs. Michael Morales", "weight_class": "Welterweight", "our_pick": "Sean Brady", "result": "Michael Morales", "method": "KO/TKO R1" },
+        { "bout": "Leon Edwards vs. Carlos Prates", "weight_class": "Welterweight", "our_pick": "Leon Edwards", "result": "Carlos Prates", "method": "KO/TKO R2" },
+        { "bout": "Beneil Dariush vs. Benoit Saint Denis", "weight_class": "Lightweight", "our_pick": "Beneil Dariush", "result": "Benoit Saint Denis", "method": "KO/TKO R1" },
+        { "bout": "Bo Nickal vs. Rodolfo Vieira", "weight_class": "Middleweight", "our_pick": "Bo Nickal", "result": "Bo Nickal", "method": "KO/TKO R3" },
+        { "bout": "Roman Kopylov vs. Gregory Rodrigues", "weight_class": "Middleweight", "our_pick": "Gregory Rodrigues", "result": "Gregory Rodrigues", "method": "Decision R3" },
+        { "bout": "Erin Blanchfield vs. Tracy Cortez", "weight_class": "Women's Flyweight", "our_pick": "Erin Blanchfield", "result": "Erin Blanchfield", "method": "Submission R2" },
+        { "bout": "Malcolm Wellmaker vs. Ethyn Ewing", "weight_class": "Featherweight", "our_pick": "Ethyn Ewing", "result": "Ethyn Ewing", "method": "Decision R3" },
+        { "bout": "Kyle Daukaus vs. Gerald Meerschaert", "weight_class": "Middleweight", "our_pick": "Kyle Daukaus", "result": "Kyle Daukaus", "method": "Submission R1" },
+        { "bout": "Pat Sabatini vs. Chepe Mariscal", "weight_class": "Featherweight", "our_pick": "Pat Sabatini", "result": "Pat Sabatini", "method": "Decision R3" },
+        { "bout": "Angela Hill vs. Fatima Kline", "weight_class": "Women's Strawweight", "our_pick": "Angela Hill", "result": "Fatima Kline", "method": "Decision R3" },
+        { "bout": "Baisangur Susurkaev vs. Eric McConico", "weight_class": "Middleweight", "our_pick": "Baisangur Susurkaev", "result": "Baisangur Susurkaev", "method": "KO/TKO R3" },
+        { "bout": "Viacheslav Borshchev vs. Matheus Camilo", "weight_class": "Lightweight", "our_pick": "Viacheslav Borshchev", "result": "Matheus Camilo", "method": "Decision R3" }
       ]
     }
   ]
