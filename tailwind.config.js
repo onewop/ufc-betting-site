@@ -49,6 +49,10 @@ module.exports = {
     "border-cyan-500",
     "border-cyan-500/40",
     "text-cyan-400",
+    "w-48", "h-48", "sm:w-48", "sm:h-48",
+    "w-52", "h-52", "sm:w-52", "sm:h-52",
+    "w-56", "h-56", "sm:w-56", "sm:h-56",
+    "w-64", "h-64", "sm:w-64", "sm:h-64",
   ],
   plugins: [require("@tailwindcss/forms")],
 };

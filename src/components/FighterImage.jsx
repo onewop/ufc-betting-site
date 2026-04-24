@@ -73,6 +73,7 @@ const FighterImage = ({
   size = "w-16 h-16 sm:w-20 sm:h-20",
   className = "",
   rounded = "rounded-full",
+  imgStyle = {},
   showName = false,
 }) => {
   const key = toKebabCase(name);
@@ -107,7 +108,7 @@ const FighterImage = ({
   const [bgColor, textColor] = getAvatarColors(name);
   const initials = getInitials(name);
 
-  const sharedRingClass = `border-2 border-yellow-500/50 shadow-md ${className}`;
+  const sharedRingClass = className;
 
   return (
     <div className="relative inline-flex flex-col items-center group">
@@ -115,7 +116,7 @@ const FighterImage = ({
         // Initials avatar — rendered purely in React, no image needed
         <div
           className={`${size} ${sharedRingClass} ${rounded} flex items-center justify-center font-bold select-none`}
-          style={{ backgroundColor: bgColor, color: textColor }}
+          style={{ backgroundColor: bgColor, color: textColor, ...imgStyle }}
           title={altText}
           role="img"
           aria-label={altText}
@@ -128,6 +129,7 @@ const FighterImage = ({
           alt={altText}
           title={credit ? `${altText} — ${credit}` : altText}
           className={`${size} ${sharedRingClass} ${rounded} object-cover bg-gray-700`}
+          style={imgStyle}
           onError={handleError}
         />
       )}

@@ -1618,17 +1618,31 @@ const FightAnalyzer = ({
 
                   <div className="p-5 sm:p-12">
                     {/* Fighters side by side */}
-                    <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3 sm:gap-12">
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-16">
                       {/* Fighter 1 */}
                       <div className="flex flex-col items-center text-center">
-                        <FighterImage
-                          name={f1.name}
-                          youtubeThumbnailId={f1.highlightVideoId || null}
-                          size="w-20 h-20 sm:w-52 sm:h-52"
-                          rounded="rounded-xl"
-                          className="border-4 border-red-600 shadow-2xl ring-4 ring-red-500/30 ring-offset-4 ring-offset-stone-900"
-                        />
-                        <h3 className="mt-5 text-sm sm:text-2xl font-black text-white tracking-tight leading-tight">
+                        {/* Desktop — inline style guarantees 224px, no Tailwind interference */}
+                        <div className="hidden sm:block">
+                          <FighterImage
+                            name={f1.name}
+                            youtubeThumbnailId={f1.highlightVideoId || null}
+                            size=""
+                            rounded="rounded-2xl"
+                            imgStyle={{ width: "224px", height: "224px" }}
+                            className="border-4 border-red-600 shadow-2xl ring-8 ring-red-500/40 ring-offset-4 ring-offset-stone-900"
+                          />
+                        </div>
+                        {/* Mobile */}
+                        <div className="sm:hidden">
+                          <FighterImage
+                            name={f1.name}
+                            youtubeThumbnailId={f1.highlightVideoId || null}
+                            size="w-20 h-20"
+                            rounded="rounded-xl"
+                            className="border-2 border-red-600 shadow-lg"
+                          />
+                        </div>
+                        <h3 className="mt-6 text-sm sm:text-3xl font-black text-white tracking-tighter leading-tight">
                           {f1.name}
                         </h3>
                         {f1.record && (
@@ -1655,7 +1669,7 @@ const FightAnalyzer = ({
                       </div>
 
                       {/* VS */}
-                      <div className="flex flex-col items-center justify-center pt-6 sm:pt-[calc(104px)]">
+                      <div className="flex flex-col items-center justify-center">
                         <span className="text-3xl sm:text-5xl font-black text-stone-700/70 tracking-tighter select-none">
                           VS
                         </span>
@@ -1663,14 +1677,28 @@ const FightAnalyzer = ({
 
                       {/* Fighter 2 */}
                       <div className="flex flex-col items-center text-center">
-                        <FighterImage
-                          name={f2.name}
-                          youtubeThumbnailId={f2.highlightVideoId || null}
-                          size="w-20 h-20 sm:w-52 sm:h-52"
-                          rounded="rounded-xl"
-                          className="border-4 border-emerald-500 shadow-2xl ring-4 ring-emerald-500/30 ring-offset-4 ring-offset-stone-900"
-                        />
-                        <h3 className="mt-5 text-sm sm:text-2xl font-black text-white tracking-tight leading-tight">
+                        {/* Desktop */}
+                        <div className="hidden sm:block">
+                          <FighterImage
+                            name={f2.name}
+                            youtubeThumbnailId={f2.highlightVideoId || null}
+                            size=""
+                            rounded="rounded-2xl"
+                            imgStyle={{ width: "224px", height: "224px" }}
+                            className="border-4 border-emerald-500 shadow-2xl ring-8 ring-emerald-500/40 ring-offset-4 ring-offset-stone-900"
+                          />
+                        </div>
+                        {/* Mobile */}
+                        <div className="sm:hidden">
+                          <FighterImage
+                            name={f2.name}
+                            youtubeThumbnailId={f2.highlightVideoId || null}
+                            size="w-20 h-20"
+                            rounded="rounded-xl"
+                            className="border-2 border-emerald-500 shadow-lg"
+                          />
+                        </div>
+                        <h3 className="mt-6 text-sm sm:text-3xl font-black text-white tracking-tighter leading-tight">
                           {f2.name}
                         </h3>
                         {f2.record && (
