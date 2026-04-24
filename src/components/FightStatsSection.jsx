@@ -47,11 +47,6 @@ const FightStatsSection = memo(
           { label: "Stance", key: "stance" },
           { label: "Weight Class", key: "weight_class" },
           {
-            label:
-              "Record (Full MMA career when Sherdog data available, otherwise UFC only)",
-            key: "record",
-          },
-          {
             label: "DK (DraftKings) Salary",
             key: "salary",
             isMoney: true,
@@ -494,22 +489,26 @@ const FightStatsSection = memo(
             <KeyNotes />
 
             {/* Full Fight Record modal buttons */}
-            <div className="mt-8 mb-6">
-              <h3 className="text-stone-300 text-lg font-bold mb-4 text-center uppercase tracking-wide">
-                📊 Professional Fight Records
-              </h3>
+            <div className="mt-10 mb-6 border-t border-stone-700/60 pt-8">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="h-px flex-1 bg-yellow-700/30" />
+                <h3 className="text-yellow-500 text-xs font-bold uppercase tracking-widest">
+                  📊 Full Career Records
+                </h3>
+                <div className="h-px flex-1 bg-yellow-700/30" />
+              </div>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button
                   onClick={() => openRecordModal(fight.fighters[0])}
                   className="bg-yellow-600 hover:bg-yellow-500 text-stone-900 px-6 py-3 rounded-lg border-2 border-yellow-500 hover:border-yellow-400 font-bold text-sm uppercase tracking-wide shadow-lg hover:shadow-xl"
                 >
-                  📈 View {fight.fighters[0].name} Complete Record
+                  📈 {fight.fighters[0].name}
                 </button>
                 <button
                   onClick={() => openRecordModal(fight.fighters[1])}
                   className="bg-yellow-600 hover:bg-yellow-500 text-stone-900 px-6 py-3 rounded-lg border-2 border-yellow-500 hover:border-yellow-400 font-bold text-sm uppercase tracking-wide shadow-lg hover:shadow-xl"
                 >
-                  📈 View {fight.fighters[1].name} Complete Record
+                  📈 {fight.fighters[1].name}
                 </button>
               </div>
             </div>
