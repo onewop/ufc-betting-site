@@ -317,61 +317,6 @@ const FightStatsSection = memo(
             );
           })}
 
-          {/* Recent fight history (from Sherdog) shown under Record & Awards tab */}
-          {tabKey === "recordAwards" && fighter.fight_history?.length > 0 && (
-            <div className="mt-4 pt-3 border-t border-stone-700">
-              <p className="text-stone-500 text-xs font-bold mb-2 uppercase tracking-wider">
-                Recent Fights (Sherdog)
-              </p>
-              <div className="flex flex-col gap-1.5">
-                {fighter.fight_history.map((fh, hi) => (
-                  <div
-                    key={hi}
-                    className={`rounded-lg px-3 py-2 ${
-                      fh.result === "win"
-                        ? "bg-green-950/40 border border-green-800/30"
-                        : fh.result === "loss"
-                          ? "bg-red-950/40 border border-red-800/30"
-                          : "bg-stone-800/40 border border-stone-700/30"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span
-                          className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
-                            fh.result === "win"
-                              ? "bg-green-500/20 text-green-400"
-                              : fh.result === "loss"
-                                ? "bg-red-500/20 text-red-400"
-                                : "bg-stone-600/20 text-stone-400"
-                          }`}
-                        >
-                          {fh.result?.charAt(0)?.toUpperCase() || "?"}
-                        </span>
-                        <span className="text-stone-200 text-sm font-medium truncate">
-                          {fh.opponent}
-                        </span>
-                      </div>
-                      <span className="text-stone-500 text-[10px] shrink-0 hidden sm:block">
-                        {fh.date}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 mt-1 ml-8 text-[11px] flex-wrap">
-                      <span className="text-stone-400">{fh.method}</span>
-                      {fh.round && (
-                        <span className="text-stone-500">
-                          ·&nbsp;R{fh.round}
-                        </span>
-                      )}
-                      {fh.time && (
-                        <span className="text-stone-600">·&nbsp;{fh.time}</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       );
     };
