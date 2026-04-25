@@ -1206,38 +1206,55 @@ export default function ParlayBuilder({ currentUser }) {
 
   return (
     <>
-      <div className="min-h-screen bg-stone-950 text-stone-100">
-        {/* Page header */}
-        <div className="relative border-b border-yellow-700/30 bg-stone-950 px-4 py-8 overflow-hidden">
+      <div
+        className="min-h-screen bg-stone-950 text-stone-100"
+        style={{ fontFamily: "'Courier New', monospace" }}
+      >
+        {/* ── CLASSIFIED HEADER ── */}
+        <div className="relative border-b border-yellow-700/40 overflow-hidden">
+          {/* Diagonal camo overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-900/10 via-stone-950 to-yellow-900/10" />
           <div
             className="absolute inset-0 opacity-[0.03]"
-            style={{ backgroundImage: "repeating-linear-gradient(0deg, #ca8a04 0, #ca8a04 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, #ca8a04 0, #ca8a04 1px, transparent 1px, transparent 40px)" }}
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(202,138,4,0.15) 10px, rgba(202,138,4,0.15) 11px)",
+            }}
           />
-          <div className="max-w-6xl mx-auto relative">
-            <div className="flex flex-wrap items-end gap-3 justify-between">
+          <div className="relative max-w-6xl mx-auto px-4 py-6 sm:py-7">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <p className="text-[10px] font-mono text-yellow-600 tracking-[0.4em] uppercase mb-1">◆ COMBAT VAULT</p>
-                <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                  Parlay Builder
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-[10px] text-yellow-600/80 tracking-[0.3em] uppercase font-mono">
+                    CLASSIFIED • LEVEL 5
+                  </span>
+                </div>
+                <h1
+                  className="text-2xl sm:text-3xl font-black tracking-wider font-mono flex items-center gap-3"
+                >
+                  <span className="text-yellow-500 text-2xl">🎯</span>
+                  OPERATION: <span className="text-yellow-400">PARLAY BUILDER</span>
                 </h1>
-                <p className="text-stone-400 text-sm mt-1">
-                  Pick your legs · Calculate your payout · Place on DK or
-                  FanDuel
+                <p className="text-stone-500 text-xs tracking-widest uppercase mt-2 font-mono">
+                  BUILD YOUR LEGS · CALCULATE PAYOUT · PLACE ON DK OR FANDUEL
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
                 <span
-                  className={`text-[11px] px-2 py-0.5 rounded-full font-semibold border ${
+                  className={`inline-flex items-center gap-1.5 text-[11px] px-3 py-1 rounded font-mono tracking-wider uppercase border ${
                     usingLive
-                      ? "text-green-400 border-green-600 bg-green-950"
-                      : "text-stone-400 border-stone-600 bg-stone-800"
+                      ? "text-green-400 border-green-700/60 bg-green-950/50"
+                      : "text-stone-400 border-stone-600/60 bg-stone-900/50"
                   }`}
                 >
-                  {usingLive ? "● Live odds" : "● Placeholder odds"}
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${usingLive ? "bg-green-400 animate-pulse" : "bg-stone-500"}`}
+                  />
+                  {usingLive ? "LIVE ODDS LOADED" : "PLACEHOLDER ODDS"}
                 </span>
                 {!usingLive && (
-                  <span className="text-[10px] text-stone-500">
-                    Visit Live Odds to load real data
+                  <span className="text-[10px] text-stone-600 font-mono">
+                    Visit Live Odds to sync real lines
                   </span>
                 )}
               </div>
@@ -1247,10 +1264,10 @@ export default function ParlayBuilder({ currentUser }) {
 
         <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4">
           {/* Mobile tab bar */}
-          <div className="lg:hidden flex rounded-lg overflow-hidden border border-stone-700 mb-4">
+          <div className="lg:hidden flex rounded-lg overflow-hidden border border-yellow-700/30 mb-4">
             <button
               onClick={() => setActiveTab("picks")}
-              className={`flex-1 py-2.5 text-sm font-semibold transition ${
+              className={`flex-1 py-2.5 text-xs font-mono font-bold tracking-widest uppercase transition ${
                 activeTab === "picks"
                   ? "bg-yellow-900/60 text-yellow-300 border-b-2 border-yellow-500"
                   : "bg-stone-900 text-stone-400 hover:text-stone-200"
@@ -1260,7 +1277,7 @@ export default function ParlayBuilder({ currentUser }) {
             </button>
             <button
               onClick={() => setActiveTab("slip")}
-              className={`flex-1 py-2.5 text-sm font-semibold transition relative ${
+              className={`flex-1 py-2.5 text-xs font-mono font-bold tracking-widest uppercase transition relative ${
                 activeTab === "slip"
                   ? "bg-yellow-900/60 text-yellow-300 border-b-2 border-yellow-500"
                   : "bg-stone-900 text-stone-400 hover:text-stone-200"
@@ -1309,10 +1326,10 @@ export default function ParlayBuilder({ currentUser }) {
                   .map((sectionName) => (
                     <div key={sectionName}>
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-xs font-bold uppercase tracking-widest text-stone-500">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-[0.3em] text-yellow-700">
                           {sectionName}
                         </span>
-                        <div className="flex-1 h-px bg-stone-800" />
+                        <div className="flex-1 h-px bg-yellow-900/30" />
                       </div>
                       <div className="flex flex-col gap-2">
                         {sections[sectionName].map((fight) => (
