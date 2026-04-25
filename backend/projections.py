@@ -282,6 +282,51 @@ def _grappling_projection(fighter: dict, opponent: dict, rounds: float) -> float
     return takedowns * 5.0 + sub_pts + ctrl_bonus + reversal_pts  # DK: 5 pts per TD
 
 
+def _derive_history_stats(fighter: dict) -> dict:
+    """
+    Compute record_last_5, current_win_streak, and current_loss_streak directly
+    from fight_history (pro fights only, newest-first). Returns the derived values
+    so callers aren't misled by stale pre-computed fields in the JSON.
+    """
+    history = [
+        h for h in (fighter.get("fight_history") or [])
+        if h.get("fight_type") == "pro"
+    ]
+    if not history:
+        return {}
+
+    # fight_history is newest-first
+    last5 = history[:5]
+    wins5 = sum(1 for h in last5 if h.get("result") == "win")
+    losses5 = len(last5) - wins5
+
+    win_streak = 0
+    loss_streak = 0
+    for h in history:
+        won = h.get("result") == "win"
+        if win_streak == 0 and loss_streak == 0:
+            if won:
+                win_streak = 1
+            else:
+                loss_streak = 1
+        elif win_streak > 0:
+            if won:
+                win_streak += 1
+            else:
+                break
+        else:
+            if not won:
+                loss_streak += 1
+            else:
+                break
+
+    return {
+        "record_last_5": f"{wins5}-{losses5}",
+        "current_win_streak": win_streak,
+        "current_loss_streak": loss_streak,
+    }
+
+
 def _form_adjustment(fighter: dict) -> float:
     """
     Adjustment based on recent form.
@@ -289,14 +334,17 @@ def _form_adjustment(fighter: dict) -> float:
     """
     adj = 0.0
 
-    # Last-5 record
-    wins, losses = _parse_record_last_5(fighter.get("record_last_5"))
+    # Always derive from fight_history so stale JSON fields don't mislead
+    derived = _derive_history_stats(fighter)
+    wins, losses = _parse_record_last_5(
+        derived.get("record_last_5") or fighter.get("record_last_5")
+    )
     if wins + losses > 0:
         adj += (wins - losses) * 1.2  # +6 for 5-0, -6 for 0-5
 
     # Win/loss streak intensity
-    win_streak = fighter.get("current_win_streak", 0) or 0
-    loss_streak = fighter.get("current_loss_streak", 0) or 0
+    win_streak = derived.get("current_win_streak") or fighter.get("current_win_streak", 0) or 0
+    loss_streak = derived.get("current_loss_streak") or fighter.get("current_loss_streak", 0) or 0
     if win_streak >= 3:
         adj += min(win_streak - 2, 3) * 1.0  # +1 to +3 for 3-5+ streak
     if loss_streak >= 2:
@@ -567,8 +615,11 @@ def project_fighter(
     if fr and fr != "N/A" and float(fr) >= 60:
         reasoning_parts.append(f"{float(fr):.0f}% career finish rate")
 
-    # 5. Recent form
-    wins_l5, losses_l5 = _parse_record_last_5(fighter.get("record_last_5"))
+    # 5. Recent form — derive from fight_history to avoid stale stored field
+    derived = _derive_history_stats(fighter)
+    wins_l5, losses_l5 = _parse_record_last_5(
+        derived.get("record_last_5") or fighter.get("record_last_5")
+    )
     if wins_l5 + losses_l5 > 0:
         reasoning_parts.append(f"Last 5: {wins_l5}-{losses_l5}")
 

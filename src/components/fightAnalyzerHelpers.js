@@ -55,6 +55,43 @@ const parseRecord = (rec) => {
   return m ? { w: parseInt(m[1]), l: parseInt(m[2]) } : null;
 };
 
+/**
+ * Derive record_last_5, current_win_streak, and current_loss_streak directly
+ * from fight_history (pro fights only, newest-first ordering from ufcstats).
+ * This always reflects the most recent fights regardless of when the static
+ * JSON was last generated, fixing stale pre-computed fields like record_last_5.
+ */
+const deriveFightHistoryStats = (f) => {
+  const history = (f.fight_history || []).filter((h) => h.fight_type === "pro");
+  if (history.length === 0) return null;
+
+  // fight_history is newest-first (index 0 = most recent fight)
+  const last5 = history.slice(0, 5);
+  const wins5 = last5.filter((h) => h.result === "win").length;
+  const losses5 = last5.length - wins5;
+
+  let winStreak = 0;
+  let lossStreak = 0;
+  for (const h of history) {
+    if (winStreak === 0 && lossStreak === 0) {
+      if (h.result === "win") winStreak = 1;
+      else lossStreak = 1;
+    } else if (winStreak > 0) {
+      if (h.result === "win") winStreak++;
+      else break;
+    } else {
+      if (h.result !== "win") lossStreak++;
+      else break;
+    }
+  }
+
+  return {
+    record_last_5: `${wins5}-${losses5}`,
+    current_win_streak: winStreak,
+    current_loss_streak: lossStreak,
+  };
+};
+
 /** Clamp a value between min and max */
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
@@ -202,7 +239,11 @@ function scoreRecordExperience(f) {
   const winPct = (wins / total) * 100;
   const longevity = f.career_longevity_years ?? 3;
   const titleBouts = f.total_title_bouts ?? 0;
-  const rec5 = parseRecord(f.record_last_5);
+
+  // Always derive from fight_history so stale pre-computed fields can't mislead
+  const derived = deriveFightHistoryStats(f);
+  const last5Str = derived ? derived.record_last_5 : f.record_last_5;
+  const rec5 = parseRecord(last5Str);
 
   const winPctScore = norm(winPct, 40, 90);
   const longevityScore = norm(longevity, 0, 12);
@@ -213,7 +254,7 @@ function scoreRecordExperience(f) {
 
   const notes = [];
   notes.push(`${wins}-${losses}${f.draws ? `-${f.draws}` : ""} career (${winPct.toFixed(0)}% win rate)`);
-  if (rec5) notes.push(`last 5: ${f.record_last_5}`);
+  if (last5Str) notes.push(`last 5: ${last5Str}`);
   if (longevity >= 8) notes.push(`seasoned veteran (${longevity.toFixed(0)}yr career)`);
   else if (longevity < 2) notes.push(`relatively new (${longevity.toFixed(1)}yr career)`);
   if (titleBouts >= 1) notes.push(`${titleBouts} title bout${titleBouts > 1 ? "s" : ""}`);
@@ -222,8 +263,10 @@ function scoreRecordExperience(f) {
 }
 
 function scoreMomentum(f) {
-  const winStreak = f.current_win_streak ?? 0;
-  const lossStreak = f.current_loss_streak ?? 0;
+  // Derive streaks from fight_history to avoid stale pre-computed values
+  const derived = deriveFightHistoryStats(f);
+  const winStreak = derived ? derived.current_win_streak : (f.current_win_streak ?? 0);
+  const lossStreak = derived ? derived.current_loss_streak : (f.current_loss_streak ?? 0);
   const longestStreak = f.longest_win_streak ?? 0;
   const lastResult = f.last_fight_result ?? "";
 
