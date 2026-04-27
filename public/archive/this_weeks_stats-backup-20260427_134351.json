@@ -608,21 +608,7 @@
           "youtubeHighlightUrl": null
         }
       ],
-      "betting_odds": {
-        "fighter1_name": "Cam Rowston",
-        "fighter2_name": "Robert Bryczek",
-        "fighter1_moneyline": "N/A",
-        "fighter2_moneyline": "N/A",
-        "over_under_rounds": "N/A",
-        "over_odds": "N/A",
-        "under_odds": "N/A",
-        "fighter1_ko_odds": "N/A",
-        "fighter2_ko_odds": "N/A",
-        "fighter1_sub_odds": "N/A",
-        "fighter2_sub_odds": "N/A",
-        "fighter1_decision_odds": "N/A",
-        "fighter2_decision_odds": "N/A"
-      }
+      "betting_odds": {}
     },
     {
       "fight_id": 1,
@@ -996,21 +982,7 @@
           "youtubeHighlightUrl": null
         }
       ],
-      "betting_odds": {
-        "fighter1_name": "Junior Tafa",
-        "fighter2_name": "Kevin Christian",
-        "fighter1_moneyline": "N/A",
-        "fighter2_moneyline": "N/A",
-        "over_under_rounds": "N/A",
-        "over_odds": "N/A",
-        "under_odds": "N/A",
-        "fighter1_ko_odds": "N/A",
-        "fighter2_ko_odds": "N/A",
-        "fighter1_sub_odds": "N/A",
-        "fighter2_sub_odds": "N/A",
-        "fighter1_decision_odds": "N/A",
-        "fighter2_decision_odds": "N/A"
-      }
+      "betting_odds": {}
     },
     {
       "fight_id": 2,
@@ -1773,21 +1745,7 @@
           "youtubeHighlightUrl": null
         }
       ],
-      "betting_odds": {
-        "fighter1_name": "Steve Erceg",
-        "fighter2_name": "Tim Elliott",
-        "fighter1_moneyline": "N/A",
-        "fighter2_moneyline": "N/A",
-        "over_under_rounds": "N/A",
-        "over_odds": "N/A",
-        "under_odds": "N/A",
-        "fighter1_ko_odds": "N/A",
-        "fighter2_ko_odds": "N/A",
-        "fighter1_sub_odds": "N/A",
-        "fighter2_sub_odds": "N/A",
-        "fighter1_decision_odds": "N/A",
-        "fighter2_decision_odds": "N/A"
-      }
+      "betting_odds": {}
     },
     {
       "fight_id": 3,
@@ -2348,21 +2306,7 @@
           "youtubeHighlightUrl": null
         }
       ],
-      "betting_odds": {
-        "fighter1_name": "Jonathan Micallef",
-        "fighter2_name": "Themba Gorimbo",
-        "fighter1_moneyline": "N/A",
-        "fighter2_moneyline": "N/A",
-        "over_under_rounds": "N/A",
-        "over_odds": "N/A",
-        "under_odds": "N/A",
-        "fighter1_ko_odds": "N/A",
-        "fighter2_ko_odds": "N/A",
-        "fighter1_sub_odds": "N/A",
-        "fighter2_sub_odds": "N/A",
-        "fighter1_decision_odds": "N/A",
-        "fighter2_decision_odds": "N/A"
-      }
+      "betting_odds": {}
     },
     {
       "fight_id": 4,
@@ -3290,21 +3234,7 @@
           "youtubeHighlightUrl": null
         }
       ],
-      "betting_odds": {
-        "fighter1_name": "Jacob Malkoun",
-        "fighter2_name": "Gerald Meerschaert",
-        "fighter1_moneyline": "N/A",
-        "fighter2_moneyline": "N/A",
-        "over_under_rounds": "N/A",
-        "over_odds": "N/A",
-        "under_odds": "N/A",
-        "fighter1_ko_odds": "N/A",
-        "fighter2_ko_odds": "N/A",
-        "fighter1_sub_odds": "N/A",
-        "fighter2_sub_odds": "N/A",
-        "fighter1_decision_odds": "N/A",
-        "fighter2_decision_odds": "N/A"
-      }
+      "betting_odds": {}
     },
     {
       "fight_id": 5,
@@ -3920,21 +3850,7 @@
           "youtubeHighlightUrl": null
         }
       ],
-      "betting_odds": {
-        "fighter1_name": "Colby Thicknesse",
-        "fighter2_name": "Vince Morales",
-        "fighter1_moneyline": "N/A",
-        "fighter2_moneyline": "N/A",
-        "over_under_rounds": "N/A",
-        "over_odds": "N/A",
-        "under_odds": "N/A",
-        "fighter1_ko_odds": "N/A",
-        "fighter2_ko_odds": "N/A",
-        "fighter1_sub_odds": "N/A",
-        "fighter2_sub_odds": "N/A",
-        "fighter1_decision_odds": "N/A",
-        "fighter2_decision_odds": "N/A"
-      }
+      "betting_odds": {}
     },
     {
       "fight_id": 6,
@@ -4440,21 +4356,7 @@
           "youtubeHighlightUrl": null
         }
       ],
-      "betting_odds": {
-        "fighter1_name": "Brando Pericic",
-        "fighter2_name": "Shamil Gaziev",
-        "fighter1_moneyline": "N/A",
-        "fighter2_moneyline": "N/A",
-        "over_under_rounds": "N/A",
-        "over_odds": "N/A",
-        "under_odds": "N/A",
-        "fighter1_ko_odds": "N/A",
-        "fighter2_ko_odds": "N/A",
-        "fighter1_sub_odds": "N/A",
-        "fighter2_sub_odds": "N/A",
-        "fighter1_decision_odds": "N/A",
-        "fighter2_decision_odds": "N/A"
-      }
+      "betting_odds": {}
     },
     {
       "fight_id": 7,
@@ -5160,21 +5062,7 @@
           "youtubeHighlightUrl": null
         }
       ],
-      "betting_odds": {
-        "fighter1_name": "Carlos Prates",
-        "fighter2_name": "Jack Della Maddalena",
-        "fighter1_moneyline": "N/A",
-        "fighter2_moneyline": "N/A",
-        "over_under_rounds": "N/A",
-        "over_odds": "N/A",
-        "under_odds": "N/A",
-        "fighter1_ko_odds": "N/A",
-        "fighter2_ko_odds": "N/A",
-        "fighter1_sub_odds": "N/A",
-        "fighter2_sub_odds": "N/A",
-        "fighter1_decision_odds": "N/A",
-        "fighter2_decision_odds": "N/A"
-      }
+      "betting_odds": {}
     },
     {
       "fight_id": 8,
@@ -5856,21 +5744,7 @@
           "youtubeHighlightUrl": null
         }
       ],
-      "betting_odds": {
-        "fighter1_name": "Quillan Salkilld",
-        "fighter2_name": "Beneil Dariush",
-        "fighter1_moneyline": "N/A",
-        "fighter2_moneyline": "N/A",
-        "over_under_rounds": "N/A",
-        "over_odds": "N/A",
-        "under_odds": "N/A",
-        "fighter1_ko_odds": "N/A",
-        "fighter2_ko_odds": "N/A",
-        "fighter1_sub_odds": "N/A",
-        "fighter2_sub_odds": "N/A",
-        "fighter1_decision_odds": "N/A",
-        "fighter2_decision_odds": "N/A"
-      }
+      "betting_odds": {}
     },
     {
       "fight_id": 9,
@@ -6240,21 +6114,7 @@
           "youtubeHighlightUrl": null
         }
       ],
-      "betting_odds": {
-        "fighter1_name": "Ben Johnston",
-        "fighter2_name": "Wes Schultz",
-        "fighter1_moneyline": "N/A",
-        "fighter2_moneyline": "N/A",
-        "over_under_rounds": "N/A",
-        "over_odds": "N/A",
-        "under_odds": "N/A",
-        "fighter1_ko_odds": "N/A",
-        "fighter2_ko_odds": "N/A",
-        "fighter1_sub_odds": "N/A",
-        "fighter2_sub_odds": "N/A",
-        "fighter1_decision_odds": "N/A",
-        "fighter2_decision_odds": "N/A"
-      }
+      "betting_odds": {}
     },
     {
       "fight_id": 10,
@@ -6641,21 +6501,7 @@
           "youtubeHighlightUrl": null
         }
       ],
-      "betting_odds": {
-        "fighter1_name": "Kody Steele",
-        "fighter2_name": "Dom Mar Fan",
-        "fighter1_moneyline": "N/A",
-        "fighter2_moneyline": "N/A",
-        "over_under_rounds": "N/A",
-        "over_odds": "N/A",
-        "under_odds": "N/A",
-        "fighter1_ko_odds": "N/A",
-        "fighter2_ko_odds": "N/A",
-        "fighter1_sub_odds": "N/A",
-        "fighter2_sub_odds": "N/A",
-        "fighter1_decision_odds": "N/A",
-        "fighter2_decision_odds": "N/A"
-      }
+      "betting_odds": {}
     },
     {
       "fight_id": 11,
@@ -7227,21 +7073,7 @@
           "youtubeHighlightUrl": null
         }
       ],
-      "betting_odds": {
-        "fighter1_name": "Tai Tuivasa",
-        "fighter2_name": "Louie Sutherland",
-        "fighter1_moneyline": "N/A",
-        "fighter2_moneyline": "N/A",
-        "over_under_rounds": "N/A",
-        "over_odds": "N/A",
-        "under_odds": "N/A",
-        "fighter1_ko_odds": "N/A",
-        "fighter2_ko_odds": "N/A",
-        "fighter1_sub_odds": "N/A",
-        "fighter2_sub_odds": "N/A",
-        "fighter1_decision_odds": "N/A",
-        "fighter2_decision_odds": "N/A"
-      }
+      "betting_odds": {}
     }
   ]
 }
