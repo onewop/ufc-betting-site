@@ -1229,11 +1229,10 @@ export default function ParlayBuilder({ currentUser }) {
                     CLASSIFIED • LEVEL 5
                   </span>
                 </div>
-                <h1
-                  className="text-2xl sm:text-3xl font-black tracking-wider font-mono flex items-center gap-3"
-                >
+                <h1 className="text-2xl sm:text-3xl font-black tracking-wider font-mono flex items-center gap-3">
                   <span className="text-yellow-500 text-2xl">🎯</span>
-                  OPERATION: <span className="text-yellow-400">PARLAY BUILDER</span>
+                  OPERATION:{" "}
+                  <span className="text-yellow-400">PARLAY BUILDER</span>
                 </h1>
                 <p className="text-stone-500 text-xs tracking-widest uppercase mt-2 font-mono">
                   BUILD YOUR LEGS · CALCULATE PAYOUT · PLACE ON DK OR FANDUEL

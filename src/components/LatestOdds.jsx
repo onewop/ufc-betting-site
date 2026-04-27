@@ -380,11 +380,16 @@ const LatestOdds = ({ currentUser }) => {
       <div className="relative border-b border-yellow-700/30 bg-stone-950 px-4 py-8 overflow-hidden">
         <div
           className="absolute inset-0 opacity-[0.03]"
-          style={{ backgroundImage: "repeating-linear-gradient(0deg, #ca8a04 0, #ca8a04 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, #ca8a04 0, #ca8a04 1px, transparent 1px, transparent 40px)" }}
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(0deg, #ca8a04 0, #ca8a04 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, #ca8a04 0, #ca8a04 1px, transparent 1px, transparent 40px)",
+          }}
         />
         <div className="max-w-6xl mx-auto relative flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-mono text-yellow-600 tracking-[0.4em] uppercase mb-1">◆ INTEL FEED</p>
+            <p className="text-[10px] font-mono text-yellow-600 tracking-[0.4em] uppercase mb-1">
+              ◆ INTEL FEED
+            </p>
             <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
               Live <span className="text-yellow-400">Betting Odds</span>
             </h1>

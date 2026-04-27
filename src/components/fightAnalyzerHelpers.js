@@ -122,11 +122,13 @@ function scoreStrikingOffense(f) {
   const kdScore = norm(kd, 0, 1.5);
   const headScore = norm(headPct, 20, 60);
 
-  const score = slpmScore * 0.4 + accScore * 0.25 + kdScore * 0.25 + headScore * 0.1;
+  const score =
+    slpmScore * 0.4 + accScore * 0.25 + kdScore * 0.25 + headScore * 0.1;
 
   const notes = [];
   if (slpm >= 5) notes.push(`high-volume striker at ${slpm.toFixed(1)} SLpM`);
-  else if (slpm < 2.5) notes.push(`low-volume striker at ${slpm.toFixed(1)} SLpM`);
+  else if (slpm < 2.5)
+    notes.push(`low-volume striker at ${slpm.toFixed(1)} SLpM`);
   if (acc >= 52) notes.push(`accurate (${acc.toFixed(0)}% landing)`);
   if (kd >= 0.5) notes.push(`knockdown threat (${kd.toFixed(1)} KD/fight)`);
   if (headPct >= 55) notes.push(`targets head heavily (${headPct}%)`);
@@ -149,7 +151,8 @@ function scoreStrikingDefense(f) {
 
   const notes = [];
   if (def >= 60) notes.push(`elite defense (${def.toFixed(0)}% avoided)`);
-  else if (def < 45) notes.push(`porous defense (only ${def.toFixed(0)}% avoided)`);
+  else if (def < 45)
+    notes.push(`porous defense (only ${def.toFixed(0)}% avoided)`);
   if (sapm >= 5) notes.push(`absorbs heavy damage (${sapm.toFixed(1)} SApM)`);
   else if (sapm < 2.5) notes.push(`rarely gets hit (${sapm.toFixed(1)} SApM)`);
   if (distPct >= 75) notes.push("fights primarily at range");
@@ -170,14 +173,18 @@ function scoreGrapplingOffense(f) {
   const ctrlScore = norm(ctrlSecs, 0, 300);
   const subAttScore = norm(subAttempts, 0, 2);
 
-  const score = tdScore * 0.35 + tdAccScore * 0.2 + ctrlScore * 0.3 + subAttScore * 0.15;
+  const score =
+    tdScore * 0.35 + tdAccScore * 0.2 + ctrlScore * 0.3 + subAttScore * 0.15;
 
   const notes = [];
-  if (tdAvg >= 3) notes.push(`aggressive wrestler (${tdAvg.toFixed(1)} TD/15min)`);
+  if (tdAvg >= 3)
+    notes.push(`aggressive wrestler (${tdAvg.toFixed(1)} TD/15min)`);
   else if (tdAvg < 0.5) notes.push("rarely attempts takedowns");
   if (tdAcc >= 50) notes.push(`efficient TDs (${tdAcc.toFixed(0)}% accuracy)`);
-  if (ctrlSecs >= 120) notes.push(`dominant control (${(ctrlSecs / 60).toFixed(1)} min avg)`);
-  if (subAttempts >= 1) notes.push(`active sub game (${subAttempts.toFixed(1)} att/fight)`);
+  if (ctrlSecs >= 120)
+    notes.push(`dominant control (${(ctrlSecs / 60).toFixed(1)} min avg)`);
+  if (subAttempts >= 1)
+    notes.push(`active sub game (${subAttempts.toFixed(1)} att/fight)`);
 
   return { score, notes };
 }
@@ -197,10 +204,13 @@ function scoreGrapplingDefense(f) {
 
   const notes = [];
   if (tdDef >= 75) notes.push(`elite TD defense (${tdDef.toFixed(0)}%)`);
-  else if (tdDef < 50) notes.push(`vulnerable to takedowns (${tdDef.toFixed(0)}%)`);
-  if (oppCtrl >= 120) notes.push(`gets controlled often (${(oppCtrl / 60).toFixed(1)} min avg)`);
+  else if (tdDef < 50)
+    notes.push(`vulnerable to takedowns (${tdDef.toFixed(0)}%)`);
+  if (oppCtrl >= 120)
+    notes.push(`gets controlled often (${(oppCtrl / 60).toFixed(1)} min avg)`);
   else if (oppCtrl < 20) notes.push("rarely held down");
-  if (subsConceded >= 2) notes.push(`has been submitted ${subsConceded}× in analyzed fights`);
+  if (subsConceded >= 2)
+    notes.push(`has been submitted ${subsConceded}× in analyzed fights`);
   if (subDef >= 95) notes.push("virtually immune to submissions");
 
   return { score, notes };
@@ -220,14 +230,22 @@ function scoreFinishing(f) {
   const firstRdScore = norm(firstRdWins, 0, 5);
   const kdFinScore = norm(kd, 0, 1);
 
-  const score = finScore * 0.3 + koScore * 0.25 + subScore * 0.15 + firstRdScore * 0.15 + kdFinScore * 0.15;
+  const score =
+    finScore * 0.3 +
+    koScore * 0.25 +
+    subScore * 0.15 +
+    firstRdScore * 0.15 +
+    kdFinScore * 0.15;
 
   const notes = [];
-  if (finRate >= 70) notes.push(`elite finisher (${finRate.toFixed(0)}% finish rate)`);
-  else if (finRate < 35) notes.push(`tends to go the distance (${finRate.toFixed(0)}% finish rate)`);
+  if (finRate >= 70)
+    notes.push(`elite finisher (${finRate.toFixed(0)}% finish rate)`);
+  else if (finRate < 35)
+    notes.push(`tends to go the distance (${finRate.toFixed(0)}% finish rate)`);
   if (koWins >= 5) notes.push(`dangerous KO power (${koWins} KO/TKO wins)`);
   if (subWins >= 3) notes.push(`submission specialist (${subWins} sub wins)`);
-  if (firstRdWins >= 3) notes.push(`fast starter (${firstRdWins} first-round finishes)`);
+  if (firstRdWins >= 3)
+    notes.push(`fast starter (${firstRdWins} first-round finishes)`);
 
   return { score, notes };
 }
@@ -248,16 +266,27 @@ function scoreRecordExperience(f) {
   const winPctScore = norm(winPct, 40, 90);
   const longevityScore = norm(longevity, 0, 12);
   const titleScore = norm(titleBouts, 0, 5);
-  const rec5Score = rec5 ? norm((rec5.w / (rec5.w + rec5.l || 1)) * 100, 20, 100) : 50;
+  const rec5Score = rec5
+    ? norm((rec5.w / (rec5.w + rec5.l || 1)) * 100, 20, 100)
+    : 50;
 
-  const score = winPctScore * 0.35 + rec5Score * 0.3 + longevityScore * 0.15 + titleScore * 0.2;
+  const score =
+    winPctScore * 0.35 +
+    rec5Score * 0.3 +
+    longevityScore * 0.15 +
+    titleScore * 0.2;
 
   const notes = [];
-  notes.push(`${wins}-${losses}${f.draws ? `-${f.draws}` : ""} career (${winPct.toFixed(0)}% win rate)`);
+  notes.push(
+    `${wins}-${losses}${f.draws ? `-${f.draws}` : ""} career (${winPct.toFixed(0)}% win rate)`,
+  );
   if (last5Str) notes.push(`last 5: ${last5Str}`);
-  if (longevity >= 8) notes.push(`seasoned veteran (${longevity.toFixed(0)}yr career)`);
-  else if (longevity < 2) notes.push(`relatively new (${longevity.toFixed(1)}yr career)`);
-  if (titleBouts >= 1) notes.push(`${titleBouts} title bout${titleBouts > 1 ? "s" : ""}`);
+  if (longevity >= 8)
+    notes.push(`seasoned veteran (${longevity.toFixed(0)}yr career)`);
+  else if (longevity < 2)
+    notes.push(`relatively new (${longevity.toFixed(1)}yr career)`);
+  if (titleBouts >= 1)
+    notes.push(`${titleBouts} title bout${titleBouts > 1 ? "s" : ""}`);
 
   return { score, notes };
 }
@@ -265,17 +294,27 @@ function scoreRecordExperience(f) {
 function scoreMomentum(f) {
   // Derive streaks from fight_history to avoid stale pre-computed values
   const derived = deriveFightHistoryStats(f);
-  const winStreak = derived ? derived.current_win_streak : (f.current_win_streak ?? 0);
-  const lossStreak = derived ? derived.current_loss_streak : (f.current_loss_streak ?? 0);
+  const winStreak = derived
+    ? derived.current_win_streak
+    : (f.current_win_streak ?? 0);
+  const lossStreak = derived
+    ? derived.current_loss_streak
+    : (f.current_loss_streak ?? 0);
   const longestStreak = f.longest_win_streak ?? 0;
   const lastResult = f.last_fight_result ?? "";
 
-  const streakScore = winStreak > 0
-    ? norm(winStreak, 0, 8)
-    : (lossStreak > 0 ? 100 - norm(lossStreak, 0, 4) : 50);
+  const streakScore =
+    winStreak > 0
+      ? norm(winStreak, 0, 8)
+      : lossStreak > 0
+        ? 100 - norm(lossStreak, 0, 4)
+        : 50;
   const longestScore = norm(longestStreak, 0, 10);
-  const lastResultScore = lastResult.toLowerCase().startsWith("w") ? 75
-    : (lastResult.toLowerCase().startsWith("l") ? 25 : 50);
+  const lastResultScore = lastResult.toLowerCase().startsWith("w")
+    ? 75
+    : lastResult.toLowerCase().startsWith("l")
+      ? 25
+      : 50;
 
   const score = streakScore * 0.5 + lastResultScore * 0.3 + longestScore * 0.2;
 
@@ -297,7 +336,8 @@ function scorePhysical(f, opponent) {
   const stance = (f.stance || "").toLowerCase();
   const oppStance = (opponent.stance || "").toLowerCase();
 
-  let heightAdv = 50, reachAdv = 50;
+  let heightAdv = 50,
+    reachAdv = 50;
   if (h1 != null && h2 != null) {
     heightAdv = clamp(50 + (h1 - h2) * 5, 20, 80);
   }
@@ -311,35 +351,47 @@ function scorePhysical(f, opponent) {
   else if (age < 25) ageScore = 50;
   else ageScore = Math.max(20, 80 - (age - 32) * 5);
 
-  const stanceScore = (stance === "southpaw" && oppStance === "orthodox") ? 60
-    : (stance === "orthodox" && oppStance === "southpaw") ? 40 : 50;
+  const stanceScore =
+    stance === "southpaw" && oppStance === "orthodox"
+      ? 60
+      : stance === "orthodox" && oppStance === "southpaw"
+        ? 40
+        : 50;
 
-  const score = reachAdv * 0.35 + heightAdv * 0.2 + ageScore * 0.3 + stanceScore * 0.15;
+  const score =
+    reachAdv * 0.35 + heightAdv * 0.2 + ageScore * 0.3 + stanceScore * 0.15;
 
   const notes = [];
   if (r1 && r2 && Math.abs(r1 - r2) >= 2) {
-    notes.push(`${r1 > r2 ? "+" : ""}${r1 - r2}" reach ${r1 > r2 ? "advantage" : "disadvantage"}`);
+    notes.push(
+      `${r1 > r2 ? "+" : ""}${r1 - r2}" reach ${r1 > r2 ? "advantage" : "disadvantage"}`,
+    );
   }
   if (h1 && h2 && Math.abs(h1 - h2) >= 2) {
     notes.push(`${h1 > h2 ? "taller" : "shorter"} by ${Math.abs(h1 - h2)}"`);
   }
   if (age >= 36) notes.push(`age concern at ${age}`);
-  else if (age >= 28 && age <= 32) notes.push(`in prime fighting years (${age})`);
+  else if (age >= 28 && age <= 32)
+    notes.push(`in prime fighting years (${age})`);
   else if (age < 25) notes.push(`young prospect (${age})`);
-  if (stance === "southpaw") notes.push("southpaw stance advantage vs orthodox");
+  if (stance === "southpaw")
+    notes.push("southpaw stance advantage vs orthodox");
 
   return { score, notes };
 }
 
 function scoreFightHistory(f) {
   const history = f.fight_history || [];
-  if (history.length === 0) return { score: 50, notes: ["no fight history data"] };
+  if (history.length === 0)
+    return { score: 50, notes: ["no fight history data"] };
 
   const proFights = history.filter((h) => h.fight_type === "pro");
   const recent5 = proFights.slice(0, 5);
   const wins = recent5.filter((h) => h.result === "win");
   const koFinishes = wins.filter((h) => h.method && /KO|TKO/i.test(h.method));
-  const subFinishes = wins.filter((h) => h.method && /submission/i.test(h.method));
+  const subFinishes = wins.filter(
+    (h) => h.method && /submission/i.test(h.method),
+  );
   const r1Finishes = wins.filter((h) => h.round === "1");
 
   const last3 = proFights.slice(0, 3);
@@ -349,15 +401,23 @@ function scoreFightHistory(f) {
   const finishCount = koFinishes.length + subFinishes.length;
   const finishScore = norm(finishCount, 0, 4);
 
-  const score = trajectoryScore * 0.5 + finishScore * 0.3 + norm(Math.min(proFights.length, 20), 0, 20) * 0.2;
+  const score =
+    trajectoryScore * 0.5 +
+    finishScore * 0.3 +
+    norm(Math.min(proFights.length, 20), 0, 20) * 0.2;
 
   const notes = [];
   if (recentWins === 3) notes.push("won all last 3 fights");
-  else if (recentWins === 0 && last3.length >= 3) notes.push("lost all last 3 fights");
-  if (koFinishes.length >= 2) notes.push(`${koFinishes.length} KO/TKOs in last 5`);
-  if (subFinishes.length >= 2) notes.push(`${subFinishes.length} subs in last 5`);
-  if (r1Finishes.length >= 2) notes.push("multiple first-round finishes recently");
-  if (proFights.length < 5) notes.push(`limited pro experience (${proFights.length} fights)`);
+  else if (recentWins === 0 && last3.length >= 3)
+    notes.push("lost all last 3 fights");
+  if (koFinishes.length >= 2)
+    notes.push(`${koFinishes.length} KO/TKOs in last 5`);
+  if (subFinishes.length >= 2)
+    notes.push(`${subFinishes.length} subs in last 5`);
+  if (r1Finishes.length >= 2)
+    notes.push("multiple first-round finishes recently");
+  if (proFights.length < 5)
+    notes.push(`limited pro experience (${proFights.length} fights)`);
 
   return { score, notes };
 }
@@ -372,7 +432,9 @@ function scoreStyleMatchup(f, opponent) {
   const oppDef = _parsePct(os.striking_defense) ?? 55;
   if (slpm >= 4 && oppDef < 50) {
     score += 12;
-    notes.push(`high output (${slpm.toFixed(1)} SLpM) vs weak defense (${oppDef.toFixed(0)}%)`);
+    notes.push(
+      `high output (${slpm.toFixed(1)} SLpM) vs weak defense (${oppDef.toFixed(0)}%)`,
+    );
   } else if (slpm >= 3 && oppDef < 45) {
     score += 8;
     notes.push("solid output vs porous defense");
@@ -382,7 +444,9 @@ function scoreStyleMatchup(f, opponent) {
   const oppTdDef = _parsePct(os.td_defense) ?? 60;
   if (tdAvg >= 2 && oppTdDef < 55) {
     score += 12;
-    notes.push(`active wrestler (${tdAvg.toFixed(1)} TD avg) vs poor TD defense (${oppTdDef.toFixed(0)}%)`);
+    notes.push(
+      `active wrestler (${tdAvg.toFixed(1)} TD avg) vs poor TD defense (${oppTdDef.toFixed(0)}%)`,
+    );
   } else if (tdAvg >= 1.5 && oppTdDef < 50) {
     score += 8;
     notes.push("wrestling advantage vs weak TD defense");
@@ -392,7 +456,9 @@ function scoreStyleMatchup(f, opponent) {
   const oppSubDef = os.implied_sub_def_pct ?? 80;
   if (subWins >= 3 && oppSubDef < 70) {
     score += 8;
-    notes.push(`submission threat (${subWins} sub wins) vs questionable sub defense`);
+    notes.push(
+      `submission threat (${subWins} sub wins) vs questionable sub defense`,
+    );
   }
 
   const kdRate = s.avg_kd_per_fight ?? 0;
@@ -418,20 +484,19 @@ function scoreStyleMatchup(f, opponent) {
   return { score: clamp(score, 0, 100), notes };
 }
 
-
 // ─── Main Prediction Engine ─────────────────────────────────────────────────
 
 const WEIGHTS = {
-  strikingOffense:  0.15,
-  strikingDefense:  0.12,
+  strikingOffense: 0.15,
+  strikingDefense: 0.12,
   grapplingOffense: 0.13,
-  grapplingDefense: 0.10,
-  finishing:        0.12,
-  record:           0.10,
-  momentum:         0.08,
-  physical:         0.08,
-  fightHistory:     0.05,
-  styleMatchup:     0.07,
+  grapplingDefense: 0.1,
+  finishing: 0.12,
+  record: 0.1,
+  momentum: 0.08,
+  physical: 0.08,
+  fightHistory: 0.05,
+  styleMatchup: 0.07,
 };
 
 const CAT_LABELS = {
@@ -463,32 +528,34 @@ const CAT_LABELS = {
  */
 export function predictFight(f1, f2) {
   const cats1 = {
-    strikingOffense:  scoreStrikingOffense(f1),
-    strikingDefense:  scoreStrikingDefense(f1),
+    strikingOffense: scoreStrikingOffense(f1),
+    strikingDefense: scoreStrikingDefense(f1),
     grapplingOffense: scoreGrapplingOffense(f1),
     grapplingDefense: scoreGrapplingDefense(f1),
-    finishing:        scoreFinishing(f1),
-    record:           scoreRecordExperience(f1),
-    momentum:         scoreMomentum(f1),
-    physical:         scorePhysical(f1, f2),
-    fightHistory:     scoreFightHistory(f1),
-    styleMatchup:     scoreStyleMatchup(f1, f2),
+    finishing: scoreFinishing(f1),
+    record: scoreRecordExperience(f1),
+    momentum: scoreMomentum(f1),
+    physical: scorePhysical(f1, f2),
+    fightHistory: scoreFightHistory(f1),
+    styleMatchup: scoreStyleMatchup(f1, f2),
   };
   const cats2 = {
-    strikingOffense:  scoreStrikingOffense(f2),
-    strikingDefense:  scoreStrikingDefense(f2),
+    strikingOffense: scoreStrikingOffense(f2),
+    strikingDefense: scoreStrikingDefense(f2),
     grapplingOffense: scoreGrapplingOffense(f2),
     grapplingDefense: scoreGrapplingDefense(f2),
-    finishing:        scoreFinishing(f2),
-    record:           scoreRecordExperience(f2),
-    momentum:         scoreMomentum(f2),
-    physical:         scorePhysical(f2, f1),
-    fightHistory:     scoreFightHistory(f2),
-    styleMatchup:     scoreStyleMatchup(f2, f1),
+    finishing: scoreFinishing(f2),
+    record: scoreRecordExperience(f2),
+    momentum: scoreMomentum(f2),
+    physical: scorePhysical(f2, f1),
+    fightHistory: scoreFightHistory(f2),
+    styleMatchup: scoreStyleMatchup(f2, f1),
   };
 
-  let total1 = 0, total2 = 0;
-  const breakdown1 = {}, breakdown2 = {};
+  let total1 = 0,
+    total2 = 0;
+  const breakdown1 = {},
+    breakdown2 = {};
   for (const [cat, weight] of Object.entries(WEIGHTS)) {
     const s1 = cats1[cat].score;
     const s2 = cats2[cat].score;
@@ -541,8 +608,18 @@ export function predictFight(f1, f2) {
   }
 
   const narrative = buildNarrative(
-    { name: winner.name, cats: wCats, breakdown: wBreak, winProb: winner.winProb },
-    { name: loser.name, cats: lCats, breakdown: lBreak, winProb: loser.winProb },
+    {
+      name: winner.name,
+      cats: wCats,
+      breakdown: wBreak,
+      winProb: winner.winProb,
+    },
+    {
+      name: loser.name,
+      cats: lCats,
+      breakdown: lBreak,
+      winProb: loser.winProb,
+    },
     catWins,
     CAT_LABELS,
     confidence,
@@ -578,9 +655,13 @@ function buildNarrative(w, l, catWins, catLabels, confidence, margin) {
     tossup: "faces a near coin-flip matchup against",
   };
   if (confidence === "tossup") {
-    lines.push(`${wLast} ${confWords[confidence]} ${lLast} — the model gives ${wLast} a thin ${w.winProb}% win probability.`);
+    lines.push(
+      `${wLast} ${confWords[confidence]} ${lLast} — the model gives ${wLast} a thin ${w.winProb}% win probability.`,
+    );
   } else {
-    lines.push(`${wLast} ${confWords[confidence]} at ${w.winProb}% win probability.`);
+    lines.push(
+      `${wLast} ${confWords[confidence]} at ${w.winProb}% win probability.`,
+    );
   }
 
   const wAdvCats = catWins.winner.slice(0, 3);
@@ -591,7 +672,9 @@ function buildNarrative(w, l, catWins, catLabels, confidence, margin) {
       const topNotes = w.cats[cat].notes.slice(0, 2);
       if (topNotes.length > 0) advDetails.push(...topNotes);
     }
-    lines.push(`Key strengths: wins ${advNames.join(", ")} categories${advDetails.length > 0 ? " — " + advDetails.slice(0, 3).join("; ") : ""}.`);
+    lines.push(
+      `Key strengths: wins ${advNames.join(", ")} categories${advDetails.length > 0 ? " — " + advDetails.slice(0, 3).join("; ") : ""}.`,
+    );
   }
 
   const lAdvCats = catWins.loser.slice(0, 2);
@@ -602,7 +685,9 @@ function buildNarrative(w, l, catWins, catLabels, confidence, margin) {
       const topNotes = l.cats[cat].notes.slice(0, 2);
       if (topNotes.length > 0) lDetails.push(...topNotes);
     }
-    lines.push(`${lLast}'s path to victory: ${lAdvNames.join(", ")}${lDetails.length > 0 ? " — " + lDetails.slice(0, 2).join("; ") : ""}.`);
+    lines.push(
+      `${lLast}'s path to victory: ${lAdvNames.join(", ")}${lDetails.length > 0 ? " — " + lDetails.slice(0, 2).join("; ") : ""}.`,
+    );
   }
 
   const wStyleNotes = w.cats.styleMatchup.notes;
@@ -616,11 +701,17 @@ function buildNarrative(w, l, catWins, catLabels, confidence, margin) {
   const wRecNotes = w.cats.record.notes;
   const lRecNotes = l.cats.record.notes;
   if (wRecNotes.length >= 1 && lRecNotes.length >= 1) {
-    lines.push(`Records: ${wLast} ${wRecNotes[0]}${wRecNotes[1] ? " (" + wRecNotes[1] + ")" : ""} vs ${lLast} ${lRecNotes[0]}${lRecNotes[1] ? " (" + lRecNotes[1] + ")" : ""}.`);
+    lines.push(
+      `Records: ${wLast} ${wRecNotes[0]}${wRecNotes[1] ? " (" + wRecNotes[1] + ")" : ""} vs ${lLast} ${lRecNotes[0]}${lRecNotes[1] ? " (" + lRecNotes[1] + ")" : ""}.`,
+    );
   }
 
-  const wMomNotes = w.cats.momentum.notes.filter((n) => !n.startsWith("last result"));
-  const lMomNotes = l.cats.momentum.notes.filter((n) => !n.startsWith("last result"));
+  const wMomNotes = w.cats.momentum.notes.filter(
+    (n) => !n.startsWith("last result"),
+  );
+  const lMomNotes = l.cats.momentum.notes.filter(
+    (n) => !n.startsWith("last result"),
+  );
   if (wMomNotes.length > 0 || lMomNotes.length > 0) {
     const parts = [];
     if (wMomNotes.length > 0) parts.push(`${wLast} ${wMomNotes[0]}`);
@@ -709,7 +800,25 @@ export const _computeAngles = (f1, f2) => [
   { attacker: f2.name, defender: f1.name, angles: [] },
 ];
 export const _LEVEL = {
-  strong: { dot: "bg-red-500", border: "border-red-700/60", bg: "bg-red-950/50", badge: "bg-red-700 text-red-100", label: "Exploit" },
-  moderate: { dot: "bg-orange-400", border: "border-orange-700/50", bg: "bg-orange-950/30", badge: "bg-orange-800 text-orange-100", label: "Edge" },
-  neutral: { dot: "bg-stone-600", border: "border-stone-700", bg: "bg-stone-900/40", badge: "bg-stone-700 text-stone-300", label: "Even" },
+  strong: {
+    dot: "bg-red-500",
+    border: "border-red-700/60",
+    bg: "bg-red-950/50",
+    badge: "bg-red-700 text-red-100",
+    label: "Exploit",
+  },
+  moderate: {
+    dot: "bg-orange-400",
+    border: "border-orange-700/50",
+    bg: "bg-orange-950/30",
+    badge: "bg-orange-800 text-orange-100",
+    label: "Edge",
+  },
+  neutral: {
+    dot: "bg-stone-600",
+    border: "border-stone-700",
+    bg: "bg-stone-900/40",
+    badge: "bg-stone-700 text-stone-300",
+    label: "Even",
+  },
 };
