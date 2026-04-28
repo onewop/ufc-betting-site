@@ -114,6 +114,188 @@ const getStat = (value, defaultValue) => {
   return value;
 };
 
+/**
+ * Classify a fight event into a competition tier.
+ * Returns 'ufc' | 'major' | 'regional'
+ */
+const classifyOrg = (eventName) => {
+  if (!eventName) return "regional";
+  const e = eventName.toUpperCase();
+  if (e.includes("UFC") || e.includes("DANA WHITE")) return "ufc";
+  if (
+    e.includes("BELLATOR") ||
+    e.includes("PROFESSIONAL FIGHTERS LEAGUE") ||
+    e.includes("PFL ") ||
+    e.includes("ONE FC") ||
+    e.includes("ONE CHAMPIONSHIP") ||
+    e.includes("STRIKEFORCE") ||
+    e.includes("WEC") ||
+    e.includes("DREAM")
+  )
+    return "major";
+  return "regional";
+};
+
+/**
+ * Quality of Opposition multiplier.
+ *
+ * Fighters with little or no UFC experience may have inflated stats from
+ * beating regional-level opposition.  We pull their raw score toward 50
+ * (neutral) proportional to how much of their career was outside the UFC.
+ *
+ * Tier weights:
+ *   UFC fight      → 1.0 (full credit)
+ *   Major org      → 0.6 (Bellator/PFL/ONE level)
+ *   Regional       → 0.2 (local shows)
+ *
+ * A fighter with all UFC fights keeps their score unchanged.
+ * A pure regional prospect gets their score pulled ~70% toward neutral.
+ */
+const QOO_DECAY = 0.75; // each older fight counts 75% of the previous
+const QOO_MAX_FIGHTS = 10;
+
+/**
+ * Recency-weighted Quality of Opposition.
+ * Most recent fight counts fully; each older fight counts 75% of the previous.
+ * This means a Bellator fight from 3 years ago contributes far less than
+ * an XKO fight from last month when assessing a fighter's current level.
+ */
+const computeQoO = (fighter) => {
+  const history = (fighter.fight_history || []).filter(
+    (h) => h.fight_type === "pro",
+  );
+  if (!history.length)
+    return { adjustmentStrength: 0.0, raw: 1.0, label: "no data" };
+
+  const TIER_WEIGHT = { ufc: 1.0, major: 0.6, regional: 0.2 };
+  const recent = history.slice(0, QOO_MAX_FIGHTS);
+  let weightedTier = 0;
+  let totalWeight = 0;
+  recent.forEach((h, i) => {
+    const recencyW = Math.pow(QOO_DECAY, i);
+    const tier = classifyOrg(h.event || "");
+    weightedTier += TIER_WEIGHT[tier] * recencyW;
+    totalWeight += recencyW;
+  });
+  const raw = weightedTier / totalWeight;
+  const adjustmentStrength = 0.7 * (1 - raw);
+  return {
+    adjustmentStrength,
+    raw,
+    label: `${Math.round(raw * 100)}% comp quality`,
+  };
+};
+
+/** Apply QoO to a single category score: only pull downward (compress scores
+ * above 50 toward 50). Scores at or below 50 are unchanged — we only want to
+ * dampen inflated advantages from weak opposition, not boost fighters who are
+ * already losing a category. */
+const applyQoO = (score, adjustmentStrength) => {
+  if (score <= 50) return score;
+  return score - (score - 50) * adjustmentStrength;
+};
+
+// ── Short Notice / UFC Debut Detection ────────────────────────────────────────
+
+const MONTH_MAP = {
+  Jan: 1,
+  Feb: 2,
+  Mar: 3,
+  Apr: 4,
+  May: 5,
+  Jun: 6,
+  Jul: 7,
+  Aug: 8,
+  Sep: 9,
+  Oct: 10,
+  Nov: 11,
+  Dec: 12,
+};
+const UFC_DEBUT_PENALTY = 5; // points deducted from final score
+const SHORT_NOTICE_DAYS = 14; // days threshold for short notice
+const SHORT_NOTICE_PENALTY = 4; // points deducted from final score
+
+/** Parse "Oct 10 2025" fight_history date → Date object, or null */
+const parseFightDate = (dateStr) => {
+  if (!dateStr) return null;
+  const parts = dateStr.trim().split(/\s+/);
+  if (parts.length !== 3) return null;
+  const month = MONTH_MAP[parts[0].slice(0, 3)];
+  if (!month) return null;
+  return new Date(parseInt(parts[2], 10), month - 1, parseInt(parts[1], 10));
+};
+
+/**
+ * Detect if a fighter is making their UFC debut or fighting on short notice.
+ *
+ * isDebut: fighter has zero UFC-tier fights in fight_history.
+ *   Penalty: −5 pts. Debut fighters have never faced UFC-caliber opposition
+ *   so their stats and record are structurally harder to trust.
+ *
+ * isShortNotice: last fight was < 14 days before eventDate.
+ *   Penalty: −4 pts. Limited camp/prep time disadvantage.
+ *
+ * @param {object} fighter  Fighter data object
+ * @param {Date}   eventDate  Event date (defaults to today for live picks)
+ */
+const detectPreparation = (fighter, eventDate = new Date(), overrides = []) => {
+  const history = (fighter.fight_history || []).filter(
+    (h) => h.fight_type === "pro",
+  );
+  const ufcFights = history.filter((h) => classifyOrg(h.event || "") === "ufc");
+  const isDebut = ufcFights.length === 0;
+
+  // Check manual override list (late replacements)
+  const fname = (fighter.name || "").toLowerCase();
+  const isManualOverride = overrides.some((n) => n.toLowerCase() === fname);
+
+  let isShortNotice = false;
+  let daysSinceLast = null;
+  if (history.length) {
+    const lastDate = parseFightDate(history[0].date);
+    if (lastDate) {
+      daysSinceLast = Math.round(
+        (eventDate - lastDate) / (1000 * 60 * 60 * 24),
+      );
+      isShortNotice = daysSinceLast > 0 && daysSinceLast < SHORT_NOTICE_DAYS;
+    }
+  }
+  // Manual override forces short-notice flag regardless of fight date
+  if (isManualOverride) isShortNotice = true;
+
+  let penalty = 0;
+  const notes = [];
+  if (isDebut) {
+    penalty += UFC_DEBUT_PENALTY;
+    notes.push(
+      `⚡ UFC debut — no prior UFC-level competition (−${UFC_DEBUT_PENALTY} pts applied)`,
+    );
+  }
+  if (isShortNotice) {
+    penalty += SHORT_NOTICE_PENALTY;
+    if (
+      isManualOverride &&
+      !(daysSinceLast > 0 && daysSinceLast < SHORT_NOTICE_DAYS)
+    ) {
+      notes.push(
+        `⚡ Late replacement (manual override) — limited prep time (−${SHORT_NOTICE_PENALTY} pts applied)`,
+      );
+    } else {
+      notes.push(
+        `⚡ Short notice (${daysSinceLast}d since last fight) — limited prep time (−${SHORT_NOTICE_PENALTY} pts applied)`,
+      );
+    }
+  }
+  return {
+    isDebut,
+    isShortNotice,
+    isManualOverride,
+    daysSinceLast,
+    penalty,
+    note: notes.join(" ") || null,
+  };
+};
+
 /** Get last name from full name */
 const lastName = (name) => {
   if (!name) return "";
@@ -539,7 +721,7 @@ const CAT_LABELS = {
  *   narrative: string,
  * }
  */
-export function predictFight(f1, f2) {
+export function predictFight(f1, f2, overrides = []) {
   const cats1 = {
     strikingOffense: scoreStrikingOffense(f1),
     strikingDefense: scoreStrikingDefense(f1),
@@ -565,13 +747,21 @@ export function predictFight(f1, f2) {
     styleMatchup: scoreStyleMatchup(f2, f1),
   };
 
+  // ── Quality of Opposition adjustment ──────────────────────────────────────
+  // Compute QoO first, then apply per-category (dampen above-50 scores only).
+  // This compresses inflated finish rates, win streaks, and grappling dominance
+  // that came from beating regional/local opposition — without distorting
+  // categories where a fighter is already losing.
+  const qoo1 = computeQoO(f1);
+  const qoo2 = computeQoO(f2);
+
   let total1 = 0,
     total2 = 0;
   const breakdown1 = {},
     breakdown2 = {};
   for (const [cat, weight] of Object.entries(WEIGHTS)) {
-    const s1 = cats1[cat].score;
-    const s2 = cats2[cat].score;
+    const s1 = applyQoO(cats1[cat].score, qoo1.adjustmentStrength);
+    const s2 = applyQoO(cats2[cat].score, qoo2.adjustmentStrength);
     total1 += s1 * weight;
     total2 += s2 * weight;
     breakdown1[cat] = { score: Math.round(s1), notes: cats1[cat].notes };
@@ -581,7 +771,16 @@ export function predictFight(f1, f2) {
   total1 = Math.round(total1 * 10) / 10;
   total2 = Math.round(total2 * 10) / 10;
 
-  // Sigmoid-style win probability
+  // ── Short Notice / UFC Debut penalty ──────────────────────────────────
+  // Debut fighters have never faced UFC-caliber opposition — their stats
+  // (finish rate, record, grappling numbers) came from lower-tier competition.
+  // Short-notice fighters had limited camp time.
+  // Apply flat point deductions to the post-QoO total before the sigmoid.
+  const prep1 = detectPreparation(f1, new Date(), overrides);
+  const prep2 = detectPreparation(f2, new Date(), overrides);
+  total1 = Math.round((total1 - prep1.penalty) * 10) / 10;
+  total2 = Math.round((total2 - prep2.penalty) * 10) / 10;
+  //   lock (≥12pt margin) → ~82%   strong (≥7) → ~74%   lean (≥3) → ~59%
   // Calibrated to /20 so labels match actual probabilities:
   //   lock (≥12pt margin) → ~82%   strong (≥7) → ~74%   lean (≥3) → ~59%
   const diff = total1 - total2;
@@ -659,6 +858,8 @@ export function predictFight(f1, f2) {
     confidence,
     margin,
     decisionCaution,
+    isF1 ? prep1 : prep2,
+    isF1 ? prep2 : prep1,
   );
 
   return {
@@ -666,6 +867,7 @@ export function predictFight(f1, f2) {
     loser,
     confidence,
     decisionCaution,
+    prep: { [f1.name]: prep1, [f2.name]: prep2 },
     margin: Math.round(margin * 10) / 10,
     categories: {
       [winner.name]: wBreak,
@@ -679,13 +881,28 @@ export function predictFight(f1, f2) {
 
 // ─── Narrative Builder ──────────────────────────────────────────────────────
 
-function buildNarrative(w, l, catWins, catLabels, confidence, margin, decisionCaution = false) {
+function buildNarrative(
+  w,
+  l,
+  catWins,
+  catLabels,
+  confidence,
+  margin,
+  decisionCaution = false,
+  wPrep = null,
+  lPrep = null,
+) {
   const wLast = lastName(w.name);
   const lLast = lastName(l.name);
   const lines = [];
 
+  if (wPrep?.note) lines.push(wPrep.note);
+  if (lPrep?.note) lines.push(lPrep.note);
+
   if (decisionCaution) {
-    lines.push("⚠ High likelihood of decision — judging criteria will decide. Confidence reduced one tier.");
+    lines.push(
+      "⚠ High likelihood of decision — judging criteria will decide. Confidence reduced one tier.",
+    );
   }
 
   const confWords = {
@@ -772,7 +989,7 @@ function buildNarrative(w, l, catWins, catLabels, confidence, margin, decisionCa
 /**
  * predictAllFights(fights) — Predict every fight on the card.
  */
-export function predictAllFights(fights) {
+export function predictAllFights(fights, overrides = []) {
   if (!fights || fights.length === 0) return [];
   return fights
     .filter((fight) => fight.fighters && fight.fighters.length >= 2)
@@ -782,7 +999,7 @@ export function predictAllFights(fights) {
         fightId: fight.fight_id,
         matchup: fight.matchup || `${f1.name} vs ${f2.name}`,
         weightClass: fight.weight_class || f1.weight_class || "",
-        prediction: predictFight(f1, f2),
+        prediction: predictFight(f1, f2, overrides),
       };
     });
 }

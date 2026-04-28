@@ -403,7 +403,8 @@ export default function PredictionTrackRecord() {
         {/* ── Methodology note ── */}
         {data && (
           <p className="text-[10px] font-mono text-yellow-600/60 text-center mb-6 tracking-wider">
-            MODEL v2 · DECISION CAUTION RULE ACTIVE · SIGMOID RECALIBRATED
+            MODEL v2.2 · DECISION CAUTION RULE · SIGMOID RECALIBRATED · QoO ·
+            DEBUT PENALTY
           </p>
         )}
 

@@ -1,5 +1,5 @@
 {
-  "_note": "REAL DATA \u2014 outcomes from ufc_fight_results.csv. Add new events at TOP. status: final|pending. result: null = ungraded (draw/no-contest).",
+  "_note": "REAL DATA — outcomes from ufc_fight_results.csv. Add new events at TOP. status: final|pending. result: null = ungraded (draw/no-contest).",
   "season_label": "2026 Season",
   "season_start": "2026-01-01",
   "events": [
@@ -82,7 +82,7 @@
         {
           "bout": "Francis Marshall vs. Lucas Brennan",
           "weight_class": "Lightweight",
-          "our_pick": "Lucas Brennan",
+          "our_pick": "Francis Marshall",
           "result": "Francis Marshall",
           "method": "Decision R3"
         },
@@ -655,7 +655,7 @@
         {
           "bout": "Bolaji Oki vs. Manoel Sousa",
           "weight_class": "Lightweight",
-          "our_pick": "Bolaji Oki",
+          "our_pick": "Manoel Sousa",
           "result": "Manoel Sousa",
           "method": "KO/TKO R3"
         },
@@ -676,7 +676,7 @@
         {
           "bout": "Luan Lacerda vs. Hecher Sosa",
           "weight_class": "Bantamweight",
-          "our_pick": "Luan Lacerda",
+          "our_pick": "Hecher Sosa",
           "result": "Hecher Sosa",
           "method": "Decision R3"
         },
@@ -888,6 +888,6 @@
       ]
     }
   ],
-  "methodology": "Smart AI v2 \u2014 10-category weighted model (striking offense/defense, grappling offense/defense, finishing, record, momentum, physical, fight history, style matchup). Sigmoid calibrated to /20 divisor. Decision Caution Rule: when both fighters have finish_rate_pct < 48%, confidence is reduced one tier to reflect judging unpredictability.",
-  "methodology_version": "v2.0 \u2014 2026-04-27"
+  "methodology": "Smart AI v2.2 — 10-category weighted model (striking offense/defense, grappling offense/defense, finishing, record, momentum, physical, fight history, style matchup). Sigmoid calibrated to /20 divisor. Decision Caution Rule: when both fighters have finish_rate_pct < 48%, confidence is reduced one tier. Quality of Opposition (QoO): recency-weighted fight history classification (decay=0.75, last 10 fights) compresses inflated above-50 category scores from regional/local opposition. Short Notice / Debut Penalty: UFC debut fighters receive −5 pts; short-notice fighters (<14d) receive −4 pts.",
+  "methodology_version": "v2.2 — 2026-04-27"
 }

@@ -120,6 +120,7 @@ const FightAnalyzer = ({
   const [fighters, setFighters] = useState([]);
   const [fights, setFights] = useState([]);
   const [highlightVideos, setHighlightVideos] = useState({});
+  const [shortNoticeOverrides, setShortNoticeOverrides] = useState([]);
   const [selectedFight, setSelectedFight] = useState("");
   const [expandedFightId, setExpandedFightId] = useState(null);
   const [fightDropdownOpen, setFightDropdownOpen] = useState(false);
@@ -281,6 +282,9 @@ const FightAnalyzer = ({
         const hvRes = await fetch("/highlight_videos.json");
         if (hvRes.ok) {
           const hvData = await hvRes.json();
+          // Extract manual short-notice overrides before building video lookup
+          const snOverrides = hvData._short_notice_overrides || [];
+          setShortNoticeOverrides(snOverrides);
           // Remove the _instructions key, keep only fighter→videoId mappings
           const { _instructions, ...fighterVideos } = hvData;
           // Build a lowercase-keyed lookup for case-insensitive matching
@@ -1742,7 +1746,7 @@ const FightAnalyzer = ({
           {fights.map((fight, idx) => {
             if (fight.fighters.length < 2) return null;
             const [f1, f2] = fight.fighters;
-            const pred = predictFight(f1, f2);
+            const pred = predictFight(f1, f2, shortNoticeOverrides);
             const isExpanded = expandedFightId === fight.fight_id;
 
             return (

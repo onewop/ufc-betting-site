@@ -6,6 +6,8 @@
     "Leave a fighter out entirely if you have no video — they just show a placeholder.",
     "URL is auto-generated: https://www.youtube.com/watch?v=VIDEO_ID"
   ],
+  "_short_notice_overrides": ["Louie Sutherland"],
+  "_short_notice_overrides_instructions": "Add fighter names here (exact match, case-insensitive) for late replacements who stepped in on short notice but whose last recorded fight was > 14 days ago. Clear this list each week.",
   "_missing_videos": [
     "Francis Marshall → https://www.youtube.com/results?search_query=Francis+Marshall+UFC+highlights",
     "Lucas Brennan → https://www.youtube.com/results?search_query=Lucas+Brennan+MMA+highlights",

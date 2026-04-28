@@ -20,6 +20,22 @@ cd /home/onewop/ufc-betting-site-main
 bash update-new-csv.sh
 
 # =======================
+# 2b. Short notice / debut check
+# =======================
+echo ""
+echo "⚡ Checking for short-notice / UFC debut fighters..."
+source .venv/bin/activate 2>/dev/null || true
+python3 scripts/aggregate_stats.py --short-notice-only 2>/dev/null || \
+    python3 - <<'PYEOF'
+import sys, os
+sys.path.insert(0, 'scripts')
+os.chdir('/home/onewop/ufc-betting-site-main')
+from aggregate_stats import check_short_notice
+check_short_notice()
+PYEOF
+echo ""
+
+# =======================
 # 3. Git Commit Changes
 # =======================
 echo "📝 Step 2: Committing changes to git..."

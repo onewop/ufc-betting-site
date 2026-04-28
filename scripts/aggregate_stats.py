@@ -1251,10 +1251,154 @@ def merge_ufcstats_results():
     except Exception as e:
         print(f"Error during merge: {e}")
 
+def check_short_notice(stats_path="public/this_weeks_stats.json",
+                       hv_path="public/highlight_videos.json",
+                       short_notice_days=21,
+                       debut_flag=True):
+    """
+    Scan this_weeks_stats.json for fighters who are:
+      (a) making their UFC debut (zero UFC fights in fight_history), OR
+      (b) fighting on short notice (last fight was within <short_notice_days> days of the event)
+
+    Prints a clearly formatted report and returns a list of flag dicts.
+    Runs automatically as part of the weekly update pipeline.
+    """
+    from datetime import date as _date, datetime as _dt
+
+    _MONTH_MAP = {
+        "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
+        "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12,
+    }
+
+    def _classify(event_name):
+        if not event_name:
+            return "regional"
+        e = event_name.upper()
+        if "UFC" in e or "DANA WHITE" in e:
+            return "ufc"
+        if any(x in e for x in ["BELLATOR", "PROFESSIONAL FIGHTERS LEAGUE", "PFL ",
+                                  "ONE FC", "ONE CHAMPIONSHIP", "STRIKEFORCE", "WEC", "DREAM"]):
+            return "major"
+        return "regional"
+
+    def _parse_date(ds):
+        if not ds:
+            return None
+        parts = ds.strip().split()
+        if len(parts) != 3:
+            return None
+        month = _MONTH_MAP.get(parts[0][:3])
+        if not month:
+            return None
+        try:
+            return _date(int(parts[2]), month, int(parts[1]))
+        except ValueError:
+            return None
+
+    if not os.path.exists(stats_path):
+        print(f"⚠️  check_short_notice: {stats_path} not found — skipping")
+        return []
+
+    with open(stats_path) as f:
+        data = json.load(f)
+
+    # Load manual short-notice overrides from highlight_videos.json
+    sn_overrides = []
+    if os.path.exists(hv_path):
+        try:
+            with open(hv_path) as _hf:
+                _hv = json.load(_hf)
+            sn_overrides = [n.lower() for n in _hv.get("_short_notice_overrides", [])]
+        except Exception:
+            pass
+
+    # Derive the event date from data["event"]["date"] (e.g. "May 2, 2026")
+    event_date = None
+    raw_event_date = data.get("event", {}).get("date", "")
+    if raw_event_date and raw_event_date != "Unknown":
+        try:
+            event_date = _dt.strptime(raw_event_date, "%B %d, %Y").date()
+        except ValueError:
+            try:
+                event_date = _dt.strptime(raw_event_date, "%B %-d, %Y").date()
+            except ValueError:
+                pass
+    if event_date is None:
+        event_date = _date.today()
+
+    flags = []
+    for fight in data.get("fights", []):
+        for fighter in fight.get("fighters", []):
+            name = fighter.get("name", "?")
+            history = [h for h in fighter.get("fight_history", [])
+                       if h.get("fight_type") == "pro"]
+            ufc_fights = [h for h in history if _classify(h.get("event", "")) == "ufc"]
+
+            is_debut = debut_flag and len(ufc_fights) == 0 and len(history) > 0
+            is_short_notice = False
+            days_since_last = None
+
+            if history:
+                last_date = _parse_date(history[0].get("date", ""))
+                if last_date:
+                    days_since_last = (event_date - last_date).days
+                    is_short_notice = 0 < days_since_last < short_notice_days
+
+            # Manual override: treat as short notice regardless of fight date
+            is_manual_override = name.lower() in sn_overrides
+
+            if is_debut or is_short_notice or is_manual_override:
+                reasons = []
+                if is_debut:
+                    reasons.append(f"UFC DEBUT (0 UFC fights, {len(history)} pro fights total)")
+                if is_short_notice:
+                    reasons.append(f"SHORT NOTICE ({days_since_last}d since last fight on {history[0].get('date','?')})")
+                if is_manual_override and not is_short_notice:
+                    last_str = history[0].get('date', '?') if history else 'no history'
+                    reasons.append(f"LATE REPLACEMENT (manual override — last fight: {last_str})")
+                flags.append({
+                    "name": name,
+                    "is_debut": is_debut,
+                    "is_short_notice": is_short_notice or is_manual_override,
+                    "is_manual_override": is_manual_override,
+                    "days_since_last": days_since_last,
+                    "reasons": reasons,
+                })
+
+    # ── Print report ──────────────────────────────────────────────────────────
+    bar = "=" * 60
+    print(f"\n{bar}")
+    print(f"  SHORT NOTICE / UFC DEBUT CHECK")
+    print(f"  Event: {data.get('event', {}).get('name', '?')}  |  Date: {event_date}")
+    print(f"  Short-notice threshold: < {short_notice_days} days")
+    if sn_overrides:
+        print(f"  Manual overrides loaded: {', '.join(sn_overrides)}")
+    print(bar)
+    if not flags:
+        print("  ✅ No short-notice or debut fighters detected.")
+    else:
+        for fl in flags:
+            prefix = "🔴" if fl.get("is_manual_override") else "⚡"
+            for reason in fl["reasons"]:
+                print(f"  {prefix} {fl['name']:30s}  {reason}")
+    print(bar + "\n")
+
+    return flags
+
+
 if __name__ == "__main__":
+    import sys as _sys
+    # Allow standalone: python3 scripts/aggregate_stats.py --short-notice-only
+    if "--short-notice-only" in _sys.argv:
+        check_short_notice()
+        _sys.exit(0)
+
     # Run main aggregation
     csv_to_json()
-    
+
+    # ── Short notice / debut check ────────────────────────────────────────────
+    check_short_notice()
+
     # Optional: Download UFC stats CSVs if env var is set
     if os.environ.get('SCRAPE_UFCSTATS_RESULTS', '0') == '1':
         print("\n" + "="*60)

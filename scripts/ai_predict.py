@@ -25,6 +25,7 @@ Usage:
 """
 
 import math
+import os
 import re
 
 # ─── Utilities ──────────────────────────────────────────────────────────────
@@ -92,10 +93,195 @@ def _get_stat(value, default_value):
     return value
 
 
+# ── Quality of Opposition ────────────────────────────────────────────────────
+
+TIER_WEIGHT = {"ufc": 1.0, "major": 0.6, "regional": 0.2}
+
+_UFC_KEYWORDS = ["UFC", "DANA WHITE"]
+_MAJOR_KEYWORDS = ["BELLATOR", "PROFESSIONAL FIGHTERS LEAGUE", "PFL ",
+                   "ONE FC", "ONE CHAMPIONSHIP", "STRIKEFORCE", "WEC", "DREAM"]
+
+
+def _classify_org(event_name: str) -> str:
+    if not event_name:
+        return "regional"
+    e = event_name.upper()
+    if any(k in e for k in _UFC_KEYWORDS):
+        return "ufc"
+    if any(k in e for k in _MAJOR_KEYWORDS):
+        return "major"
+    return "regional"
+
+
+_QOO_DECAY = 0.75   # each older fight counts 75% of the previous one
+_QOO_MAX_FIGHTS = 10  # look back at most 10 fights
+
+
+def _compute_qoo(fighter: dict) -> dict:
+    """
+    Quality of Opposition multiplier.  Returns a dict with
+    `adjustment_strength` (0-0.7) and `raw` (0-1 quality score).
+
+    Tier weights: UFC=1.0, Major org=0.6, Regional=0.2.
+    Fights are weighted by recency: most recent = 1.0, each older fight
+    is multiplied by _QOO_DECAY (0.75).  This means a Bellator fight
+    from 3 years ago contributes much less than last month's XKO fight.
+
+    A fighter with all recent UFC fights keeps their score unchanged.
+    A fighter whose recent fights are all regional gets a strong pull
+    toward 50 (neutral).
+    """
+    history = [h for h in fighter.get("fight_history", [])
+               if h.get("fight_type") == "pro"]
+    if not history:
+        return {"adjustment_strength": 0.0, "raw": 1.0}  # no data → no penalty
+
+    recent = history[:_QOO_MAX_FIGHTS]
+    weighted_tier = 0.0
+    total_weight = 0.0
+    for i, h in enumerate(recent):
+        recency_w = _QOO_DECAY ** i
+        tier = _classify_org(h.get("event", ""))
+        weighted_tier += TIER_WEIGHT[tier] * recency_w
+        total_weight += recency_w
+
+    raw = weighted_tier / total_weight
+    adjustment_strength = 0.7 * (1 - raw)
+    return {"adjustment_strength": adjustment_strength, "raw": raw}
+
+
+def _apply_qoo(score: float, adjustment_strength: float) -> float:
+    """Pull a single category score downward toward 50 if above 50.
+    Scores already at or below 50 are not changed.
+    This only penalizes strong scores earned against weak opposition.
+    """
+    if score <= 50:
+        return score
+    return score - (score - 50) * adjustment_strength
+
+
+# ── Short Notice / UFC Debut Detection ────────────────────────────────────────
+
+from datetime import date as _date_cls
+
+_MONTH_MAP = {
+    "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
+    "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12,
+}
+
+UFC_DEBUT_PENALTY = 5.0    # points deducted from final score
+SHORT_NOTICE_DAYS = 14     # days threshold for short notice
+SHORT_NOTICE_PENALTY = 4.0 # points deducted from final score
+
+
+def _load_short_notice_overrides(hv_path=None):
+    """Load the _short_notice_overrides list from highlight_videos.json.
+
+    Returns a list of lowercase fighter names that should be treated as
+    short-notice regardless of their last recorded fight date.
+    """
+    import json as _json_mod
+    if hv_path is None:
+        for p in ["public/highlight_videos.json", "../public/highlight_videos.json"]:
+            if os.path.exists(p):
+                hv_path = p
+                break
+    if not hv_path or not os.path.exists(hv_path):
+        return []
+    try:
+        with open(hv_path) as _f:
+            _data = _json_mod.load(_f)
+        return [n.lower() for n in _data.get("_short_notice_overrides", [])]
+    except Exception:
+        return []
+
+
+def _parse_fight_date(date_str: str):
+    """Parse 'Oct 10 2025' → datetime.date, or None."""
+    if not date_str:
+        return None
+    parts = date_str.strip().split()
+    if len(parts) != 3:
+        return None
+    month = _MONTH_MAP.get(parts[0][:3])
+    if not month:
+        return None
+    try:
+        return _date_cls(int(parts[2]), month, int(parts[1]))
+    except ValueError:
+        return None
+
+
+def _detect_preparation(fighter: dict, event_date=None, overrides=None) -> dict:
+    """
+    Detect UFC debut or short-notice status.
+
+    is_debut: fighter has zero UFC-tier fights in fight_history.
+      Penalty: −5 pts. Stats from non-UFC competition are less reliable.
+
+    is_short_notice: last fight was < 14 days before event_date, OR fighter
+      name appears in the manual overrides list (late replacements).
+      Penalty: −4 pts. Limited camp / prep time.
+
+    overrides: list of lowercase names from _short_notice_overrides in
+      highlight_videos.json. Pass None to skip override check.
+
+    event_date: datetime.date (defaults to today if None).
+    Returns dict with is_debut, is_short_notice, is_manual_override,
+      days_since_last, penalty, note.
+    """
+    ref = event_date if isinstance(event_date, _date_cls) else _date_cls.today()
+    history = [h for h in fighter.get("fight_history", [])
+               if h.get("fight_type") == "pro"]
+    ufc_fights = [h for h in history if _classify_org(h.get("event", "")) == "ufc"]
+    is_debut = len(ufc_fights) == 0
+
+    # Manual override check
+    fname = fighter.get("name", "").lower()
+    is_manual_override = bool(overrides) and fname in overrides
+
+    is_short_notice = False
+    days_since_last = None
+    if history:
+        last_date = _parse_fight_date(history[0].get("date", ""))
+        if last_date:
+            days_since_last = (ref - last_date).days
+            is_short_notice = 0 < days_since_last < SHORT_NOTICE_DAYS
+
+    # Manual override forces short-notice regardless of fight date
+    if is_manual_override:
+        is_short_notice = True
+
+    penalty = 0.0
+    notes = []
+    if is_debut:
+        penalty += UFC_DEBUT_PENALTY
+        notes.append(f"UFC debut — no prior UFC-level competition (−{UFC_DEBUT_PENALTY:.0f} pts)")
+    if is_short_notice:
+        penalty += SHORT_NOTICE_PENALTY
+        if is_manual_override and not (days_since_last and 0 < days_since_last < SHORT_NOTICE_DAYS):
+            notes.append(
+                f"late replacement (manual override) — limited prep time "
+                f"(−{SHORT_NOTICE_PENALTY:.0f} pts)"
+            )
+        else:
+            notes.append(
+                f"short notice ({days_since_last}d since last fight) — limited prep time "
+                f"(−{SHORT_NOTICE_PENALTY:.0f} pts)"
+            )
+    return {
+        "is_debut": is_debut,
+        "is_short_notice": is_short_notice,
+        "is_manual_override": is_manual_override,
+        "days_since_last": days_since_last,
+        "penalty": penalty,
+        "note": "; ".join(notes) if notes else None,
+    }
+
+
 # ─── Derived fight history stats ─────────────────────────────────────────────
 
 def _derive_hist(f):
-    """Mirror of deriveFightHistoryStats() in fightAnalyzerHelpers.js."""
     history = [h for h in f.get("fight_history", []) if h.get("fight_type") == "pro"]
     if not history:
         return None
@@ -308,26 +494,33 @@ WEIGHTS = {
 DECISION_CAUTION_THRESHOLD = 48  # finish_rate_pct below which both fighters trigger caution
 
 
-def _score_fighter(f, opp):
+def _score_fighter(f, opp, qoo_adj: float = 0.0):
+    """Score a fighter. If qoo_adj > 0, dampen above-50 category scores."""
+    def q(score):
+        return _apply_qoo(score, qoo_adj)
+
     return (
-        _score_striking_offense(f) * 0.15
-        + _score_striking_defense(f) * 0.12
-        + _score_grappling_offense(f) * 0.13
-        + _score_grappling_defense(f) * 0.10
-        + _score_finishing(f) * 0.12
-        + _score_record(f) * 0.10
-        + _score_momentum(f) * 0.08
-        + _score_physical(f, opp) * 0.08
-        + _score_fight_history(f) * 0.05
-        + _score_style_matchup(f, opp) * 0.07
+        q(_score_striking_offense(f)) * 0.15
+        + q(_score_striking_defense(f)) * 0.12
+        + q(_score_grappling_offense(f)) * 0.13
+        + q(_score_grappling_defense(f)) * 0.10
+        + q(_score_finishing(f)) * 0.12
+        + q(_score_record(f)) * 0.10
+        + q(_score_momentum(f)) * 0.08
+        + q(_score_physical(f, opp)) * 0.08
+        + q(_score_fight_history(f)) * 0.05
+        + q(_score_style_matchup(f, opp)) * 0.07
     )
 
 
 # ─── Main prediction entry point ─────────────────────────────────────────────
 
-def predict(f1: dict, f2: dict) -> dict:
+def predict(f1: dict, f2: dict, event_date=None) -> dict:
     """
     Predict outcome for one matchup.
+
+    event_date: datetime.date of the event (used for short-notice detection).
+                Defaults to today if None.
 
     Returns:
         {
@@ -338,10 +531,21 @@ def predict(f1: dict, f2: dict) -> dict:
           'margin': float,       — raw score gap (0-100 scale)
           'f1_score': float,
           'f2_score': float,
+          'f1_prep': dict,       — debut/short-notice info for f1
+          'f2_prep': dict,       — debut/short-notice info for f2
         }
     """
-    t1 = _score_fighter(f1, f2)
-    t2 = _score_fighter(f2, f1)
+    qoo1 = _compute_qoo(f1)
+    qoo2 = _compute_qoo(f2)
+    t1 = _score_fighter(f1, f2, qoo_adj=qoo1["adjustment_strength"])
+    t2 = _score_fighter(f2, f1, qoo_adj=qoo2["adjustment_strength"])
+
+    # Short notice / debut penalty
+    overrides = _load_short_notice_overrides()
+    prep1 = _detect_preparation(f1, event_date, overrides)
+    prep2 = _detect_preparation(f2, event_date, overrides)
+    t1 -= prep1["penalty"]
+    t2 -= prep2["penalty"]
 
     diff = t1 - t2
     margin = abs(diff)
@@ -382,6 +586,8 @@ def predict(f1: dict, f2: dict) -> dict:
         "margin": round(margin, 1),
         "f1_score": round(t1, 1),
         "f2_score": round(t2, 1),
+        "f1_prep": prep1,
+        "f2_prep": prep2,
     }
 
 
