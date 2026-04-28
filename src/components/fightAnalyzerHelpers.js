@@ -101,6 +101,19 @@ const norm = (v, min, max) => {
   return clamp(((v - min) / (max - min)) * 100, 0, 100);
 };
 
+/**
+ * Return a stat value, substituting the league-average default when the
+ * value is null, undefined, or exactly 0.  In UFCStats data, a fighter
+ * with no UFC fights recorded will have slpm/sapm/td_avg all stored as 0
+ * ("no data"), not a genuine zero performance.  Using the default prevents
+ * those fighters from being scored as if they have elite defense / never
+ * attempt takedowns / etc.
+ */
+const getStat = (value, defaultValue) => {
+  if (value == null || value === 0) return defaultValue;
+  return value;
+};
+
 /** Get last name from full name */
 const lastName = (name) => {
   if (!name) return "";
@@ -112,8 +125,8 @@ const lastName = (name) => {
 
 function scoreStrikingOffense(f) {
   const s = f.stats || {};
-  const slpm = s.slpm ?? 0;
-  const acc = _parsePct(s.striking_accuracy) ?? 45;
+  const slpm = getStat(s.slpm, 3.0);
+  const acc = getStat(_parsePct(s.striking_accuracy), 45);
   const kd = s.avg_kd_per_fight ?? 0;
   const headPct = s.head_str_pct ?? 40;
 
@@ -138,8 +151,8 @@ function scoreStrikingOffense(f) {
 
 function scoreStrikingDefense(f) {
   const s = f.stats || {};
-  const def = _parsePct(s.striking_defense) ?? 50;
-  const sapm = s.sapm ?? 4;
+  const def = getStat(_parsePct(s.striking_defense), 50);
+  const sapm = getStat(s.sapm, 3.8);
   const distPct = s.distance_str_pct ?? 60;
   const groundPct = s.ground_str_pct ?? 20;
 
@@ -163,8 +176,8 @@ function scoreStrikingDefense(f) {
 
 function scoreGrapplingOffense(f) {
   const s = f.stats || {};
-  const tdAvg = s.td_avg ?? 0;
-  const tdAcc = _parsePct(s.td_accuracy) ?? 35;
+  const tdAvg = getStat(s.td_avg, 1.8);
+  const tdAcc = getStat(_parsePct(s.td_accuracy), 35);
   const ctrlSecs = s.avg_ctrl_secs ?? 0;
   const subAttempts = f.avg_sub_attempts ?? 0;
 
@@ -191,7 +204,7 @@ function scoreGrapplingOffense(f) {
 
 function scoreGrapplingDefense(f) {
   const s = f.stats || {};
-  const tdDef = _parsePct(s.td_defense) ?? 60;
+  const tdDef = getStat(_parsePct(s.td_defense), 60);
   const oppCtrl = s.avg_opp_ctrl_secs ?? 60;
   const subDef = s.implied_sub_def_pct ?? 80;
   const subsConceded = s.subs_conceded ?? 0;
@@ -569,8 +582,10 @@ export function predictFight(f1, f2) {
   total2 = Math.round(total2 * 10) / 10;
 
   // Sigmoid-style win probability
+  // Calibrated to /20 so labels match actual probabilities:
+  //   lock (≥12pt margin) → ~82%   strong (≥7) → ~74%   lean (≥3) → ~59%
   const diff = total1 - total2;
-  const winProb1 = 1 / (1 + Math.pow(10, -diff / 25));
+  const winProb1 = 1 / (1 + Math.pow(10, -diff / 20));
   const winProb2 = 1 - winProb1;
 
   const margin = Math.abs(diff);
@@ -579,6 +594,25 @@ export function predictFight(f1, f2) {
   else if (margin >= 7) confidence = "strong";
   else if (margin >= 3) confidence = "lean";
   else confidence = "tossup";
+
+  // ── Decision Caution Rule ──────────────────────────────────────────────────
+  // If both fighters have low finish rates (<48%), the fight is likely decided
+  // by judges. Reduce confidence one tier to avoid over-committing on coin-flip
+  // decisions where the model has structurally less signal.
+  const DECISION_CAUTION_THRESHOLD = 48;
+  const f1FinRate = f1.finish_rate_pct ?? 50;
+  const f2FinRate = f2.finish_rate_pct ?? 50;
+  const isLikelyDecision =
+    f1FinRate < DECISION_CAUTION_THRESHOLD &&
+    f2FinRate < DECISION_CAUTION_THRESHOLD;
+  let decisionCaution = false;
+  if (isLikelyDecision) {
+    decisionCaution = true;
+    if (confidence === "lock") confidence = "strong";
+    else if (confidence === "strong") confidence = "lean";
+    else if (confidence === "lean") confidence = "tossup";
+    // tossup stays tossup
+  }
 
   const isF1 = total1 >= total2;
   const winner = {
@@ -624,12 +658,14 @@ export function predictFight(f1, f2) {
     CAT_LABELS,
     confidence,
     margin,
+    decisionCaution,
   );
 
   return {
     winner,
     loser,
     confidence,
+    decisionCaution,
     margin: Math.round(margin * 10) / 10,
     categories: {
       [winner.name]: wBreak,
@@ -643,10 +679,14 @@ export function predictFight(f1, f2) {
 
 // ─── Narrative Builder ──────────────────────────────────────────────────────
 
-function buildNarrative(w, l, catWins, catLabels, confidence, margin) {
+function buildNarrative(w, l, catWins, catLabels, confidence, margin, decisionCaution = false) {
   const wLast = lastName(w.name);
   const lLast = lastName(l.name);
   const lines = [];
+
+  if (decisionCaution) {
+    lines.push("⚠ High likelihood of decision — judging criteria will decide. Confidence reduced one tier.");
+  }
 
   const confWords = {
     lock: "is the clear favorite",

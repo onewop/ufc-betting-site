@@ -1,5 +1,5 @@
 {
-  "_note": "REAL DATA — outcomes from ufc_fight_results.csv. Add new events at TOP. status: final|pending. result: null = ungraded (draw/no-contest).",
+  "_note": "REAL DATA \u2014 outcomes from ufc_fight_results.csv. Add new events at TOP. status: final|pending. result: null = ungraded (draw/no-contest).",
   "season_label": "2026 Season",
   "season_start": "2026-01-01",
   "events": [
@@ -203,21 +203,21 @@
         {
           "bout": "Jiri Prochazka vs. Carlos Ulberg",
           "weight_class": "UFC Light Heavyweight Title Bout",
-          "our_pick": "Jiri Prochazka",
+          "our_pick": "Carlos Ulberg",
           "result": "Carlos Ulberg",
           "method": "KO/TKO R1"
         },
         {
           "bout": "Azamat Murzakanov vs. Paulo Costa",
           "weight_class": "Light Heavyweight",
-          "our_pick": "Paulo Costa",
+          "our_pick": "Azamat Murzakanov",
           "result": "Paulo Costa",
           "method": "KO/TKO R3"
         },
         {
           "bout": "Curtis Blaydes vs. Josh Hokit",
           "weight_class": "Heavyweight",
-          "our_pick": "Curtis Blaydes",
+          "our_pick": "Josh Hokit",
           "result": "Josh Hokit",
           "method": "Decision R3"
         },
@@ -295,7 +295,7 @@
         {
           "bout": "Renato Moicano vs. Chris Duncan",
           "weight_class": "Lightweight",
-          "our_pick": "Renato Moicano",
+          "our_pick": "Chris Duncan",
           "result": "Renato Moicano",
           "method": "Submission R2"
         },
@@ -316,7 +316,7 @@
         {
           "bout": "Ethyn Ewing vs. Rafael Estevam",
           "weight_class": "Bantamweight",
-          "our_pick": "Ethyn Ewing",
+          "our_pick": "Rafael Estevam",
           "result": "Ethyn Ewing",
           "method": "KO/TKO R3"
         },
@@ -337,7 +337,7 @@
         {
           "bout": "Guilherme Pat vs. Thomas Petersen",
           "weight_class": "Heavyweight",
-          "our_pick": "Guilherme Pat",
+          "our_pick": "Thomas Petersen",
           "result": "Thomas Petersen",
           "method": "Decision R3"
         },
@@ -365,14 +365,14 @@
         {
           "bout": "Azamat Bekoev vs. Tresean Gore",
           "weight_class": "Middleweight",
-          "our_pick": "Azamat Bekoev",
+          "our_pick": "Tresean Gore",
           "result": "Tresean Gore",
           "method": "Submission R3"
         },
         {
           "bout": "Dione Barbosa vs. Melissa Gatto",
           "weight_class": "Women's Flyweight",
-          "our_pick": "Dione Barbosa",
+          "our_pick": "Melissa Gatto",
           "result": "Dione Barbosa",
           "method": "Decision R3"
         },
@@ -521,7 +521,7 @@
         {
           "bout": "Roman Dolidze vs. Christian Leroy Duncan",
           "weight_class": "Middleweight",
-          "our_pick": "Roman Dolidze",
+          "our_pick": "Christian Leroy Duncan",
           "result": "Christian Leroy Duncan",
           "method": "Decision R3"
         },
@@ -535,7 +535,7 @@
         {
           "bout": "Mason Jones vs. Axel Sola",
           "weight_class": "Lightweight",
-          "our_pick": "Mason Jones",
+          "our_pick": "Axel Sola",
           "result": "Mason Jones",
           "method": "Decision R3"
         },
@@ -563,7 +563,7 @@
         {
           "bout": "Louie Sutherland vs. Brando Pericic",
           "weight_class": "Heavyweight",
-          "our_pick": "Louie Sutherland",
+          "our_pick": "Brando Pericic",
           "result": "Brando Pericic",
           "method": "KO/TKO R1"
         },
@@ -577,7 +577,7 @@
         {
           "bout": "Shanelle Dyer vs. Ravena Oliveira",
           "weight_class": "Women's Strawweight",
-          "our_pick": "Shanelle Dyer",
+          "our_pick": "Ravena Oliveira",
           "result": "Shanelle Dyer",
           "method": "KO/TKO R2"
         }
@@ -592,7 +592,7 @@
         {
           "bout": "Josh Emmett vs. Kevin Vallejos",
           "weight_class": "Featherweight (5 Rds)",
-          "our_pick": "Josh Emmett",
+          "our_pick": "Kevin Vallejos",
           "result": "Kevin Vallejos",
           "method": "KO/TKO R1"
         },
@@ -606,7 +606,7 @@
         {
           "bout": "Andre Fili vs. Jose Delgado",
           "weight_class": "Featherweight",
-          "our_pick": "Andre Fili",
+          "our_pick": "Jose Delgado",
           "result": "Jose Delgado",
           "method": "Decision R3"
         },
@@ -620,21 +620,21 @@
         {
           "bout": "Ion Cutelaba vs. Oumar Sy",
           "weight_class": "Light Heavyweight",
-          "our_pick": "Ion Cutelaba",
+          "our_pick": "Oumar Sy",
           "result": "Ion Cutelaba",
           "method": "Submission R1"
         },
         {
           "bout": "Charles Johnson vs. Bruno Silva",
           "weight_class": "Flyweight",
-          "our_pick": "Charles Johnson",
+          "our_pick": "Bruno Silva",
           "result": "Charles Johnson",
           "method": "Decision R3"
         },
         {
           "bout": "Chris Curtis vs. Myktybek Orolbai",
           "weight_class": "Welterweight",
-          "our_pick": "Chris Curtis",
+          "our_pick": "Myktybek Orolbai",
           "result": "Myktybek Orolbai",
           "method": "Decision R3"
         },
@@ -648,7 +648,7 @@
         {
           "bout": "Elijah Smith vs. SuYoung You",
           "weight_class": "Bantamweight",
-          "our_pick": "Elijah Smith",
+          "our_pick": "SuYoung You",
           "result": "Elijah Smith",
           "method": "Submission R2"
         },
@@ -662,7 +662,7 @@
         {
           "bout": "Brad Tavares vs. Eryk Anders",
           "weight_class": "Middleweight",
-          "our_pick": "Brad Tavares",
+          "our_pick": "Eryk Anders",
           "result": "Eryk Anders",
           "method": "Decision R3"
         },
@@ -698,7 +698,7 @@
         {
           "bout": "Max Holloway vs. Charles Oliveira",
           "weight_class": "Lightweight",
-          "our_pick": "Max Holloway",
+          "our_pick": "Charles Oliveira",
           "result": "Charles Oliveira",
           "method": "Decision R5"
         },
@@ -712,7 +712,7 @@
         {
           "bout": "Rob Font vs. Raul Rosas Jr.",
           "weight_class": "Bantamweight",
-          "our_pick": "Rob Font",
+          "our_pick": "Raul Rosas Jr.",
           "result": "Raul Rosas Jr.",
           "method": "Decision R3"
         },
@@ -733,35 +733,35 @@
         {
           "bout": "Cody Garbrandt vs. Xiao Long",
           "weight_class": "Bantamweight",
-          "our_pick": "Cody Garbrandt",
+          "our_pick": "Xiao Long",
           "result": "Cody Garbrandt",
           "method": "Decision R3"
         },
         {
           "bout": "Donte Johnson vs. Cody Brundage",
           "weight_class": "Middleweight",
-          "our_pick": "Donte Johnson",
+          "our_pick": "Cody Brundage",
           "result": "Donte Johnson",
           "method": "Decision R3"
         },
         {
           "bout": "Ricky Turcios vs. Alberto Montes",
           "weight_class": "Featherweight",
-          "our_pick": "Ricky Turcios",
+          "our_pick": "Alberto Montes",
           "result": "Alberto Montes",
           "method": "Submission R2"
         },
         {
           "bout": "Cody Durden vs. Nyamjargal Tumendemberel",
           "weight_class": "Flyweight",
-          "our_pick": "Cody Durden",
+          "our_pick": "Nyamjargal Tumendemberel",
           "result": "Nyamjargal Tumendemberel",
           "method": "Decision R3"
         },
         {
           "bout": "Sumudaerji vs. Jesus Aguilar",
           "weight_class": "Flyweight",
-          "our_pick": "Sumudaerji",
+          "our_pick": "Jesus Aguilar",
           "result": "Sumudaerji",
           "method": "Decision R3"
         },
@@ -775,7 +775,7 @@
         {
           "bout": "Luke Fernandez vs. Rodolfo Bellato",
           "weight_class": "Light Heavyweight",
-          "our_pick": "Luke Fernandez",
+          "our_pick": "Rodolfo Bellato",
           "result": "Rodolfo Bellato",
           "method": "KO/TKO R1"
         }
@@ -887,5 +887,7 @@
         }
       ]
     }
-  ]
+  ],
+  "methodology": "Smart AI v2 \u2014 10-category weighted model (striking offense/defense, grappling offense/defense, finishing, record, momentum, physical, fight history, style matchup). Sigmoid calibrated to /20 divisor. Decision Caution Rule: when both fighters have finish_rate_pct < 48%, confidence is reduced one tier to reflect judging unpredictability.",
+  "methodology_version": "v2.0 \u2014 2026-04-27"
 }

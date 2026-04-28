@@ -400,6 +400,13 @@ export default function PredictionTrackRecord() {
           </div>
         )}
 
+        {/* ── Methodology note ── */}
+        {data && (
+          <p className="text-[10px] font-mono text-yellow-600/60 text-center mb-6 tracking-wider">
+            MODEL v2 · DECISION CAUTION RULE ACTIVE · SIGMOID RECALIBRATED
+          </p>
+        )}
+
         {/* ── Event list ── */}
         {data && (
           <div className="space-y-3">
