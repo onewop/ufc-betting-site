@@ -36,6 +36,22 @@ PYEOF
 echo ""
 
 # =======================
+# 2c. Refresh active fighter seed + profiles
+# =======================
+echo "🥊 Refreshing active fighter seed from ufc-master.csv..."
+source .venv/bin/activate 2>/dev/null || true
+python3 scripts/generate_fighter_seed.py --active-since 2023
+echo ""
+
+echo "📸 Updating active fighter profiles (scrapers + portraits)..."
+python3 scripts/build_fighter_profiles.py --active-only
+echo ""
+
+echo "🗺️  Regenerating sitemap.xml..."
+python3 scripts/generate_sitemap.py
+echo ""
+
+# =======================
 # 3. Git Commit Changes
 # =======================
 echo "📝 Step 2: Committing changes to git..."

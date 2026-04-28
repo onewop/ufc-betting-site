@@ -26,6 +26,8 @@ import PredictionTrackRecord from "./components/PredictionTrackRecord";
 // PRIVATE OWNER TOOL — not linked in any public navigation
 import DebugStatsPage from "./pages/DebugStatsPage";
 import ManagerPage from "./pages/ManagerPage";
+import FighterDirectory from "./components/FighterDirectory";
+import FighterProfile from "./components/FighterProfile";
 import api from "./services/api";
 
 // Auth keys for localStorage
@@ -46,6 +48,7 @@ const navLinks = [
   { to: "/parlay-builder", label: "Parlay Builder" },
   { to: "/value-bets", label: "+EV Value Bets" },
   { to: "/track-record", label: "AI Track Record" },
+  { to: "/fighters", label: "Combat Dossiers" },
 ];
 
 const mobileNavLinks = [
@@ -54,6 +57,7 @@ const mobileNavLinks = [
   { to: "/odds", label: "Odds", icon: "💰" },
   { to: "/team-combinations", label: "DFS", icon: "🏆" },
   { to: "/parlay-builder", label: "Parlay", icon: "🎯" },
+  { to: "/fighters", label: "Fighters", icon: "🥊" },
 ];
 
 const AppShell = () => {
@@ -573,6 +577,13 @@ const AppShell = () => {
           }
         />
         <Route path="/track-record" element={<PredictionTrackRecord />} />
+        <Route path="/fighters" element={<FighterDirectory />} />
+        <Route
+          path="/fighters/:slug"
+          element={
+            <FighterProfile currentUser={currentUser} authToken={authToken} />
+          }
+        />
         {/* PRIVATE OWNER TOOL — /debug-stats — not in nav, not linked publicly */}
         <Route
           path="/debug-stats"

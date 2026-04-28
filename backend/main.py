@@ -20,6 +20,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from database import Base, engine
 from routers.auth import router as auth_router
+from routers.fighters import router as fighters_router
 from routers.lineups import router as lineups_router
 from routers.optimize import router as optimize_router
 from routers.payments import router as payments_router
@@ -67,6 +68,7 @@ def create_app() -> FastAPI:
 
     # ── Routers ──────────────────────────────────────────────────────────────
     app.include_router(auth_router)
+    app.include_router(fighters_router)
     app.include_router(lineups_router)
     app.include_router(optimize_router)
     app.include_router(payments_router)

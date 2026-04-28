@@ -451,6 +451,9 @@ def scrape_sherdog_fighter_data(fighter_name, profile_url=None):
 
         data['fight_history'] = fight_history
 
+        # Store the profile URL so callers can derive the Sherdog image CDN path
+        data['sherdog_url'] = profile_url or ''
+
         print(
             f"  ✅ Sherdog: {fighter_name} | record={data['sherdog_record']} | "
             f"KO={data['wins_by_ko']} Sub={data['wins_by_submission']} "
@@ -487,6 +490,7 @@ def get_empty_sherdog_data():
         'team':        'N/A',
         'nickname':    None,
         'fight_history': [],
+        'sherdog_url': '',
     }
 
 

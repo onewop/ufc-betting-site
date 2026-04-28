@@ -1,0 +1,61 @@
+{
+  "slug": "jesus-aguilar",
+  "name": "Jesus Aguilar",
+  "last_updated": "2026-04-28T16:51:17.378651",
+  "weight_class": "Flyweight",
+  "record": "4-1-0",
+  "wins": 4,
+  "losses": 1,
+  "draws": 0,
+  "height": "5' 4\"",
+  "reach": "62\"",
+  "weight_lbs": "125 lbs",
+  "stance": "Orthodox",
+  "gender": "MALE",
+  "finish_rate_pct": 0.0,
+  "wins_ko_tko": 0,
+  "wins_submission": 0,
+  "wins_decision": 0,
+  "current_win_streak": 0,
+  "last_fight_date": "2024-08-17",
+  "ufcstats_url": "http://ufcstats.com/fighter-details/c051c2e12d692b8a",
+  "dob": "Mar 13, 1996",
+  "sherdog_record": "N/A",
+  "weight": "145 lbs",
+  "nationality": "Pero",
+  "team": "Pro Fighting Peru",
+  "fight_history": [
+    {
+      "result": "loss",
+      "opponent": "Cristian Pimentel",
+      "method": "TKO (Punches)",
+      "method_detail": "Jorge Figueroa",
+      "event": "Pro Fighting Peru - Amateur 1",
+      "date": "Apr 01 2017",
+      "round": "1",
+      "time": "1:30",
+      "fight_type": "amateur"
+    }
+  ],
+  "sherdog_url": "https://www.sherdog.com/fighter/Jesus-Aguilar-426849",
+  "current_loss_streak": 0,
+  "record_last_5": "0-0",
+  "age": 30,
+  "ufc_image_url": "https://www.sherdog.com/image_crop/300/400/_images/fighter/426849_ff.jpg",
+  "stats": {
+    "slpm": 2.54,
+    "sapm": 2.29,
+    "striking_accuracy": "38%",
+    "striking_defense": "61%",
+    "td_avg": 1.52,
+    "td_accuracy": "29%",
+    "td_defense": "45%",
+    "avg_sub_attempts": 1.1
+  },
+  "ai_record": {
+    "name": "Jesus Aguilar",
+    "picked": 1,
+    "correct": 0,
+    "record": "0-1"
+  }
+}
