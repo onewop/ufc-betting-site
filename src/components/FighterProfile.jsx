@@ -56,17 +56,45 @@ const fmtDate = (d) => {
   }
 };
 
+/** Parse a percentage value (number or "47%" string) into a plain number. */
+const parsePct = (v) => {
+  if (v == null) return null;
+  const n = typeof v === "number" ? v : parseFloat(v);
+  return isNaN(n) ? null : n;
+};
+
+/** Return a Tailwind color class for a fight method string. */
+const methodColorCls = (method) => {
+  const m = (method || "").toLowerCase();
+  if (m.includes("ko") || m.includes("tko")) return "text-red-400";
+  if (m.includes("sub")) return "text-blue-400";
+  return "text-stone-400";
+};
+
 // ── Sub-components ───────────────────────────────────────────────────────────
 
-function StatRow({ label, value, isHighlight = false }) {
+function StatRow({ label, value, isHighlight = false, bar = null }) {
+  // bar = { pct: 0-100, color?: tailwind bg class }
   return (
     <div
-      className={`flex items-center justify-between py-2 border-b border-stone-800/80 ${isHighlight ? "bg-stone-800/30 px-2 -mx-2 rounded" : ""}`}
+      className={`flex items-center justify-between py-2.5 border-b border-stone-800/60 ${isHighlight ? "bg-stone-800/30 px-3 -mx-3 rounded" : ""}`}
     >
-      <span className="text-xs font-mono text-stone-400">{label}</span>
-      <span className="text-xs font-mono text-white font-semibold">
-        {value ?? "—"}
+      <span className="text-xs font-mono text-stone-400 flex-1 pr-3">
+        {label}
       </span>
+      <div className="flex items-center gap-3">
+        {bar != null && (
+          <div className="w-16 sm:w-24 h-1.5 bg-stone-800 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${bar.color || "bg-yellow-600/80"}`}
+              style={{ width: `${Math.min(Math.max(bar.pct || 0, 0), 100)}%` }}
+            />
+          </div>
+        )}
+        <span className="text-xs font-mono text-white font-semibold tabular-nums min-w-[40px] text-right">
+          {value ?? "—"}
+        </span>
+      </div>
     </div>
   );
 }
@@ -129,7 +157,7 @@ function WinProbBar({ winnerName, winnerProb, loserName, loserProb }) {
   );
 }
 
-// Finish rate donut substitute — just a styled stat block
+// Win record with animated method bars
 function RecordBreakdown({
   wins,
   losses,
@@ -139,39 +167,91 @@ function RecordBreakdown({
   wins_decision,
   finish_rate_pct,
 }) {
+  const w = wins || 0;
+  const koBar = w > 0 ? ((wins_ko_tko || 0) / w) * 100 : 0;
+  const subBar = w > 0 ? ((wins_submission || 0) / w) * 100 : 0;
+  const decBar = w > 0 ? ((wins_decision || 0) / w) * 100 : 0;
   return (
-    <div className="grid grid-cols-2 gap-2">
-      <div className="bg-stone-800/50 rounded-lg p-3 text-center border border-stone-700/40">
-        <p className="text-2xl font-black text-white">
-          {wins}-{losses}-{draws}
-        </p>
-        <p className="text-[9px] text-stone-500 font-mono mt-0.5">W-L-D</p>
+    <div className="space-y-4">
+      {/* W / L / D boxes */}
+      <div className="flex gap-3">
+        <div className="flex-1 bg-emerald-950/50 rounded-xl p-4 text-center border border-emerald-800/30">
+          <p className="text-3xl font-black text-emerald-400 font-mono">{w}</p>
+          <p className="text-[9px] text-stone-500 font-mono mt-0.5">WINS</p>
+        </div>
+        <div className="flex-1 bg-red-950/50 rounded-xl p-4 text-center border border-red-800/30">
+          <p className="text-3xl font-black text-red-400 font-mono">
+            {losses || 0}
+          </p>
+          <p className="text-[9px] text-stone-500 font-mono mt-0.5">LOSSES</p>
+        </div>
+        <div className="flex-1 bg-stone-800/40 rounded-xl p-4 text-center border border-stone-700/30">
+          <p className="text-3xl font-black text-stone-400 font-mono">
+            {draws || 0}
+          </p>
+          <p className="text-[9px] text-stone-500 font-mono mt-0.5">DRAWS</p>
+        </div>
       </div>
-      <div className="bg-stone-800/50 rounded-lg p-3 text-center border border-stone-700/40">
-        <p className="text-2xl font-black text-yellow-400">
-          {finish_rate_pct ?? 0}%
+
+      {/* Win method bars */}
+      <div className="space-y-3 pt-1">
+        <p className="text-[9px] font-mono text-stone-600 tracking-widest">
+          WIN BREAKDOWN
         </p>
-        <p className="text-[9px] text-stone-500 font-mono mt-0.5">
-          FINISH RATE
-        </p>
-      </div>
-      <div className="bg-red-900/20 rounded-lg p-3 text-center border border-red-800/30">
-        <p className="text-xl font-black text-red-400">{wins_ko_tko ?? 0}</p>
-        <p className="text-[9px] text-stone-500 font-mono mt-0.5">KO / TKO</p>
-      </div>
-      <div className="bg-blue-900/20 rounded-lg p-3 text-center border border-blue-800/30">
-        <p className="text-xl font-black text-blue-400">
-          {wins_submission ?? 0}
-        </p>
-        <p className="text-[9px] text-stone-500 font-mono mt-0.5">
-          SUBMISSIONS
-        </p>
-      </div>
-      <div className="col-span-2 bg-stone-800/30 rounded-lg p-3 text-center border border-stone-700/30">
-        <p className="text-xl font-black text-stone-300">
-          {wins_decision ?? 0}
-        </p>
-        <p className="text-[9px] text-stone-500 font-mono mt-0.5">DECISIONS</p>
+
+        <div>
+          <div className="flex justify-between text-[10px] font-mono mb-1.5">
+            <span className="text-stone-400">KO / TKO</span>
+            <span className="text-red-400 font-bold">{wins_ko_tko || 0}</span>
+          </div>
+          <div className="h-2 bg-stone-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-red-600/70 rounded-full transition-all duration-700"
+              style={{ width: `${koBar}%` }}
+            />
+          </div>
+        </div>
+
+        <div>
+          <div className="flex justify-between text-[10px] font-mono mb-1.5">
+            <span className="text-stone-400">SUBMISSION</span>
+            <span className="text-blue-400 font-bold">
+              {wins_submission || 0}
+            </span>
+          </div>
+          <div className="h-2 bg-stone-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-blue-600/70 rounded-full transition-all duration-700"
+              style={{ width: `${subBar}%` }}
+            />
+          </div>
+        </div>
+
+        <div>
+          <div className="flex justify-between text-[10px] font-mono mb-1.5">
+            <span className="text-stone-400">DECISION</span>
+            <span className="text-stone-300 font-bold">
+              {wins_decision || 0}
+            </span>
+          </div>
+          <div className="h-2 bg-stone-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-stone-500/70 rounded-full transition-all duration-700"
+              style={{ width: `${decBar}%` }}
+            />
+          </div>
+        </div>
+
+        {finish_rate_pct > 0 && (
+          <div className="mt-3 bg-stone-800/40 border border-stone-700/30 rounded-lg px-4 py-3 flex justify-between items-center">
+            <span className="text-[10px] font-mono text-stone-500 tracking-wider">
+              FINISH RATE
+            </span>
+            <span className="text-xl font-black text-yellow-400 font-mono">
+              {finish_rate_pct}%
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -218,17 +298,21 @@ export default function FighterProfile({ currentUser, authToken }) {
   const [statsTab, setStatsTab] = useState("striking");
   const [historyExpanded, setHistoryExpanded] = useState(false);
   const [highlightVideos, setHighlightVideos] = useState({});
+  const [portraitIdx, setPortraitIdx] = useState(0);
 
   // Load profile + this week's card in parallel
   useEffect(() => {
     if (!slug) return;
     setLoading(true);
     setError(null);
+    setPortraitIdx(0);
 
     Promise.all([
       api.get(`/api/fighters/${slug}`).catch(() => null),
       api.get("/api/this-weeks-stats").catch(() => null),
-      fetch("/highlight_videos.json").then((r) => r.json()).catch(() => ({})),
+      fetch("/highlight_videos.json")
+        .then((r) => r.json())
+        .catch(() => ({})),
     ]).then(([profileData, weekData, videoData]) => {
       setHighlightVideos(videoData || {});
       if (!profileData) {
@@ -280,9 +364,15 @@ export default function FighterProfile({ currentUser, authToken }) {
           description,
           url,
           image,
-          jobTitle: p.weight_class ? `${p.weight_class} UFC Fighter` : "UFC Fighter",
+          jobTitle: p.weight_class
+            ? `${p.weight_class} UFC Fighter`
+            : "UFC Fighter",
           nationality: p.nationality || undefined,
-          ...(p.height   ? { height:  { "@type": "QuantitativeValue", description: p.height  } } : {}),
+          ...(p.height
+            ? {
+                height: { "@type": "QuantitativeValue", description: p.height },
+              }
+            : {}),
           ...(p.dob && p.dob !== "N/A" ? { birthDate: p.dob } : {}),
         };
         let ldEl = document.querySelector('script[data-cv="fighter-ld"]');
@@ -357,14 +447,73 @@ export default function FighterProfile({ currentUser, authToken }) {
     const nameLower = (profile.name || "").toLowerCase();
     const entry = Object.entries(highlightVideos).find(([k]) => {
       if (k.startsWith("_")) return false;
-      return k.toLowerCase() === nameLower ||
+      return (
+        k.toLowerCase() === nameLower ||
         nameLower.includes(k.toLowerCase()) ||
-        k.toLowerCase().includes(nameLower);
+        k.toLowerCase().includes(nameLower)
+      );
     });
     return entry ? entry[1] : null;
   }, [profile, highlightVideos]);
 
-  const handleVote = async (choice) => {    if (vote || voteSubmitting) return;
+  // Combat style archetype derived from stats
+  const styleArchetype = useMemo(() => {
+    if (!profile) return null;
+    const {
+      wins = 0,
+      wins_ko_tko = 0,
+      wins_submission = 0,
+      finish_rate_pct = 0,
+      stats: s = {},
+    } = profile;
+    const koRate = wins > 0 ? (wins_ko_tko / wins) * 100 : 0;
+    const subRate = wins > 0 ? (wins_submission / wins) * 100 : 0;
+    const tdAvg = s.td_avg || 0;
+    const slpm = s.slpm || 0;
+    const strAcc = parsePct(s.striking_accuracy) || 0;
+    const tdAcc = parsePct(s.td_accuracy) || 0;
+    const strDef = parsePct(s.striking_defense) || 0;
+    if (koRate >= 50)
+      return {
+        label: "KNOCKOUT ARTIST",
+        icon: "🔥",
+        cls: "text-red-400 border-red-700/40 bg-red-950/50",
+      };
+    if (subRate >= 40)
+      return {
+        label: "SUBMISSION SPECIALIST",
+        icon: "🔗",
+        cls: "text-blue-400 border-blue-700/40 bg-blue-950/50",
+      };
+    if (tdAvg >= 2.5 && tdAcc >= 40)
+      return {
+        label: "WRESTLING MACHINE",
+        icon: "🤼",
+        cls: "text-emerald-400 border-emerald-700/40 bg-emerald-950/50",
+      };
+    if (slpm >= 5 && strAcc >= 45)
+      return {
+        label: "VOLUME STRIKER",
+        icon: "⚡",
+        cls: "text-yellow-400 border-yellow-700/40 bg-yellow-950/50",
+      };
+    if (finish_rate_pct >= 65)
+      return {
+        label: "FINISHER",
+        icon: "💥",
+        cls: "text-orange-400 border-orange-700/40 bg-orange-950/50",
+      };
+    if (strDef >= 62)
+      return {
+        label: "COUNTER STRIKER",
+        icon: "🛡",
+        cls: "text-violet-400 border-violet-700/40 bg-violet-950/50",
+      };
+    return null;
+  }, [profile]);
+
+  const handleVote = async (choice) => {
+    if (vote || voteSubmitting) return;
     setVoteSubmitting(true);
     try {
       const result = await api.post(`/api/fighters/${slug}/vote`, {
@@ -405,12 +554,20 @@ export default function FighterProfile({ currentUser, authToken }) {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-5">
             {[200, 280, 320].map((h, i) => (
-              <div key={i} className="bg-stone-900 rounded-xl" style={{ height: h }} />
+              <div
+                key={i}
+                className="bg-stone-900 rounded-xl"
+                style={{ height: h }}
+              />
             ))}
           </div>
           <div className="space-y-5">
             {[160, 200, 120].map((h, i) => (
-              <div key={i} className="bg-stone-900 rounded-xl" style={{ height: h }} />
+              <div
+                key={i}
+                className="bg-stone-900 rounded-xl"
+                style={{ height: h }}
+              />
             ))}
           </div>
         </div>
@@ -469,8 +626,11 @@ export default function FighterProfile({ currentUser, authToken }) {
     votes = { fighter_a: 0, fighter_b: 0 },
   } = profile;
 
-  // Best available portrait — UFC CDN preferred, Sherdog CDN as fallback
-  const portraitUrl = ufc_image_url || sherdogPortrait(sherdog_url) || null;
+  // Portrait fallback chain: UFC CDN → Sherdog CDN → initials placeholder
+  const portraitSources = [ufc_image_url, sherdogPortrait(sherdog_url)].filter(
+    Boolean,
+  );
+  const portraitUrl = portraitSources[portraitIdx] ?? null;
 
   const totalVotes = (votes.fighter_a || 0) + (votes.fighter_b || 0);
   const voteAPct =
@@ -504,9 +664,14 @@ export default function FighterProfile({ currentUser, authToken }) {
         {/* Top classification tape */}
         <div className="relative border-b border-yellow-800/20 bg-stone-950/60">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2 flex items-center gap-3">
-            <span className="text-[8px] font-mono text-yellow-800 tracking-[0.5em]">◆ CLASSIFICATION: COMBAT DOSSIER ◆</span>
+            <span className="text-[8px] font-mono text-yellow-800 tracking-[0.5em]">
+              ◆ CLASSIFICATION: COMBAT DOSSIER ◆
+            </span>
             <div className="flex-1 h-px bg-yellow-900/30" />
-            <Link to="/fighters" className="text-[9px] font-mono text-stone-600 hover:text-yellow-600 transition-colors tracking-wider">
+            <Link
+              to="/fighters"
+              className="text-[9px] font-mono text-stone-600 hover:text-yellow-600 transition-colors tracking-wider"
+            >
               ← ALL FIGHTERS
             </Link>
           </div>
@@ -514,7 +679,6 @@ export default function FighterProfile({ currentUser, authToken }) {
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
           <div className="flex flex-col sm:flex-row gap-8 items-center sm:items-end">
-
             {/* ── Portrait ── */}
             <div className="relative flex-shrink-0 flex flex-col items-center">
               {portraitUrl ? (
@@ -522,14 +686,24 @@ export default function FighterProfile({ currentUser, authToken }) {
                   src={portraitUrl}
                   alt={name}
                   className="w-44 h-56 sm:w-56 sm:h-72 md:w-64 md:h-80 object-cover object-top rounded-2xl border border-stone-600/50 shadow-[0_25px_80px_rgba(0,0,0,0.8)]"
-                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                  onError={() => {
+                    // Try next source in the chain; if exhausted, portraitUrl goes null and placeholder renders
+                    setPortraitIdx((prev) => prev + 1);
+                  }}
                 />
               ) : (
                 <div className="w-44 h-56 sm:w-56 sm:h-72 rounded-2xl border border-stone-700/50 bg-stone-800/80 flex flex-col items-center justify-center gap-3">
                   <span className="text-5xl font-black text-stone-600 font-mono">
-                    {(name || "?").split(" ").map((w) => w[0] || "").join("").slice(0, 2).toUpperCase()}
+                    {(name || "?")
+                      .split(" ")
+                      .map((w) => w[0] || "")
+                      .join("")
+                      .slice(0, 2)
+                      .toUpperCase()}
                   </span>
-                  <span className="text-[9px] font-mono text-stone-700 tracking-widest">NO PHOTO</span>
+                  <span className="text-[9px] font-mono text-stone-700 tracking-widest">
+                    NO PHOTO
+                  </span>
                 </div>
               )}
               {currentCardMatch && (
@@ -546,7 +720,19 @@ export default function FighterProfile({ currentUser, authToken }) {
                 {name}
               </h1>
               {nickname && (
-                <p className="text-yellow-500/60 font-mono italic text-base mt-2">"{nickname}"</p>
+                <p className="text-yellow-500/60 font-mono italic text-base mt-2">
+                  "{nickname}"
+                </p>
+              )}
+
+              {/* Combat archetype badge */}
+              {styleArchetype && (
+                <div
+                  className={`inline-flex items-center gap-1.5 mt-2.5 text-[10px] font-mono font-black px-3 py-1 rounded-full border ${styleArchetype.cls}`}
+                >
+                  <span>{styleArchetype.icon}</span>
+                  <span>{styleArchetype.label}</span>
+                </div>
               )}
 
               {/* Record + streaks */}
@@ -565,6 +751,31 @@ export default function FighterProfile({ currentUser, authToken }) {
                   </span>
                 )}
               </div>
+
+              {/* Last-5 form dots */}
+              {fight_history.length > 0 && (
+                <div className="flex items-center gap-1.5 mt-2 justify-center sm:justify-start">
+                  <span className="text-[8px] font-mono text-stone-600 tracking-wider mr-0.5">
+                    FORM
+                  </span>
+                  {fight_history.slice(0, 5).map((f, i) => {
+                    const r = (f.result || "").toLowerCase();
+                    return (
+                      <div
+                        key={i}
+                        title={`${r.toUpperCase()} vs ${f.opponent || ""}`}
+                        className={`w-2.5 h-2.5 rounded-full ${
+                          r === "win"
+                            ? "bg-emerald-500"
+                            : r === "loss"
+                              ? "bg-red-500"
+                              : "bg-stone-600"
+                        }`}
+                      />
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Tag pills */}
               <div className="flex flex-wrap gap-1.5 mt-3 justify-center sm:justify-start">
@@ -604,38 +815,58 @@ export default function FighterProfile({ currentUser, authToken }) {
               <div className="flex flex-wrap gap-2 mt-4 justify-center sm:justify-start">
                 {finish_rate_pct > 0 && (
                   <div className="bg-red-900/25 border border-red-800/30 rounded-lg px-3 py-2 text-center min-w-[56px]">
-                    <p className="text-base font-black text-red-400">{finish_rate_pct}%</p>
-                    <p className="text-[8px] text-stone-500 font-mono">FINISH</p>
+                    <p className="text-base font-black text-red-400">
+                      {finish_rate_pct}%
+                    </p>
+                    <p className="text-[8px] text-stone-500 font-mono">
+                      FINISH
+                    </p>
                   </div>
                 )}
                 {record_last_5 && (
                   <div className="bg-stone-800/60 border border-stone-700/30 rounded-lg px-3 py-2 text-center min-w-[56px]">
-                    <p className="text-base font-black text-white">{record_last_5}</p>
-                    <p className="text-[8px] text-stone-500 font-mono">LAST 5</p>
+                    <p className="text-base font-black text-white">
+                      {record_last_5}
+                    </p>
+                    <p className="text-[8px] text-stone-500 font-mono">
+                      LAST 5
+                    </p>
                   </div>
                 )}
                 {wins_ko_tko > 0 && (
                   <div className="bg-orange-900/20 border border-orange-800/30 rounded-lg px-3 py-2 text-center min-w-[56px]">
-                    <p className="text-base font-black text-orange-400">{wins_ko_tko}</p>
-                    <p className="text-[8px] text-stone-500 font-mono">KO/TKO</p>
+                    <p className="text-base font-black text-orange-400">
+                      {wins_ko_tko}
+                    </p>
+                    <p className="text-[8px] text-stone-500 font-mono">
+                      KO/TKO
+                    </p>
                   </div>
                 )}
                 {wins_submission > 0 && (
                   <div className="bg-blue-900/20 border border-blue-800/30 rounded-lg px-3 py-2 text-center min-w-[56px]">
-                    <p className="text-base font-black text-blue-400">{wins_submission}</p>
+                    <p className="text-base font-black text-blue-400">
+                      {wins_submission}
+                    </p>
                     <p className="text-[8px] text-stone-500 font-mono">SUBS</p>
                   </div>
                 )}
                 {stats.slpm != null && (
                   <div className="bg-stone-800/60 border border-stone-700/30 rounded-lg px-3 py-2 text-center min-w-[56px]">
-                    <p className="text-base font-black text-white">{num(stats.slpm)}</p>
+                    <p className="text-base font-black text-white">
+                      {num(stats.slpm)}
+                    </p>
                     <p className="text-[8px] text-stone-500 font-mono">SLpM</p>
                   </div>
                 )}
                 {stats.td_avg != null && (
                   <div className="bg-stone-800/60 border border-stone-700/30 rounded-lg px-3 py-2 text-center min-w-[56px]">
-                    <p className="text-base font-black text-white">{num(stats.td_avg)}</p>
-                    <p className="text-[8px] text-stone-500 font-mono">TD/15m</p>
+                    <p className="text-base font-black text-white">
+                      {num(stats.td_avg)}
+                    </p>
+                    <p className="text-[8px] text-stone-500 font-mono">
+                      TD/15m
+                    </p>
                   </div>
                 )}
               </div>
@@ -645,7 +876,7 @@ export default function FighterProfile({ currentUser, authToken }) {
       </div>
 
       {/* ── Body content ── */}
-      <div className="max-w-6xl mx-auto px-4 pb-16 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="max-w-6xl mx-auto px-4 pt-6 pb-16 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* ── LEFT / MAIN column ── */}
         <div className="lg:col-span-2 space-y-5">
           {/* ── 2. AI Pick (current card only) ── */}
@@ -708,22 +939,38 @@ export default function FighterProfile({ currentUser, authToken }) {
             {statsTab === "striking" && (
               <div className="space-y-0.5">
                 <StatRow
-                  label="Significant Strikes Landed / min"
+                  label="Sig. Strikes Landed / min"
                   value={num(stats.slpm)}
                   isHighlight
+                  bar={{
+                    pct: ((stats.slpm || 0) / 10) * 100,
+                    color: "bg-yellow-500/80",
+                  }}
                 />
                 <StatRow
-                  label="Significant Strikes Absorbed / min"
+                  label="Sig. Strikes Absorbed / min"
                   value={num(stats.sapm)}
+                  bar={{
+                    pct: ((stats.sapm || 0) / 8) * 100,
+                    color: "bg-red-500/70",
+                  }}
                 />
                 <StatRow
                   label="Striking Accuracy"
                   value={pct(stats.striking_accuracy)}
                   isHighlight
+                  bar={{
+                    pct: parsePct(stats.striking_accuracy),
+                    color: "bg-yellow-600/80",
+                  }}
                 />
                 <StatRow
                   label="Striking Defense"
                   value={pct(stats.striking_defense)}
+                  bar={{
+                    pct: parsePct(stats.striking_defense),
+                    color: "bg-emerald-600/70",
+                  }}
                 />
               </div>
             )}
@@ -733,19 +980,35 @@ export default function FighterProfile({ currentUser, authToken }) {
                   label="Takedowns / 15 min"
                   value={num(stats.td_avg)}
                   isHighlight
+                  bar={{
+                    pct: ((stats.td_avg || 0) / 5) * 100,
+                    color: "bg-blue-500/80",
+                  }}
                 />
                 <StatRow
                   label="Takedown Accuracy"
                   value={pct(stats.td_accuracy)}
+                  bar={{
+                    pct: parsePct(stats.td_accuracy),
+                    color: "bg-blue-600/70",
+                  }}
                 />
                 <StatRow
                   label="Takedown Defense"
                   value={pct(stats.td_defense)}
                   isHighlight
+                  bar={{
+                    pct: parsePct(stats.td_defense),
+                    color: "bg-emerald-600/70",
+                  }}
                 />
                 <StatRow
-                  label="Submission Attempts / 15 min"
+                  label="Sub Attempts / 15 min"
                   value={num(stats.avg_sub_attempts)}
+                  bar={{
+                    pct: ((stats.avg_sub_attempts || 0) / 3) * 100,
+                    color: "bg-violet-500/70",
+                  }}
                 />
               </div>
             )}
@@ -847,7 +1110,9 @@ export default function FighterProfile({ currentUser, authToken }) {
                                 </span>
                               )}
                             </td>
-                            <td className="px-2 py-2.5 text-stone-400">
+                            <td
+                              className={`px-2 py-2.5 font-mono ${methodColorCls(fight.method)}`}
+                            >
                               {fight.method || "—"}
                             </td>
                             <td className="px-2 py-2.5 text-stone-500 max-w-[140px] truncate">
@@ -885,7 +1150,11 @@ export default function FighterProfile({ currentUser, authToken }) {
             <div className="bg-stone-900 border border-stone-700/50 rounded-xl overflow-hidden">
               <div className="px-5 pt-5 pb-3">
                 <ClassifiedBanner text="INTEL FOOTAGE" />
-                <SectionHeader icon="🎬" title="Highlight Reel" subtitle={name} />
+                <SectionHeader
+                  icon="🎬"
+                  title="Highlight Reel"
+                  subtitle={name}
+                />
               </div>
               <div className="relative aspect-video">
                 <iframe
@@ -918,9 +1187,13 @@ export default function FighterProfile({ currentUser, authToken }) {
                 if (!currentCardMatch) return "Opponent";
                 const { fighters } = currentCardMatch;
                 const opp = (fighters || []).find(
-                  (f) => (f.name || f.fighter_name || "").toLowerCase() !== (name || "").toLowerCase()
+                  (f) =>
+                    (f.name || f.fighter_name || "").toLowerCase() !==
+                    (name || "").toLowerCase(),
                 );
-                return opp ? (opp.name || opp.fighter_name || "Opponent") : "Opponent";
+                return opp
+                  ? opp.name || opp.fighter_name || "Opponent"
+                  : "Opponent";
               })();
 
               return (
@@ -937,7 +1210,9 @@ export default function FighterProfile({ currentUser, authToken }) {
                           : "bg-stone-800 border-stone-700/50 text-stone-300 hover:border-yellow-700/50 hover:text-yellow-400 cursor-pointer"
                     }`}
                   >
-                    <span className="font-bold">{vote === "fighter_a" ? "✓ " : ""}</span>
+                    <span className="font-bold">
+                      {vote === "fighter_a" ? "✓ " : ""}
+                    </span>
                     {name} wins
                   </button>
 
@@ -953,7 +1228,9 @@ export default function FighterProfile({ currentUser, authToken }) {
                           : "bg-stone-800 border-stone-700/50 text-stone-300 hover:border-stone-600 cursor-pointer"
                     }`}
                   >
-                    <span className="font-bold">{vote === "fighter_b" ? "✓ " : ""}</span>
+                    <span className="font-bold">
+                      {vote === "fighter_b" ? "✓ " : ""}
+                    </span>
                     {oppName} wins
                   </button>
                 </div>
@@ -968,20 +1245,32 @@ export default function FighterProfile({ currentUser, authToken }) {
                     if (!currentCardMatch) return "Opponent";
                     const { fighters } = currentCardMatch;
                     const opp = (fighters || []).find(
-                      (f) => (f.name || f.fighter_name || "").toLowerCase() !== (name || "").toLowerCase()
+                      (f) =>
+                        (f.name || f.fighter_name || "").toLowerCase() !==
+                        (name || "").toLowerCase(),
                     );
-                    return opp ? (opp.name || opp.fighter_name || "Opponent") : "Opponent";
+                    return opp
+                      ? opp.name || opp.fighter_name || "Opponent"
+                      : "Opponent";
                   })();
                   return (
                     <>
                       <div className="flex justify-between text-[9px] font-mono text-stone-500">
                         <span className="truncate max-w-[80px]">{name}</span>
                         <span>{totalVotes.toLocaleString()} votes</span>
-                        <span className="truncate max-w-[80px] text-right">{oppLabel}</span>
+                        <span className="truncate max-w-[80px] text-right">
+                          {oppLabel}
+                        </span>
                       </div>
                       <div className="flex h-4 rounded overflow-hidden">
-                        <div className="bg-yellow-700/60 transition-all" style={{ width: `${voteAPct}%` }} />
-                        <div className="bg-stone-700 transition-all" style={{ width: `${voteBPct}%` }} />
+                        <div
+                          className="bg-yellow-700/60 transition-all"
+                          style={{ width: `${voteAPct}%` }}
+                        />
+                        <div
+                          className="bg-stone-700 transition-all"
+                          style={{ width: `${voteBPct}%` }}
+                        />
                       </div>
                       <div className="flex justify-between text-[9px] font-mono font-bold">
                         <span className="text-yellow-400">{voteAPct}%</span>
@@ -1024,50 +1313,82 @@ export default function FighterProfile({ currentUser, authToken }) {
           )}
 
           {/* ── DFS Insights (current-card only) ── */}
-          {currentCardMatch && (() => {
-            const f = currentCardMatch.fighter;
-            const salary = f?.salary;
-            const avgPts = f?.avgPointsPerGame;
-            if (!salary && !avgPts) return null;
-            const ptsPerK = avgPts && salary ? (avgPts / (salary / 1000)) : null;
-            const valueTier =
-              ptsPerK == null ? null
-              : ptsPerK >= 12 ? { label: "STRONG VALUE", cls: "text-emerald-400 bg-emerald-900/25 border-emerald-800/40" }
-              : ptsPerK >= 10 ? { label: "SOLID", cls: "text-yellow-400 bg-yellow-900/25 border-yellow-800/40" }
-              : ptsPerK >= 8  ? { label: "NEUTRAL", cls: "text-stone-300 bg-stone-800/60 border-stone-700/40" }
-              : { label: "HIGH COST", cls: "text-red-400 bg-red-900/25 border-red-800/40" };
-            return (
-              <div className="bg-stone-900 border border-yellow-800/30 rounded-xl p-4">
-                <ClassifiedBanner text="DFS INTEL — DRAFTKINGS" />
-                <SectionHeader icon="💰" title="DFS Projection" />
-                <div className="space-y-2">
-                  {salary && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-mono text-stone-500">DK SALARY</span>
-                      <span className="text-sm font-black text-white font-mono">${salary.toLocaleString()}</span>
-                    </div>
-                  )}
-                  {avgPts && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-mono text-stone-500">AVG PTS / GAME</span>
-                      <span className="text-sm font-black text-yellow-400 font-mono">{avgPts.toFixed(1)}</span>
-                    </div>
-                  )}
-                  {ptsPerK && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-mono text-stone-500">PTS / $1K</span>
-                      <span className="text-sm font-black text-stone-300 font-mono">{ptsPerK.toFixed(1)}</span>
-                    </div>
-                  )}
-                  {valueTier && (
-                    <div className={`mt-3 text-center text-[10px] font-mono font-bold px-3 py-1.5 rounded border ${valueTier.cls}`}>
-                      {valueTier.label}
-                    </div>
-                  )}
+          {currentCardMatch &&
+            (() => {
+              const f = currentCardMatch.fighter;
+              const salary = f?.salary;
+              const avgPts = f?.avgPointsPerGame;
+              if (!salary && !avgPts) return null;
+              const ptsPerK =
+                avgPts && salary ? avgPts / (salary / 1000) : null;
+              const valueTier =
+                ptsPerK == null
+                  ? null
+                  : ptsPerK >= 12
+                    ? {
+                        label: "STRONG VALUE",
+                        cls: "text-emerald-400 bg-emerald-900/25 border-emerald-800/40",
+                      }
+                    : ptsPerK >= 10
+                      ? {
+                          label: "SOLID",
+                          cls: "text-yellow-400 bg-yellow-900/25 border-yellow-800/40",
+                        }
+                      : ptsPerK >= 8
+                        ? {
+                            label: "NEUTRAL",
+                            cls: "text-stone-300 bg-stone-800/60 border-stone-700/40",
+                          }
+                        : {
+                            label: "HIGH COST",
+                            cls: "text-red-400 bg-red-900/25 border-red-800/40",
+                          };
+              return (
+                <div className="bg-stone-900 border border-yellow-800/30 rounded-xl p-4">
+                  <ClassifiedBanner text="DFS INTEL — DRAFTKINGS" />
+                  <SectionHeader icon="💰" title="DFS Projection" />
+                  <div className="space-y-2">
+                    {salary && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-mono text-stone-500">
+                          DK SALARY
+                        </span>
+                        <span className="text-sm font-black text-white font-mono">
+                          ${salary.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    {avgPts && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-mono text-stone-500">
+                          AVG PTS / GAME
+                        </span>
+                        <span className="text-sm font-black text-yellow-400 font-mono">
+                          {avgPts.toFixed(1)}
+                        </span>
+                      </div>
+                    )}
+                    {ptsPerK && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-mono text-stone-500">
+                          PTS / $1K
+                        </span>
+                        <span className="text-sm font-black text-stone-300 font-mono">
+                          {ptsPerK.toFixed(1)}
+                        </span>
+                      </div>
+                    )}
+                    {valueTier && (
+                      <div
+                        className={`mt-3 text-center text-[10px] font-mono font-bold px-3 py-1.5 rounded border ${valueTier.cls}`}
+                      >
+                        {valueTier.label}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })()}
+              );
+            })()}
 
           {/* ── Quick links ── */}
           <div className="bg-stone-900 border border-stone-700/50 rounded-xl p-4 space-y-2">

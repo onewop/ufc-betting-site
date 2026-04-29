@@ -19,7 +19,9 @@ import api from "../services/api";
 function sherdogPortrait(url) {
   if (!url) return null;
   const m = url.match(/\/fighter\/[^/]+(\d+)\/?$/);
-  return m ? `https://www.sherdog.com/image_crop/300/400/_images/fighter/${m[1]}_ff.jpg` : null;
+  return m
+    ? `https://www.sherdog.com/image_crop/300/400/_images/fighter/${m[1]}_ff.jpg`
+    : null;
 }
 
 // ── Weight class canonical order ─────────────────────────────────────────────
@@ -93,7 +95,8 @@ function FighterCard({ fighter }) {
   } = fighter;
 
   const [imgFailed, setImgFailed] = useState(false);
-  const portraitUrl = (!imgFailed && (ufc_image_url || sherdogPortrait(sherdog_url))) || null;
+  const portraitUrl =
+    (!imgFailed && (ufc_image_url || sherdogPortrait(sherdog_url))) || null;
 
   const isWomen =
     gender === "FEMALE" || (weight_class || "").startsWith("Women");
