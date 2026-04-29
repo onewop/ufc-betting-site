@@ -573,7 +573,7 @@ export default function FighterDirectory() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search name, nickname, nationality, team..."
-              className="w-full bg-stone-800/60 border border-stone-700/50 rounded-lg pl-8 pr-8 py-2.5 text-sm text-stone-200 placeholder-stone-600 focus:border-yellow-600/50 focus:ring-1 focus:ring-yellow-600/10 focus:outline-none font-mono transition-all"
+              className="w-full bg-stone-800 border border-stone-700/50 rounded-lg pl-8 pr-8 py-2.5 text-sm text-white placeholder-stone-500 focus:border-yellow-600/50 focus:ring-1 focus:ring-yellow-600/10 focus:outline-none font-mono transition-all"
             />
             {search && (
               <button
