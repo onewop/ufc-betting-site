@@ -276,14 +276,10 @@ function removeMeta(key, attr = "property") {
   document.querySelector(`meta[${attr}="${key}"]`)?.remove();
 }
 
-/** Derive Sherdog CDN portrait from a Sherdog profile URL. */
-function sherdogPortrait(sherdogUrl) {
-  if (!sherdogUrl) return null;
-  const m = sherdogUrl.match(/\/fighter\/[^/]+-(\d+)\/?$/);
-  return m
-    ? `https://www.sherdog.com/image_crop/300/400/_images/fighter/${m[1]}_ff.jpg`
-    : null;
-}
+// NOTE: sherdogPortrait() removed — Sherdog changed their CDN in 2024 from
+// /{id}_ff.jpg to /{timestamp}_{Name}_ff.JPG. Real URLs are scraped from the
+// profile page by build_fighter_profiles.py and stored in ufc_image_url.
+// Images need referrerpolicy="no-referrer" in the browser to bypass hotlinking.
 
 // ── Main Component ───────────────────────────────────────────────────────────
 
@@ -334,9 +330,7 @@ export default function FighterProfile({ currentUser, authToken }) {
         const description = `${p.name} (${record})${wc}${fin} — UFC career stats, fight history & analysis on CageVault.`;
         const url = `https://cagevault.com/fighters/${slug}`;
         const image =
-          p.ufc_image_url ||
-          sherdogPortrait(p.sherdog_url) ||
-          "https://cagevault.com/images/og-default.jpg";
+          p.ufc_image_url || "https://cagevault.com/images/og-default.jpg";
 
         // Page title
         document.title = title;
@@ -626,10 +620,8 @@ export default function FighterProfile({ currentUser, authToken }) {
     votes = { fighter_a: 0, fighter_b: 0 },
   } = profile;
 
-  // Portrait fallback chain: UFC CDN → Sherdog CDN → initials placeholder
-  const portraitSources = [ufc_image_url, sherdogPortrait(sherdog_url)].filter(
-    Boolean,
-  );
+  // Portrait fallback chain: ufc_image_url (set by build script from Sherdog) → initials placeholder
+  const portraitSources = [ufc_image_url].filter(Boolean);
   const portraitUrl = portraitSources[portraitIdx] ?? null;
 
   const totalVotes = (votes.fighter_a || 0) + (votes.fighter_b || 0);
@@ -686,6 +678,8 @@ export default function FighterProfile({ currentUser, authToken }) {
                   src={portraitUrl}
                   alt={name}
                   className="w-44 h-56 sm:w-56 sm:h-72 md:w-64 md:h-80 object-cover object-top rounded-2xl border border-stone-600/50 shadow-[0_25px_80px_rgba(0,0,0,0.8)]"
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
                   onError={() => {
                     // Try next source in the chain; if exhausted, portraitUrl goes null and placeholder renders
                     setPortraitIdx((prev) => prev + 1);

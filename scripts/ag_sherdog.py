@@ -452,6 +452,18 @@ def scrape_sherdog_fighter_data(fighter_name, profile_url=None):
         data['fight_history'] = fight_history
 
         # Store the profile URL so callers can derive the Sherdog image CDN path
+        # ── Portrait URL ──────────────────────────────────────────────────
+        # Extract from the already-loaded profile page — avoids a separate HTTP
+        # request in get_sherdog_portrait_url().  Only the /200/300/ crop is the
+        # real fighter portrait; the 72/72 thumbnails are site-wide placeholders.
+        portrait_url = None
+        for img in soup2.find_all("img"):
+            src = img.get("src", "")
+            if "_ff." in src and "/image_crop/200/300/" in src:
+                portrait_url = src if src.startswith("http") else f"https://www.sherdog.com{src}"
+                break
+        data["portrait_url"] = portrait_url
+
         data['sherdog_url'] = profile_url or ''
 
         print(
@@ -491,6 +503,7 @@ def get_empty_sherdog_data():
         'nickname':    None,
         'fight_history': [],
         'sherdog_url': '',
+        'portrait_url': None,
     }
 
 

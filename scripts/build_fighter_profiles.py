@@ -303,21 +303,71 @@ def scrape_ufcstats_profile_direct(profile_url: str) -> dict:
 # ── Portrait images ──────────────────────────────────────────────────────────
 
 def get_sherdog_portrait_url(sherdog_url: str) -> str | None:
-    """Derive the Sherdog CDN portrait URL directly from the profile URL.
+    """Scrape the Sherdog fighter profile page to extract the real portrait URL.
 
-    Sherdog stores fighter images at a predictable CDN path based on the
-    numeric fighter ID in the profile URL.
+    Sherdog used to serve portraits at a predictable /{id}_ff.jpg CDN path, but
+    now uses timestamped filenames like /20220922042411_Name_ff.JPG that cannot
+    be derived from the profile URL alone.  We must fetch the profile page and
+    parse the <img> tag.
 
-    E.g. https://www.sherdog.com/fighter/Israel-Adesanya-56374
-             → https://www.sherdog.com/image_crop/300/400/_images/fighter/56374_ff.jpg
+    The images are served at https://www.sherdog.com/image_crop/... and require
+    NO Referer header (hotlink-blocked when Referer is a foreign domain).  In the
+    browser we set referrerpolicy="no-referrer" on the <img> tag to bypass this.
+
+    E.g. https://www.sherdog.com/fighter/Cub-Swanson-11002
+             → https://www.sherdog.com/image_crop/200/300/_images/fighter/20220922042411_Cub_Swanson_ff.JPG
     """
     if not sherdog_url:
         return None
-    m = re.search(r"-(\d+)$", sherdog_url.rstrip("/"))
-    if not m:
+
+    import requests as _requests
+    from bs4 import BeautifulSoup as _BS
+
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+        ),
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Referer": "https://www.sherdog.com/",
+    }
+
+    # Use the perfight cache so we don't re-fetch pages already in the cache
+    try:
+        from ag_perfight import _perfight_load_cache, _perfight_save_cache
+        cache = _perfight_load_cache()
+        cache_key = f"sherdog_portrait__{sherdog_url}"
+        if cache_key in cache:
+            return cache[cache_key] or None
+
+        import time as _time, random as _random
+        _time.sleep(_random.uniform(1.5, 3.5))  # polite delay
+
+        resp = _requests.get(sherdog_url, headers=headers, timeout=15)
+        if resp.status_code != 200:
+            cache[cache_key] = ""
+            _perfight_save_cache()
+            return None
+
+        soup = _BS(resp.text, "html.parser")
+        # The fighter portrait is at /image_crop/200/300/ (not the 72x72 sidebar thumbnails)
+        for img in soup.find_all("img"):
+            src = img.get("src", "")
+            if "_ff." in src and "/image_crop/200/300/" in src:
+                # Make absolute
+                portrait = src if src.startswith("http") else f"https://www.sherdog.com{src}"
+                cache[cache_key] = portrait
+                _perfight_save_cache()
+                return portrait
+
+        cache[cache_key] = ""
+        _perfight_save_cache()
         return None
-    fighter_id = m.group(1)
-    return f"https://www.sherdog.com/image_crop/300/400/_images/fighter/{fighter_id}_ff.jpg"
+
+    except Exception as e:
+        print(f"    [portrait] Error fetching {sherdog_url}: {e}")
+        return None
 
 
 # ── UFC.com headers (full browser fingerprint) ──────────────────────────────
@@ -637,10 +687,14 @@ def build_all_profiles(
             profile["age"] = age
 
         # ── Step E: Portrait image ────────────────────────────────────────
-        # Primary: Sherdog CDN (derived instantly from the profile URL — no HTTP)
-        # Secondary: UFC.com (full browser session, only if Sherdog has no ID)
-        sherdog_url = profile.get("sherdog_url") or ""
-        portrait_url = get_sherdog_portrait_url(sherdog_url)
+        # Use the portrait_url already extracted from the Sherdog page in Step B
+        # (ag_sherdog.py now extracts it from the same soup2 parse — no extra HTTP).
+        # Fall back to get_sherdog_portrait_url() for fighters whose Sherdog data
+        # came from cache (portrait_url may not be in older cached entries).
+        portrait_url = profile.pop("portrait_url", None)
+        if not portrait_url:
+            sherdog_url = profile.get("sherdog_url") or ""
+            portrait_url = get_sherdog_portrait_url(sherdog_url)
 
         if portrait_url:
             profile["ufc_image_url"] = portrait_url

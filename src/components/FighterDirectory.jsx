@@ -150,6 +150,8 @@ function FighterCard({ fighter }) {
           <img
             src={portraitUrl}
             alt={name}
+            referrerPolicy="no-referrer"
+            crossOrigin="anonymous"
             className="w-full h-full object-cover object-top group-hover:scale-[1.04] transition-transform duration-300"
             onError={() => setImgFailed(true)}
           />
