@@ -33,6 +33,9 @@ class User(Base):
     )
     stripe_customer_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     subscription_status: Mapped[str] = mapped_column(String(20), default="free", nullable=False)
+    trial_expires_at: Mapped[datetime.datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     def __repr__(self) -> str:
         return f"<User id={self.id} username={self.username!r}>"
@@ -227,6 +230,7 @@ class UserOut(BaseModel):
     is_active: bool
     created_at: datetime.datetime
     subscription_status: str
+    trial_expires_at: datetime.datetime | None = None
 
     model_config = {"from_attributes": True}
 

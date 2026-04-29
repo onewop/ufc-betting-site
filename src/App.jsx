@@ -28,6 +28,11 @@ import DebugStatsPage from "./pages/DebugStatsPage";
 import ManagerPage from "./pages/ManagerPage";
 import FighterDirectory from "./components/FighterDirectory";
 import FighterProfile from "./components/FighterProfile";
+import PrivacyPolicy from "./components/PrivacyPolicy";
+import TermsOfService from "./components/TermsOfService";
+import FreeTrialModal from "./components/FreeTrialModal";
+import FreeTrialBanner from "./components/FreeTrialBanner";
+import { captureUTM } from "./utils/utm";
 import api from "./services/api";
 
 // Auth keys for localStorage
@@ -80,6 +85,16 @@ const AppShell = () => {
   const [authModalTab, setAuthModalTab] = useState("login");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showUpgradeSuccess, setShowUpgradeSuccess] = useState(false);
+  const [trialModalOpen, setTrialModalOpen] = useState(() => {
+    // Show trial modal if visitor has no auth token and hasn't dismissed it
+    try {
+      const dismissed = localStorage.getItem("cv_trial_dismissed");
+      const hasToken = !!localStorage.getItem("authToken");
+      return !dismissed && !hasToken;
+    } catch {
+      return false;
+    }
+  });
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -98,6 +113,11 @@ const AppShell = () => {
     if (storedTheme === "light" || storedTheme === "dark") {
       setTheme(storedTheme);
     }
+  }, []);
+
+  // Capture UTM params on first load — persists attribution across the session
+  useEffect(() => {
+    captureUTM();
   }, []);
 
   useEffect(() => {
@@ -527,6 +547,20 @@ const AppShell = () => {
         </div>
       )}
 
+      <FreeTrialBanner currentUser={currentUser} onUpgrade={handleUpgrade} />
+
+      <FreeTrialModal
+        isOpen={trialModalOpen}
+        onClose={() => setTrialModalOpen(false)}
+        onSuccess={(token, user) => {
+          setAuthToken(token);
+          setCurrentUser(user);
+          localStorage.setItem("authToken", token);
+          localStorage.setItem("currentUser", JSON.stringify(user));
+          setTrialModalOpen(false);
+        }}
+      />
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route
@@ -604,6 +638,8 @@ const AppShell = () => {
           path="/manager"
           element={<ManagerPage currentUser={currentUser} />}
         />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
       </Routes>
       <Footer />
 

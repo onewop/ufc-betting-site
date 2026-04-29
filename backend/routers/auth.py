@@ -14,12 +14,13 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 import bcrypt
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from database import get_db
+from limiter import limiter
 from models import Token, TokenData, User, UserCreate, UserLogin, UserOut
 
 logger = logging.getLogger(__name__)
@@ -110,7 +111,8 @@ def get_current_user(
     status_code=status.HTTP_201_CREATED,
     summary="Register a new user",
 )
-def register(payload: UserCreate, db: Session = Depends(get_db)) -> Token:
+@limiter.limit("5/minute")
+def register(request: Request, payload: UserCreate, db: Session = Depends(get_db)) -> Token:
     """
     Create a new account and return a JWT access token (auto-login).
 
@@ -147,7 +149,8 @@ def register(payload: UserCreate, db: Session = Depends(get_db)) -> Token:
     response_model=Token,
     summary="Login and receive a JWT access token",
 )
-def login(payload: UserLogin, db: Session = Depends(get_db)) -> Token:
+@limiter.limit("10/minute")
+def login(request: Request, payload: UserLogin, db: Session = Depends(get_db)) -> Token:
     """
     Authenticate with email + password.  Returns a Bearer JWT valid for 7 days.
 
@@ -169,12 +172,6 @@ def login(payload: UserLogin, db: Session = Depends(get_db)) -> Token:
             detail="Account is disabled",
         )
 
-    # TEMP: For testing, if user has stripe_customer_id, force pro status
-    if user.stripe_customer_id and user.subscription_status != "pro":
-        user.subscription_status = "pro"
-        db.commit()
-        logger.info("Forced pro status for user with stripe_customer_id: %s", user.email)
-
     token = _create_access_token(user.email)
     logger.info("User logged in: %s", user.email)
     return Token(access_token=token)
@@ -190,10 +187,4 @@ def get_me(current_user: Annotated[User, Depends(get_current_user)], db: Session
     Return the profile of the currently authenticated user.
     Requires a valid Bearer JWT in the Authorization header.
     """
-    # TEMP: For testing, if user has stripe_customer_id, force pro status
-    if current_user.stripe_customer_id and current_user.subscription_status != "pro":
-        current_user.subscription_status = "pro"
-        db.commit()
-        logger.info("Forced pro status for user with stripe_customer_id: %s", current_user.email)
-
     return UserOut.from_orm(current_user)

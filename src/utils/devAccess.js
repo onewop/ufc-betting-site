@@ -28,7 +28,19 @@ export const isDevUser = (email) => {
 
 /**
  * Drop-in replacement for  currentUser?.subscription_status === "pro".
- * Returns true for real Pro subscribers AND dev/owner accounts.
+ * Returns true for:
+ *   - Real Pro subscribers (subscription_status === "pro")
+ *   - Active free trial users (subscription_status === "trial" and not yet expired)
+ *   - Dev / owner accounts
  */
-export const isPro = (user) =>
-  user?.subscription_status === "pro" || isDevUser(user?.email);
+export const isPro = (user) => {
+  if (!user) return false;
+  if (isDevUser(user.email)) return true;
+  if (user.subscription_status === "pro") return true;
+  if (user.subscription_status === "trial") {
+    // Check expiry if available; default to allowing access if field is missing
+    if (!user.trial_expires_at) return true;
+    return new Date(user.trial_expires_at) > new Date();
+  }
+  return false;
+};
